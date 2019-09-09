@@ -144,7 +144,7 @@ public class ChangeWindow : EditorWindow
 
         var currentFileData = export();
 
-        for (var i = 0; i < linesToChange.Length; i++)
+        for (var i = 0; i < linesToChange.Length;  i++)
         {
             string line = linesToChange[i];
             Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
@@ -153,7 +153,7 @@ public class ChangeWindow : EditorWindow
             Match matchGuid = regexGuid.Match(line);
             if (!matchGuid.Success) continue;
 
-            Regex fileIDRegex = new Regex(@"(?<=fileID: )[A-z0-9]*");
+            Regex fileIDRegex = new Regex(@"(?<=fileID: )\-?[A-z0-9]*");
 
             var fileIDMatch = fileIDRegex.Match(line);
             string fileID = fileIDMatch.Success ? fileIDMatch.Value : "";
@@ -166,14 +166,15 @@ public class ChangeWindow : EditorWindow
             {
                 continue;
             }
+            linesToChange[i] = linesToChange[i].Replace(matchGuid.Value, replacementFileData.Guid);
 
-            if (!String.IsNullOrEmpty(fileID) && replacementFileData.FileID!=null)
+            if (String.IsNullOrEmpty(fileID)) continue;
+            
+            if (String.IsNullOrEmpty(replacementFileData.FileID) )
             {
-                linesToChange[i] = line.Replace(fileID, replacementFileData.FileID);
+                replacementFileData.FileID = "11500000";
             }
-
-            linesToChange[i] = line.Replace(matchGuid.Value, replacementFileData.Guid);
-
+            linesToChange[i] = linesToChange[i].Replace(fileID, replacementFileData.FileID);
         }
 
         var now = DateTime.Now;
@@ -185,7 +186,7 @@ public class ChangeWindow : EditorWindow
 
     private FileData getNewValue(List<FileData> oldData, List<FileData> newData, string fileId, string oldGuid)
     {
-        if (oldGuid.Equals("cc55f0e6497cb994f8838590aeb61b0f"))
+        if (oldGuid.Equals("edca63024319877419b4e8a6f3208714"))
         {
             Debug.Log("Should replace");
         }
@@ -193,7 +194,7 @@ public class ChangeWindow : EditorWindow
         FileData oldFileData = null;
         foreach (FileData currentOldFileData in oldData)
         {
-            if ((currentOldFileData.Guid.Equals(oldGuid) && string.IsNullOrEmpty(currentOldFileData.FileID))
+            if ((currentOldFileData.Guid.Equals(oldGuid) && string.IsNullOrEmpty(fileId))
                 || (currentOldFileData.Guid.Equals(oldGuid) && currentOldFileData.FileID.Equals(fileId)))
             {
                 oldFileData = currentOldFileData;

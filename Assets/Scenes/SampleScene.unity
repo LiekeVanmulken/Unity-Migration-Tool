@@ -130,6 +130,7 @@ GameObject:
   m_Component:
   - component: {fileID: 836316766}
   - component: {fileID: 836316767}
+  - component: {fileID: 836316768}
   m_Layer: 0
   m_Name: GameObject1
   m_TagString: Untagged
@@ -164,3 +165,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   test: This value is set
+--- !u!114 &836316768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 836316765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -58757690, guid: edca63024319877419b4e8a6f3208714, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TestField: 
