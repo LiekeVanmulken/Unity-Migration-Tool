@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YamlDotNet.RepresentationModel;
 
 public class YamlTestWindow : EditorWindow
@@ -33,17 +35,24 @@ public class YamlTestWindow : EditorWindow
 
         if (GUILayout.Button("Yaml"))
         {
-            string path = EditorUtility.OpenFilePanel("title", "", "*");
-            if (path.Length != 0)
+            var rootPath = Application.dataPath.Replace("/Assets", "");
+            var path = rootPath + "/" + EditorApplication.currentScene;
+            Debug.Log(path);
+
+            if (File.Exists(path))
             {
                 ConvertYaml(path);
             }
             else
             {
-                throw new NotImplementedException("Could not get file");
+                throw new NotImplementedException("Could not find scene with path : " + path);
             }
         }
+
+        jsonData = GUILayout.TextArea(jsonData);
     }
+
+    private string jsonData;
 
     private void ConvertYaml(string path)
     {
@@ -88,15 +97,18 @@ public class YamlTestWindow : EditorWindow
                 string fileID = fileIDS[j];
 
                 YamlDocument document = getYamlDocumentByAnchor(yaml, fileID);
-                var guid = getGuidFromDocument(document);
-                if (guid != null)
+                Tuple<string, string> scriptInfo = getGuidFromDocument(document);
+                if (scriptInfo != null)
                 {
-                    fileDatas.Add(new ChangeWindow.FileData(component.GetType().Name, guid, true));
+                    fileDatas.Add(new ChangeWindow.FileData(component.GetType().Name, scriptInfo.Item1,
+                        scriptInfo.Item2, true));
                 }
             }
         }
 
-        Debug.Log(JsonConvert.SerializeObject(fileDatas, Formatting.Indented));
+        var json = JsonConvert.SerializeObject(fileDatas, Formatting.Indented);
+        jsonData = json;
+        Debug.Log(json);
     }
 
     private List<string> getFileIDsFromDocument(YamlDocument document)
@@ -134,12 +146,33 @@ public class YamlTestWindow : EditorWindow
         throw new NotImplementedException();
     }
 
-    private string getGuidFromDocument(YamlDocument document)
+    /// <summary>
+    /// Gets the guid and fileID from a yaml document
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns>item1 => guid, item2 => guid</returns>
+    private Tuple<string, string> getGuidFromDocument(YamlDocument document)
     {
         try
         {
-            YamlNode scriptNode = document.RootNode["MonoBehaviour"]["m_Script"]["guid"];
-            return ((YamlScalarNode) scriptNode).Value;
+            YamlMappingNode scriptNode = (YamlMappingNode) document.RootNode["MonoBehaviour"]["m_Script"];
+            string guid = ((YamlScalarNode) scriptNode["guid"]).Value;
+            string fileID = "";
+            try
+            {
+                fileID = ((YamlScalarNode) scriptNode["fileID"]).Value;
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Could nit find fileID");
+            }
+
+//
+//            YamlNode guidNode = document.RootNode["MonoBehaviour"]["m_Script"]["guid"];
+//            YamlNode fileIDNode = document.RootNode["MonoBehaviour"]["m_Script"]["fileID"];
+//            string guid =  ((YamlScalarNode) guidNode).Value;
+//            string fileID =  ((YamlScalarNode) fileIDNode).Value;
+            return new Tuple<string, string>(guid, fileID);
         }
         catch (Exception e)
         {

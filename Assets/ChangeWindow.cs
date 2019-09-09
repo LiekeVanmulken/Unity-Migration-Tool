@@ -25,9 +25,15 @@ public class ChangeWindow : EditorWindow
             }
         }
 
-        [SerializeField] public string Name { get; private set; }
+        [SerializeField] public string Name { get; set; }
+        [SerializeField] public string FileID { get; set; }
 
-        [SerializeField] public string Guid { get; private set; }
+
+        [SerializeField] public string Guid { get; set; }
+
+        public FileData()
+        {
+        }
 
         public FileData(string path, string guid, bool generateFromPath = false)
         {
@@ -42,7 +48,24 @@ public class ChangeWindow : EditorWindow
                 this.Name = path;
             }
 
-            Guid = guid;
+            this.Guid = guid;
+        }
+
+        public FileData(string path, string guid, string fileID, bool generateFromPath = false)
+        {
+            path = path.Replace(".cs.meta", "");
+            if (generateFromPath)
+            {
+                Path = path;
+            }
+            else
+            {
+                this.path = path;
+                this.Name = path;
+            }
+
+            this.Guid = guid;
+            this.FileID = fileID;
         }
     }
 
@@ -101,7 +124,7 @@ public class ChangeWindow : EditorWindow
                 Match match = regex.Match(line);
                 if (match.Success)
                 {
-                    data.Add(new FileData(file, match.Value));
+                    data.Add(new FileData(Path.GetFileName(file), match.Value));
                     Debug.Log("File: " + file + "; GUID: " + match.Value);
                 }
             }
@@ -124,17 +147,33 @@ public class ChangeWindow : EditorWindow
         for (var i = 0; i < linesToChange.Length; i++)
         {
             string line = linesToChange[i];
-            Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
-            Match match = regex.Match(line);
-            if (match.Success)
+            Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
+
+
+            Match matchGuid = regexGuid.Match(line);
+            if (!matchGuid.Success) continue;
+
+            Regex fileIDRegex = new Regex(@"(?<=fileID: )[A-z0-9]*");
+
+            var fileIDMatch = fileIDRegex.Match(line);
+            string fileID = fileIDMatch.Success ? fileIDMatch.Value : "";
+
+            
+            
+            FileData replacementFileData = getNewValue(existingData, currentFileData, fileID, matchGuid.Value);
+
+            if (replacementFileData == null)
             {
-                var replacement = getNewValue(existingData, currentFileData, match.Value);
-                if (replacement != null)
-                {
-                    Debug.Log("Replaced " + match.Value);
-                    linesToChange[i] = line.Replace(match.Value, replacement);
-                }
+                continue;
             }
+
+            if (!String.IsNullOrEmpty(fileID) && replacementFileData.FileID!=null)
+            {
+                linesToChange[i] = line.Replace(fileID, replacementFileData.FileID);
+            }
+
+            linesToChange[i] = line.Replace(matchGuid.Value, replacementFileData.Guid);
+
         }
 
         var now = DateTime.Now;
@@ -143,14 +182,21 @@ public class ChangeWindow : EditorWindow
             linesToChange);
     }
 
-    private string getNewValue(List<FileData> oldData, List<FileData> newData, string oldGuid)
+
+    private FileData getNewValue(List<FileData> oldData, List<FileData> newData, string fileId, string oldGuid)
     {
-        FileData oldFileData = null;
-        foreach (FileData filedata1 in oldData)
+        if (oldGuid.Equals("cc55f0e6497cb994f8838590aeb61b0f"))
         {
-            if (filedata1.Guid.Equals(oldGuid))
+            Debug.Log("Should replace");
+        }
+
+        FileData oldFileData = null;
+        foreach (FileData currentOldFileData in oldData)
+        {
+            if ((currentOldFileData.Guid.Equals(oldGuid) && string.IsNullOrEmpty(currentOldFileData.FileID))
+                || (currentOldFileData.Guid.Equals(oldGuid) && currentOldFileData.FileID.Equals(fileId)))
             {
-                oldFileData = filedata1;
+                oldFileData = currentOldFileData;
                 break;
             }
         }
@@ -158,7 +204,7 @@ public class ChangeWindow : EditorWindow
         if (oldFileData != null)
         {
             var newFileData = newData.First(filedata => filedata.Name.Equals(oldFileData.Name));
-            return newFileData.Guid;
+            return newFileData;
         }
 
         Debug.Log("Could not find oldFileData");
