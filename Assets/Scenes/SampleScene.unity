@@ -177,4 +177,4 @@ MonoBehaviour:
   m_Script: {fileID: -58757690, guid: edca63024319877419b4e8a6f3208714, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TestField: 
+  TestField: Tetsing the library field
