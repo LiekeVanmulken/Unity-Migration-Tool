@@ -102,7 +102,8 @@ public class NewProjectImportWindow : EditorWindow
     private List<FileData> export()
     {
         var path = Application.dataPath;
-        var directories = Directory.GetFiles(path, "*.cs.meta", SearchOption.AllDirectories);
+        var directories = Directory.GetFiles(path, "*" +
+                                                   ".cs.meta", SearchOption.AllDirectories);
         List<FileData> data = new List<FileData>();
 
         foreach (string file in directories)
