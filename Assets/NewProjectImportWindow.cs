@@ -74,7 +74,6 @@ public partial class NewProjectImportWindow : EditorWindow
                     {
                         continue;
                     }
-
                     data.Add(new FileData(className, match.Value));
                     Debug.Log("File: " + file + "; GUID: " + match.Value);
                 }

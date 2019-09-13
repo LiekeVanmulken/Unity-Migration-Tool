@@ -1,13 +1,18 @@
 using System;
 using UnityEngine;
 
+/// <summary>
+/// Stores the data of a class that has been parsed
+/// Using in the <see cref="NewProjectImportWindow"/> and in the <see cref="OldProjectExportWindow"/>
+/// </summary>
 [Serializable]
 public class FileData
 {
-    [SerializeField] public string Name { get; private set; }
+    //Has public setters because json.net won't be able to set the properties otherwise 
+    [SerializeField] public string Name { get; set; }
 
-    [SerializeField] public string FileID { get; private set; }
-    [SerializeField] public string Guid { get; private set; }
+    [SerializeField] public string FileID { get; set; }
+    [SerializeField] public string Guid { get; set; }
 
     public FileData()
     {
