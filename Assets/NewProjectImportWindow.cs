@@ -7,68 +7,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
-public class NewProjectImportWindow : EditorWindow
+public partial class NewProjectImportWindow : EditorWindow
 {
-    [Serializable]
-    public class FileData
-    {
-        [SerializeField] private string path;
-
-
-        public string Path
-        {
-            get { return path; }
-            set
-            {
-                path = value;
-                Name = System.IO.Path.GetFileName(path);
-            }
-        }
-
-        [SerializeField] public string Name { get; set; }
-        [SerializeField] public string FileID { get; set; }
-
-
-        [SerializeField] public string Guid { get; set; }
-
-        public FileData()
-        {
-        }
-
-        public FileData(string path, string guid, bool generateFromPath = false)
-        {
-            path = path.Replace(".cs.meta", "");
-            if (generateFromPath)
-            {
-                Path = path;
-            }
-            else
-            {
-                this.path = path;
-                this.Name = path;
-            }
-
-            this.Guid = guid;
-        }
-
-        public FileData(string path, string guid, string fileID, bool generateFromPath = false)
-        {
-            path = path.Replace(".cs.meta", "");
-            if (generateFromPath)
-            {
-                Path = path;
-            }
-            else
-            {
-                this.path = path;
-                this.Name = path;
-            }
-
-            this.Guid = guid;
-            this.FileID = fileID;
-        }
-    }
-
     private static List<FileData> filedata = new List<FileData>();
 
     [MenuItem("ImportExport/New project import window")]
@@ -95,17 +35,18 @@ public class NewProjectImportWindow : EditorWindow
                 throw new NotImplementedException("Could not get file");
             }
         }
-        jsonTextArea = EditorGUILayout.TextArea(jsonTextArea);
 
+        jsonTextArea = EditorGUILayout.TextArea(jsonTextArea);
     }
 
     private List<FileData> export()
     {
         var path = Application.dataPath;
+
         var directories = Directory.GetFiles(path, "*" +
                                                    ".cs.meta", SearchOption.AllDirectories);
-        List<FileData> data = new List<FileData>();
 
+        List<FileData> data = new List<FileData>();
         foreach (string file in directories)
         {
             var lines = File.ReadAllLines(file);
@@ -134,7 +75,6 @@ public class NewProjectImportWindow : EditorWindow
 
         var linesToChange = File.ReadAllLines(fileToChange);
         var currentFileData = export();
-
         for (var i = 0; i < linesToChange.Length; i++)
         {
             string line = linesToChange[i];
@@ -154,13 +94,12 @@ public class NewProjectImportWindow : EditorWindow
                 continue;
             }
 
+            // Replace the Guid
             linesToChange[i] = linesToChange[i].Replace(matchGuid.Value, replacementFileData.Guid);
-            if (String.IsNullOrEmpty(fileID)) continue;
-            if (String.IsNullOrEmpty(replacementFileData.FileID)) //when the file is no longer in a library set the fileID to the default
-            {
-                replacementFileData.FileID = "11500000";
-            }
 
+            if (String.IsNullOrEmpty(fileID)) continue;
+
+            //Replace the fileID
             linesToChange[i] = linesToChange[i].Replace(fileID, replacementFileData.FileID);
         }
 
