@@ -4,6 +4,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
@@ -21,6 +22,14 @@ public partial class NewProjectImportWindow : EditorWindow
 
     void OnGUI()
     {
+        if (GUILayout.Button("Test export with dll"))
+        {
+            var exportedData = export();
+            var content = JsonConvert.SerializeObject(exportedData,Formatting.Indented);
+            jsonTextArea = content;
+            Debug.Log(content);
+        }
+
         if (GUILayout.Button("Import"))
         {
             string path = EditorUtility.OpenFilePanel("title", "", "*");
@@ -36,18 +45,21 @@ public partial class NewProjectImportWindow : EditorWindow
             }
         }
 
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         jsonTextArea = EditorGUILayout.TextArea(jsonTextArea);
+        EditorGUILayout.EndScrollView();
     }
 
+    private Vector2 scrollPosition;
     private List<FileData> export()
     {
         var path = Application.dataPath;
 
-        var directories = Directory.GetFiles(path, "*" +
-                                                   ".cs.meta", SearchOption.AllDirectories);
-
+        //Get all files
+        var classMetaFiles = Directory.GetFiles(path, "*" +
+                                                      ".cs.meta", SearchOption.AllDirectories);
         List<FileData> data = new List<FileData>();
-        foreach (string file in directories)
+        foreach (string file in classMetaFiles)
         {
             var lines = File.ReadAllLines(file);
 
@@ -57,13 +69,64 @@ public partial class NewProjectImportWindow : EditorWindow
                 Match match = regex.Match(line);
                 if (match.Success)
                 {
-                    data.Add(new FileData(Path.GetFileName(file), match.Value));
+                    string className = getClassByFile(file);
+                    if (className == null)
+                    {
+                        continue;
+                    }
+
+                    data.Add(new FileData(className, match.Value));
                     Debug.Log("File: " + file + "; GUID: " + match.Value);
                 }
             }
         }
 
+        //Get all dlls
+        var dllMetaFiles = Directory.GetFiles(path, "*" +
+                                                    ".dll.meta", SearchOption.AllDirectories);
+
+        foreach (string metaFile in dllMetaFiles)
+        {
+            string text = File.ReadAllText(metaFile);
+            Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
+            Match match = regex.Match(text);
+            if (!match.Success)
+            {
+                throw new NotImplementedException("Could not parse the guid from the dll meta file. File : " + metaFile);
+            }
+
+            var file = metaFile.Replace(".meta", "");
+            Assembly assembly = Assembly.LoadFile(file);
+//            Assembly assembly = Assembly.ReflectionOnlyLoadFrom(file);
+            foreach (Type type in assembly.GetTypes())
+            {
+                data.Add(new FileData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+            }
+        }
+
+
         return data;
+    }
+
+    private string getClassByFile(string path)
+    {
+        var fileName = Path.GetFileName(path);
+        fileName = fileName.Replace(".cs.meta", "");
+        Type[] types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+            .Where(x => x.Name == fileName).ToArray();
+
+        if (types.Length == 0)
+        {
+            Debug.Log("Could not find type with name : " + fileName);
+            return null;
+        }        
+        if (types.Length > 1)
+        {
+            Debug.Log("Cannot find class with the name : " + fileName +
+                                " as it has a double declaration in multiple namespaces. Using the last one");
+        }
+        var last = types.Last();
+        return last.FullName;
     }
 
     private void import(string fileToChange, List<FileData> existingData)

@@ -16,7 +16,7 @@ public class OldProjectExportWindow : EditorWindow
 
     void OnGUI()
     {
-        if (GUILayout.Button("Yaml"))
+        if (GUILayout.Button("Export current scene ID's to json"))
         {
             var rootPath = Application.dataPath.Replace("/Assets", "");
             var path = rootPath + "/" + EditorApplication.currentScene;

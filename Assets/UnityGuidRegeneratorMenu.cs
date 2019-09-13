@@ -82,6 +82,7 @@ public class UnityGuidRegeneratorMenu : MonoBehaviour
                 {
                     int index = fileLines[i].IndexOf("guid: ") + 6;
                     string oldGUID = fileLines[i].Substring(index, 32); // GUID has 32 characters.
+                    
                     //use that as a key to the dictionary and find the value
                     //replace those 32 characters with the new GUID value
                     if (GUIDDict.ContainsKey(oldGUID))
