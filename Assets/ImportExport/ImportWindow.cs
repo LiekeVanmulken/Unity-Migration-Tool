@@ -4,7 +4,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ImportExporter
+namespace importerexporter
 {
     /// <summary>
     /// Change the GUIDS and fileIDS to the new GUIDS and fileIDs

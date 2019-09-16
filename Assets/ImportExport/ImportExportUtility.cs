@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 
-namespace ImportExporter
+namespace importerexporter
 {
     public static class ImportExportUtility
     {
@@ -29,8 +29,6 @@ namespace ImportExporter
                                                         ".dll.meta", SearchOption.AllDirectories);
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
-//            EditorUtility.DisplayProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds",
-//                progress / totalFiles);
 
             List<FileData> data = new List<FileData>();
             foreach (string file in classMetaFiles)

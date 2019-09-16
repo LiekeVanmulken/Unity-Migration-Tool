@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ImportExporter
+namespace importerexporter
 {
     /// <summary>
     /// Stores the data of a class that has been parsed
