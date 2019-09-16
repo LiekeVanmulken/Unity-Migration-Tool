@@ -29,12 +29,14 @@ namespace ImportExporter
                                                         ".dll.meta", SearchOption.AllDirectories);
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
-            EditorUtility.DisplayProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds",
-                progress / totalFiles);
+//            EditorUtility.DisplayProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds",
+//                progress / totalFiles);
 
             List<FileData> data = new List<FileData>();
             foreach (string file in classMetaFiles)
             {
+                progress++;
+                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs", progress / totalFiles);
                 var lines = File.ReadAllLines(file);
 
                 foreach (string line in lines)
@@ -58,6 +60,8 @@ namespace ImportExporter
 
             foreach (string metaFile in dllMetaFiles)
             {
+                progress++;
+                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs", progress / totalFiles);
                 string text = File.ReadAllText(metaFile);
                 Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
                 Match match = regex.Match(text);
@@ -82,8 +86,10 @@ namespace ImportExporter
                 }
             }
 
+            EditorUtility.ClearProgressBar();
             return data;
         }
+
 
         /// <summary>
         /// Replaces all old GUIDs and old fileIDs with the new GUID and fileID and returns a the new scenefile.
@@ -95,6 +101,7 @@ namespace ImportExporter
         /// <exception cref="NotImplementedException"></exception>
         public static string[] Import(string fileToChange, List<FileData> existingData)
         {
+            EditorUtility.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
             if (existingData == null)
             {
                 throw new NotImplementedException("ExistingData is null");
@@ -129,6 +136,8 @@ namespace ImportExporter
                 //Replace the fileID
                 linesToChange[i] = linesToChange[i].Replace(fileID, replacementFileData.FileID);
             }
+
+            EditorUtility.ClearProgressBar();
 
             return linesToChange;
         }

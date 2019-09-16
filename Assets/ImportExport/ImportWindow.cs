@@ -19,11 +19,6 @@ namespace ImportExporter
             EditorWindow.GetWindow(typeof(ImportWindow));
         }
 
-        /// <summary>
-        /// Backing field for the textArea where the json is imported from 
-        /// </summary>
-        [SerializeField] private static string jsonTextArea = "";
-
         [SerializeField] private static string oldProjectPath;
 
         /// <summary>
@@ -43,6 +38,7 @@ namespace ImportExporter
                 }
             }
 
+            EditorGUI.BeginDisabledGroup(String.IsNullOrEmpty(oldProjectPath));
             if (GUILayout.Button("Import"))
             {
                 if (string.IsNullOrEmpty(oldProjectPath))
@@ -73,6 +69,8 @@ namespace ImportExporter
                     throw new NotImplementedException("Could not get file");
                 }
             }
+
+            EditorGUI.EndDisabledGroup();
         }
     }
 }
