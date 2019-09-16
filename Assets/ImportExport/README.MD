@@ -22,4 +22,5 @@ Which results in fixing the script references in the scenefile including all ref
 - Then there will be a popup that says the process has completed and has been written to a new file. (This file has the same path as the original scene + the current time)
 
 You should now be able to open that scenen with all references intact.
+If you can't see the file in Unity make sure to class ctrl + r to refresh the project tab.
 
