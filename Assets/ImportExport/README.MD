@@ -4,6 +4,10 @@ This is a tool to import scenes between projects.
 This will change the GUID and fileID in the the scene and copy it to a new file.
 Which results in fixing the script references in the scenefile including all references.
 
+| WARNING: There are many ways that it would be possible that this tool doesn't work. Although it only reads files and copies them you should always keep a backup of the scene file and the project! |
+| --- |
+
+
 ## How to use
 
 - Have two projects, the project where you want to copy from (project A) and the project you want to copy to (project B).

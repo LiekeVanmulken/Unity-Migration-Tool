@@ -7,8 +7,13 @@ using System.IO;
 namespace importerexporter
 {
     /// <summary>
-    /// Change the GUIDS and fileIDS to the new GUIDS and fileIDs
-    /// For a proper explanation <see cref="OldProjectExportWindow"/>
+    /// Changes the GUIDS and fileIDS to the new GUIDS and fileIDs.
+    /// To use this, open Window/Scene import window.
+    /// Set the old project path.
+    /// Click the import button and select the scene that you wish to replace the fileID's and GUIDs
+    /// It will now generate a copy with changed GUIDs and fileIDs causing unity to load the scene without missing references.
+    ///
+    /// For a more detailed explanation read the README.MD
     /// </summary>
     [Serializable]
     public class ImportWindow : EditorWindow

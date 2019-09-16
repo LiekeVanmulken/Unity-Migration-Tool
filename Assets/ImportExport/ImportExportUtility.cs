@@ -9,6 +9,9 @@ using UnityEditor;
 
 namespace importerexporter
 {
+    /// <summary>
+    /// Imports and exports the guids and fileIDS from projects
+    /// </summary>
     public static class ImportExportUtility
     {
         /// <summary>

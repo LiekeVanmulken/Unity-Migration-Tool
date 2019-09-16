@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using importerexporter;
+﻿using importerexporter;
 using UnityEngine;
 
 public class FileIDCalculationScript : MonoBehaviour
