@@ -1,10 +1,10 @@
-#1 Scene Import Export Tool
+# Scene Import Export Tool
 
 This is a tool to import scenes between projects.
 This will change the GUID and fileID in the the scene and copy it to a new file.
 Which results in fixing the script references in the scenefile including all references.
 
-##How to use
+## How to use
 
 - Have two projects, the project where you want to copy from (project A) and the project you want to copy to (project B).
 - Copy the scene file from project A to project B.
