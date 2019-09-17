@@ -23,6 +23,21 @@ namespace importerexporter
         {
             EditorWindow.GetWindow(typeof(ImportWindow));
         }
+        
+        private const string EDITORPREFS_KEY = "ImportExportWindow";
+
+        protected void OnEnable()
+        {
+            hideFlags = HideFlags.HideAndDontSave;
+            string savedOldProjectPath = EditorPrefs.GetString(EDITORPREFS_KEY);
+            oldProjectPath = savedOldProjectPath;
+        }
+
+        protected void OnDisable()
+        {
+            EditorPrefs.SetString(EDITORPREFS_KEY, oldProjectPath);
+        }
+        
 
         [SerializeField] private static string oldProjectPath;
 
