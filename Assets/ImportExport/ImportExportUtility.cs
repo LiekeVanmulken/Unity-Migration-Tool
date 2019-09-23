@@ -1,11 +1,16 @@
-﻿using System;
+﻿using ExtensionMethods;
+using YamlDotNet.Serialization;
+#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using UnityEditor;
+using YamlDotNet.RepresentationModel;
 
 namespace importerexporter
 {
@@ -15,6 +20,12 @@ namespace importerexporter
     public static class ImportExportUtility
     {
         /// <summary>
+        /// Cached field of all assemblies to loop through
+        /// </summary>
+        private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+
+        /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
         /// </summary>
         /// <returns></returns>
@@ -22,7 +33,6 @@ namespace importerexporter
         public static List<FileData> Export(string path)
         {
             float progress = 0;
-
 
             //Get all meta files
             var classMetaFiles = Directory.GetFiles(path, "*" +
@@ -37,7 +47,7 @@ namespace importerexporter
             foreach (string file in classMetaFiles)
             {
                 progress++;
-                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs", progress / totalFiles);
+                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file), progress / totalFiles);
                 var lines = File.ReadAllLines(file);
 
                 foreach (string line in lines)
@@ -62,7 +72,7 @@ namespace importerexporter
             foreach (string metaFile in dllMetaFiles)
             {
                 progress++;
-                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs", progress / totalFiles);
+                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile), progress / totalFiles);
                 string text = File.ReadAllText(metaFile);
                 Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
                 Match match = regex.Match(text);
@@ -78,6 +88,7 @@ namespace importerexporter
                     Assembly assembly = Assembly.LoadFile(file);
                     foreach (Type type in assembly.GetTypes())
                     {
+                        EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type, progress / totalFiles);
                         data.Add(new FileData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
                     }
                 }
@@ -97,19 +108,38 @@ namespace importerexporter
         /// This can be saved as an .unity file and then be opened in the editor.
         /// </summary>
         /// <param name="fileToChange"></param>
-        /// <param name="existingData"></param>
+        /// <param name="oldIDs"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static string[] Import(string fileToChange, List<FileData> existingData)
+        public static string[] Import(string fileToChange, List<FileData> oldIDs)
         {
             EditorUtility.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
-            if (existingData == null)
+            if (oldIDs == null)
             {
                 throw new NotImplementedException("ExistingData is null");
             }
 
+            var currentIDs = Export(Application.dataPath);
             var linesToChange = File.ReadAllLines(fileToChange);
-            var currentFileData = Export(Application.dataPath);
+
+            linesToChange = migrateGUIDsAndFieldIDs(linesToChange, currentIDs, oldIDs);
+            linesToChange = migrateFieldData(linesToChange, currentIDs);
+
+
+            EditorUtility.ClearProgressBar();
+
+            return linesToChange;
+        }
+
+        public static string[] testVariableMapping(string path, List<FileData> currentIDS)
+        {
+            string[] lines = File.ReadAllLines(path);
+            return migrateFieldData(lines, currentIDS);
+        }
+
+        private static string[] migrateGUIDsAndFieldIDs(string[] linesToChange, List<FileData> currentIDs,
+            List<FileData> oldIDs)
+        {
             for (var i = 0; i < linesToChange.Length; i++)
             {
                 string line = linesToChange[i];
@@ -123,7 +153,7 @@ namespace importerexporter
                 string fileID = fileIDMatch.Success ? fileIDMatch.Value : "";
 
 
-                FileData replacementFileData = getNewValue(existingData, currentFileData, fileID, matchGuid.Value);
+                FileData replacementFileData = getNewValue(oldIDs, currentIDs, fileID, matchGuid.Value);
                 if (replacementFileData == null)
                 {
                     continue;
@@ -138,7 +168,63 @@ namespace importerexporter
                 linesToChange[i] = linesToChange[i].Replace(fileID, replacementFileData.FileID);
             }
 
-            EditorUtility.ClearProgressBar();
+            return linesToChange;
+        }
+
+        private static string[] migrateFieldData(string[] linesToChange, List<FileData> currentIDs)
+        {
+            string content = string.Join("\n", linesToChange);
+
+            YamlStream yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(content));
+
+            for (var i = 0; i < yamlStream.Documents.Count; i++)
+            {
+                YamlDocument document = yamlStream.Documents[i];
+
+                //get if its a monobehaviour
+                string type = document.GetName();
+                if (type != "MonoBehaviour")
+                {
+                    continue;
+                }
+
+                //get which type it is
+                //    get guid and fileID
+                var script = document.RootNode.GetChildren()["MonoBehaviour"];
+
+                string fileID = (string) script["m_Script"]["fileID"];
+                string guid = (string) script["m_Script"]["guid"];
+                
+                //    get corresponding fileData
+                var currentFileData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
+
+                List<MemberData> unmapped = new List<MemberData>();
+                
+                // check if all fields are present
+                foreach (MemberData member in currentFileData.FieldDatas)
+                {
+                    foreach (KeyValuePair<YamlNode,YamlNode> pair in script.GetChildren())
+                    {
+                        if ((string) pair.Key == member.Name)
+                        {
+                            //todo : this won't work
+                            unmapped.Add(member);
+                        }
+                    }
+                }
+                
+                //if not check for a mapping
+                List<string> yamlMembers = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
+                Dictionary<string, MemberData> mappings = new Dictionary<string, MemberData>(); 
+                foreach (MemberData member in unmapped)
+                {
+                    var closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember)).First();
+                    mappings.Add(closest,member);
+                }
+                
+            }
+
 
             return linesToChange;
         }
@@ -153,7 +239,7 @@ namespace importerexporter
         {
             string fileName = Path.GetFileName(path);
             fileName = fileName.Replace(".cs.meta", "");
-            Type[] types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+            Type[] types = assemblies.SelectMany(x => x.GetTypes())
                 .Where(x => x.Name == fileName).ToArray();
 
             if (types.Length == 0)
@@ -230,3 +316,4 @@ namespace importerexporter
         }
     }
 }
+#endif

@@ -6,8 +6,9 @@ using System.Security.Cryptography;
 namespace importerexporter
 {
     /// <summary>
-    /// Source https://forum.unity.com/threads/yaml-fileid-hash-function-for-dll-scripts.252075/
+    /// Source https://forum.unity.com/threads/yaml-fileid-hash-function-for-dll-scripts.252075/ - lambda knight 11-6-2014
     ///
+    /// Original comment:
     /// Taken from http://www.superstarcoders.com/blogs/posts/md4-hash-algorithm-in-c-sharp.aspx
     /// Probably not the best implementation of MD4, but it works.
     /// </summary>

@@ -1,8 +1,10 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace importerexporter
 {
@@ -48,6 +50,19 @@ namespace importerexporter
 
         void OnGUI()
         {
+
+            if (GUILayout.Button("Test variableMapping"))
+            {
+                List<FileData> oldFileDatas = ImportExportUtility.Export(Application.dataPath);
+                Debug.Log(JsonConvert.SerializeObject(oldFileDatas));
+                
+                string path = EditorUtility.OpenFilePanel("title", Application.dataPath, "*");
+
+                Debug.Log(ImportExportUtility.testVariableMapping(path, oldFileDatas));
+
+            }
+
+
             GUILayout.Label("Old Assets folder : " + oldProjectPath);
             if (GUILayout.Button("Set old project path"))
             {
@@ -70,11 +85,11 @@ namespace importerexporter
                         return;
                     }
                 }
-
-                List<FileData> oldFileDatas = ImportExportUtility.Export(oldProjectPath);
-                string path = EditorUtility.OpenFilePanel("title", Application.dataPath, "*");
+                
+                string path = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
                 if (path.Length != 0)
                 {
+                    List<FileData> oldFileDatas = ImportExportUtility.Export(oldProjectPath);
                     string[] newScene = ImportExportUtility.Import(path, oldFileDatas);
 
                     var now = DateTime.Now;
@@ -86,7 +101,7 @@ namespace importerexporter
                 }
                 else
                 {
-                    throw new NotImplementedException("Could not get file");
+                    Debug.LogWarning("No path was selected");
                 }
             }
 
@@ -94,3 +109,4 @@ namespace importerexporter
         }
     }
 }
+#endif
