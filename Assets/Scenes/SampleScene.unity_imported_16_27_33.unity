@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc55f0e6497cb994f8838590aeb61b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  test2: 
+  test: 
   _testScriptSubClass1:
-    _3privateString: aa
-    _4publicString: bb
+    privateString: aa
+    publicString: bb

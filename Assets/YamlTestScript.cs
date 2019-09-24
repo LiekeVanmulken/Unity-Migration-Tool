@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
-using YamlDotNet.Serialization;
 
 public class YamlTestScript : MonoBehaviour
 {
@@ -42,20 +38,4 @@ public class YamlTestScript : MonoBehaviour
     {
         
     }
-}
-namespace ExtensionMethods
-{
-    public static class MyExtensions
-    {
-        public static string GetName(this YamlDocument document)
-        {
-            return (string) ((YamlMappingNode) document.RootNode).Children.First().Key;
-        }
-
-        public static IDictionary<YamlNode, YamlNode> GetChildren(this YamlNode node)
-        {
-            return ((YamlMappingNode) node).Children;
-        }
-
-    }   
 }

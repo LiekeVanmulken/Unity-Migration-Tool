@@ -25,7 +25,7 @@ namespace importerexporter
         {
             EditorWindow.GetWindow(typeof(ImportWindow));
         }
-        
+
         private const string EDITORPREFS_KEY = "ImportExportWindow";
 
         protected void OnEnable()
@@ -39,7 +39,7 @@ namespace importerexporter
         {
             EditorPrefs.SetString(EDITORPREFS_KEY, oldProjectPath);
         }
-        
+
 
         [SerializeField] private static string oldProjectPath;
 
@@ -48,18 +48,17 @@ namespace importerexporter
         /// </summary>
         private Vector2 scrollPosition;
 
+        private static List<FileData> oldFileDatas;
+
         void OnGUI()
         {
-
             if (GUILayout.Button("Test variableMapping"))
             {
-                List<FileData> oldFileDatas = ImportExportUtility.Export(Application.dataPath);
-                Debug.Log(JsonConvert.SerializeObject(oldFileDatas));
-                
                 string path = EditorUtility.OpenFilePanel("title", Application.dataPath, "*");
-
+                oldFileDatas = oldFileDatas == null ? ImportExportUtility.Export(Application.dataPath) : oldFileDatas;
+                oldFileDatas =  ImportExportUtility.Export(Application.dataPath);
+//                Debug.Log(JsonConvert.SerializeObject(oldFileDatas));
                 Debug.Log(ImportExportUtility.testVariableMapping(path, oldFileDatas));
-
             }
 
 
@@ -85,7 +84,7 @@ namespace importerexporter
                         return;
                     }
                 }
-                
+
                 string path = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
                 if (path.Length != 0)
                 {

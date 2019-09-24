@@ -11,6 +11,7 @@
         <e p="AssetDatabaseTest" t="Include">
           <e p="AssetDatabaseTestScript.cs" t="Include" />
         </e>
+        <e p="ExtensionMethods.cs" t="Include" />
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="FileData.cs" t="Include" />

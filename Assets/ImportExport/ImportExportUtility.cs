@@ -47,7 +47,8 @@ namespace importerexporter
             foreach (string file in classMetaFiles)
             {
                 progress++;
-                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file), progress / totalFiles);
+                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
+                    progress / totalFiles);
                 var lines = File.ReadAllLines(file);
 
                 foreach (string line in lines)
@@ -72,7 +73,8 @@ namespace importerexporter
             foreach (string metaFile in dllMetaFiles)
             {
                 progress++;
-                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile), progress / totalFiles);
+                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+                    progress / totalFiles);
                 string text = File.ReadAllText(metaFile);
                 Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
                 Match match = regex.Match(text);
@@ -88,7 +90,8 @@ namespace importerexporter
                     Assembly assembly = Assembly.LoadFile(file);
                     foreach (Type type in assembly.GetTypes())
                     {
-                        EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type, progress / totalFiles);
+                        EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
+                            progress / totalFiles);
                         data.Add(new FileData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
                     }
                 }
@@ -131,6 +134,12 @@ namespace importerexporter
             return linesToChange;
         }
 
+        /// <summary>
+        /// Test method to call the migrateFieldData without calling the rest
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="currentIDS"></param>
+        /// <returns></returns>
         public static string[] testVariableMapping(string path, List<FileData> currentIDS)
         {
             string[] lines = File.ReadAllLines(path);
@@ -171,6 +180,12 @@ namespace importerexporter
             return linesToChange;
         }
 
+        /// <summary>
+        /// Helper method to change the fields to the corresponding new name
+        /// </summary>
+        /// <param name="linesToChange"></param>
+        /// <param name="currentIDs"></param>
+        /// <returns></returns>
         private static string[] migrateFieldData(string[] linesToChange, List<FileData> currentIDs)
         {
             string content = string.Join("\n", linesToChange);
@@ -195,40 +210,55 @@ namespace importerexporter
 
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
-                
-                //    get corresponding fileData
-                var currentFileData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
 
-                List<MemberData> unmapped = new List<MemberData>();
-                
-                // check if all fields are present
-                foreach (MemberData member in currentFileData.FieldDatas)
-                {
-                    foreach (KeyValuePair<YamlNode,YamlNode> pair in script.GetChildren())
-                    {
-                        if ((string) pair.Key == member.Name)
-                        {
-                            //todo : this won't work
-                            unmapped.Add(member);
-                        }
-                    }
-                }
-                
-                //if not check for a mapping
-                List<string> yamlMembers = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
-                Dictionary<string, MemberData> mappings = new Dictionary<string, MemberData>(); 
-                foreach (MemberData member in unmapped)
-                {
-                    var closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember)).First();
-                    mappings.Add(closest,member);
-                }
-                
+                //    get corresponding fileData
+                FileData currentFileData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
+
+                linesToChange = mapFields(linesToChange, script, currentFileData.FieldDatas);
             }
 
 
             return linesToChange;
         }
 
+        private static string[] mapFields(string[] linesToChange, YamlNode script, MemberData[] members)
+        {
+            List<MemberData> unmapped = new List<MemberData>();
+            IDictionary<YamlNode, YamlNode> sceneFileMembers = script.GetChildren();
+
+            // check if all fields are present
+            foreach (MemberData member in members)
+            {
+                if (!sceneFileMembers.ContainsKey(member.Name))
+                {
+                    unmapped.Add(member);
+                }
+            }
+
+            //if not check and use a mapping
+            List<string> yamlMembers = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
+            foreach (MemberData member in unmapped)
+            {
+                string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
+                    .First();
+
+                var foundLine = script[closest].Start.Line - 1;
+                linesToChange[foundLine] = linesToChange[foundLine].ReplaceFirst(closest, member.Name);
+            }
+
+            //Replace for all subobjects
+            foreach (var member in members)
+            {
+                if (member.Children != null && member.Children.Length > 0)
+                {
+                    string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
+                        .First();
+                    linesToChange = mapFields(linesToChange, script[closest], member.Children);
+                }
+            }
+
+            return linesToChange;
+        }
 
         /// <summary>
         /// Get the Type of a class by the name of the class. 
