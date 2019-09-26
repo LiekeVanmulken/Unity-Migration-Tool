@@ -1,6 +1,5 @@
-﻿using ExtensionMethods;
-using YamlDotNet.Serialization;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using ExtensionMethods;
 using System;
 using UnityEngine;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using UnityEditor;
 using YamlDotNet.RepresentationModel;
 
@@ -27,10 +25,11 @@ namespace importerexporter
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
+        /// Then checks all to be serialized fields and returns them in a list
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static List<FileData> Export(string path)
+        public static List<FileData> ExportClassData(string path)
         {
             float progress = 0;
 
@@ -57,7 +56,7 @@ namespace importerexporter
                     Match match = regex.Match(line);
                     if (match.Success)
                     {
-                        string className = getClassByFile(file);
+                        string className = getTypeByMetafileFileName(file);
                         if (String.IsNullOrEmpty(className))
                         {
                             continue;
@@ -114,7 +113,8 @@ namespace importerexporter
         /// <param name="oldIDs"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static string[] Import(string fileToChange, List<FileData> oldIDs)
+        public static string[] ImportClassDataAndTransformIDsInScene(string fileToChange, List<FileData> oldIDs,
+            List<FileData> newIDs = null)
         {
             EditorUtility.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
             if (oldIDs == null)
@@ -122,13 +122,19 @@ namespace importerexporter
                 throw new NotImplementedException("ExistingData is null");
             }
 
-            var currentIDs = Export(Application.dataPath);
+            var currentIDs = newIDs ?? ExportClassData(Application.dataPath);
             var linesToChange = File.ReadAllLines(fileToChange);
 
-            linesToChange = migrateGUIDsAndFieldIDs(linesToChange, currentIDs, oldIDs);
-            linesToChange = migrateFieldData(linesToChange, currentIDs);
+            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, currentIDs, oldIDs);
+            EditorUtility.ClearProgressBar();
 
+            return linesToChange;
+        }
 
+        public static string[] MigrateFields(string[] linesToChange, List<FileData> currentIDs)
+        {
+            EditorUtility.DisplayProgressBar("", "Importing progress bar.", 0.5f);
+            linesToChange = MigrateFieldNames(linesToChange, currentIDs);
             EditorUtility.ClearProgressBar();
 
             return linesToChange;
@@ -140,13 +146,20 @@ namespace importerexporter
         /// <param name="path"></param>
         /// <param name="currentIDS"></param>
         /// <returns></returns>
-        public static string[] testVariableMapping(string path, List<FileData> currentIDS)
+        public static string[] TestVariableMapping(string path, List<FileData> currentIDS)
         {
             string[] lines = File.ReadAllLines(path);
-            return migrateFieldData(lines, currentIDS);
+            return MigrateFieldNames(lines, currentIDS);
         }
 
-        private static string[] migrateGUIDsAndFieldIDs(string[] linesToChange, List<FileData> currentIDs,
+        /// <summary>
+        /// Replaces the GUID and fileID, matching the oldIDs with the currentIDs
+        /// </summary>
+        /// <param name="linesToChange"></param>
+        /// <param name="currentIDs">List of GUIDs and FileID for all currently in the project classes.</param>
+        /// <param name="oldIDs">List of GUIDs and FileID for all classes in the previous project.</param>
+        /// <returns></returns>
+        private static string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<FileData> currentIDs,
             List<FileData> oldIDs)
         {
             for (var i = 0; i < linesToChange.Length; i++)
@@ -162,7 +175,8 @@ namespace importerexporter
                 string fileID = fileIDMatch.Success ? fileIDMatch.Value : "";
 
 
-                FileData replacementFileData = getNewValue(oldIDs, currentIDs, fileID, matchGuid.Value);
+                // Get the new value with by matching the old id with the one in the file and finding the matching class in the new IDs
+                FileData replacementFileData = findNewID(oldIDs, currentIDs, fileID, matchGuid.Value);
                 if (replacementFileData == null)
                 {
                     continue;
@@ -186,7 +200,7 @@ namespace importerexporter
         /// <param name="linesToChange"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        private static string[] migrateFieldData(string[] linesToChange, List<FileData> currentIDs)
+        private static string[] MigrateFieldNames(string[] linesToChange, List<FileData> currentIDs)
         {
             string content = string.Join("\n", linesToChange);
 
@@ -197,16 +211,14 @@ namespace importerexporter
             {
                 YamlDocument document = yamlStream.Documents[i];
 
-                //get if its a monobehaviour
+                //Only change it if it's a MonoBehaviour as unity script won't be as easily broken
                 string type = document.GetName();
                 if (type != "MonoBehaviour")
                 {
                     continue;
                 }
 
-                //get which type it is
-                //    get guid and fileID
-                var script = document.RootNode.GetChildren()["MonoBehaviour"];
+                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"];
 
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
@@ -214,14 +226,15 @@ namespace importerexporter
                 //    get corresponding fileData
                 FileData currentFileData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
 
-                linesToChange = mapFields(linesToChange, script, currentFileData.FieldDatas);
+                linesToChange = MapFields(linesToChange, script, currentFileData.FieldDatas);
             }
 
 
             return linesToChange;
         }
 
-        private static string[] mapFields(string[] linesToChange, YamlNode script, MemberData[] members)
+
+        private static string[] MapFields(string[] linesToChange, YamlNode script, MemberData[] members)
         {
             List<MemberData> unmapped = new List<MemberData>();
             IDictionary<YamlNode, YamlNode> sceneFileMembers = script.GetChildren();
@@ -237,13 +250,23 @@ namespace importerexporter
 
             //if not check and use a mapping
             List<string> yamlMembers = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
+            List<string> replaced = new List<string>();
             foreach (MemberData member in unmapped)
             {
                 string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
                     .First();
+                if (replaced.Contains(closest))
+                {
+                    Debug.LogError("Tried to map " + closest + " to " + member.Name + " but it was already mapped");
+                    continue;
+                }
+
+                replaced.Add(closest);
 
                 var foundLine = script[closest].Start.Line - 1;
                 linesToChange[foundLine] = linesToChange[foundLine].ReplaceFirst(closest, member.Name);
+
+                Debug.LogWarning("Replaced fieldName: " + closest + " with " + member.Name + " on line " + foundLine);
             }
 
             //Replace for all subobjects
@@ -253,19 +276,71 @@ namespace importerexporter
                 {
                     string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
                         .First();
-                    linesToChange = mapFields(linesToChange, script[closest], member.Children);
+                    linesToChange = MapFields(linesToChange, script[closest], member.Children);
                 }
             }
 
             return linesToChange;
         }
 
+        #region old map data
+
+//        private static string[] MapFields(string[] linesToChange, YamlNode script, MemberData[] members)
+//        {
+//            List<MemberData> unmapped = new List<MemberData>();
+//            IDictionary<YamlNode, YamlNode> sceneFileMembers = script.GetChildren();
+//
+//            // check if all fields are present
+//            foreach (MemberData member in members)
+//            {
+//                if (!sceneFileMembers.ContainsKey(member.Name))
+//                {
+//                    unmapped.Add(member);
+//                }
+//            }
+//
+//            //if not check and use a mapping
+//            List<string> yamlMembers = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
+//            List<string> replaced = new List<string>(); 
+//            foreach (MemberData member in unmapped)
+//            {
+//                string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
+//                    .First();
+//                if (replaced.Contains(closest))
+//                {
+//                    Debug.LogError("Tried to map " + closest + " to " + member.Name + " but it was already mapped");
+//                    continue;
+//                }
+//                replaced.Add(closest);
+//
+//                var foundLine = script[closest].Start.Line - 1;
+//                linesToChange[foundLine] = linesToChange[foundLine].ReplaceFirst(closest, member.Name);
+//
+//                Debug.LogWarning("Replaced fieldName: " + closest + " with " + member.Name + " on line " + foundLine);
+//            }
+//
+//            //Replace for all subobjects
+//            foreach (var member in members)
+//            {
+//                if (member.Children != null && member.Children.Length > 0)
+//                {
+//                    string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
+//                        .First();
+//                    linesToChange = MapFields(linesToChange, script[closest], member.Children);
+//                }
+//            }
+//
+//            return linesToChange;
+//        }
+
+        #endregion
+
         /// <summary>
-        /// Get the Type of a class by the name of the class. 
+        /// Get the Type of a class by the name of the class.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">The path of the meta file we're getting the name from</param>
         /// <returns></returns>
-        private static string getClassByFile(string path)
+        private static string getTypeByMetafileFileName(string path)
         {
             string fileName = Path.GetFileName(path);
             fileName = fileName.Replace(".cs.meta", "");
@@ -274,7 +349,7 @@ namespace importerexporter
 
             if (types.Length == 0)
             {
-                Debug.LogWarning("Could not find type with name : " + fileName);
+                Debug.Log("Could not find type with name : " + fileName);
                 return null;
             }
 
@@ -321,7 +396,15 @@ namespace importerexporter
             return last.FullName;
         }
 
-        private static FileData getNewValue(List<FileData> oldData, List<FileData> newData, string fileId,
+        /// <summary>
+        /// Finds the new GUID and fileID from the old IDs and the new IDs by checking for the classname in both
+        /// </summary>
+        /// <param name="oldData"></param>
+        /// <param name="newData"></param>
+        /// <param name="fileId"></param>
+        /// <param name="oldGuid"></param>
+        /// <returns></returns>
+        private static FileData findNewID(List<FileData> oldData, List<FileData> newData, string fileId,
             string oldGuid)
         {
             FileData oldFileData = null;

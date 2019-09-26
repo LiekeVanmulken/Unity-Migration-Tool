@@ -52,14 +52,14 @@ namespace importerexporter
 
         void OnGUI()
         {
-            if (GUILayout.Button("Test variableMapping"))
-            {
-                string path = EditorUtility.OpenFilePanel("title", Application.dataPath, "*");
-                oldFileDatas = oldFileDatas == null ? ImportExportUtility.Export(Application.dataPath) : oldFileDatas;
-                oldFileDatas =  ImportExportUtility.Export(Application.dataPath);
-//                Debug.Log(JsonConvert.SerializeObject(oldFileDatas));
-                Debug.Log(ImportExportUtility.testVariableMapping(path, oldFileDatas));
-            }
+//            if (GUILayout.Button("Test variableMapping"))
+//            {
+//                string path = EditorUtility.OpenFilePanel("title", Application.dataPath, "*");
+//                oldFileDatas = oldFileDatas == null ? ImportExportUtility.ExportClassData(Application.dataPath) : oldFileDatas;
+//                oldFileDatas =  ImportExportUtility.ExportClassData(Application.dataPath);
+////                Debug.Log(JsonConvert.SerializeObject(oldFileDatas));
+//                Debug.Log(ImportExportUtility.TestVariableMapping(path, oldFileDatas));
+//            }
 
 
             GUILayout.Label("Old Assets folder : " + oldProjectPath);
@@ -88,8 +88,8 @@ namespace importerexporter
                 string path = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
                 if (path.Length != 0)
                 {
-                    List<FileData> oldFileDatas = ImportExportUtility.Export(oldProjectPath);
-                    string[] newScene = ImportExportUtility.Import(path, oldFileDatas);
+                    List<FileData> oldFileDatas = ImportExportUtility.ExportClassData(oldProjectPath);
+                    string[] newScene = ImportExportUtility.ImportClassDataAndTransformIDsInScene(path, oldFileDatas);
 
                     var now = DateTime.Now;
                     string newScenePath = path + "_imported_" + now.Hour + "_" + now.Minute + "_" +
