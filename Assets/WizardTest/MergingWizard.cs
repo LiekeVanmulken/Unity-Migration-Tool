@@ -1,48 +1,59 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using ExtensionMethods;
 using importerexporter;
 using UnityEditor;
 using UnityEngine;
+using YamlDotNet.RepresentationModel;
 
 public class MergingWizard : ScriptableWizard
 {
     [MenuItem("WizardTest/Wizard")]
-    public static MergingWizard CreateWizard(List<ImportExportUtility.FoundField> mergeVariables)
+    public static MergingWizard CreateWizard(List<ImportExportUtility.FoundScript> mergeVariables)
     {
-        
         var wizard = ScriptableWizard.DisplayWizard<MergingWizard>("Create Light", "Create");
-        
-        wizard.foundFields = mergeVariables;
-        
-        return wizard;
 
+        wizard.foundScripts = mergeVariables;
+
+        return wizard;
     }
 
 
-    private List<ImportExportUtility.FoundField> foundFields; 
-    
+    private List<ImportExportUtility.FoundScript> foundScripts;
+
     public bool done = false;
 
     protected override bool DrawWizardGUI()
     {
-        
-        
-        for (var i = 0; i < foundFields.Count; i++)
+        if (foundScripts.Count == 0)
         {
-            ImportExportUtility.FoundField mergeVariable = foundFields[i];
+            Debug.Log("Found no fields to change");
+            return base.DrawWizardGUI();
+        }
 
-            foreach (var field in foundFields)
+        for (var i = 0; i < foundScripts.Count; i++)
+        {
+            GUILayout.Label("class : " + foundScripts[0].fileData.Name);
+            ImportExportUtility.FoundScript script = foundScripts[i];
+
+            for (var j = 0; j < script.fileData.FieldDatas.Length; i++)
             {
-                GUILayout.BeginHorizontal();
-                
-                var key = GUILayout.TextField(mergeVariable.Key);
-                var value = GUILayout.TextField(mergeVariable.Value);
-                
-                foundFields[i] = new KeyValuePair<string, string>(key, value);    
-                GUILayout.EndHorizontal();
-                
-            }
+                var field = script.fileData.FieldDatas[j];
+                IDictionary<YamlNode, YamlNode> yamlFields = script.yamlOptions.GetChildren();
+                string closest = script.yamlOptions.GetChildren()
+                    .Select(pair => pair.Key.ToString()).ToList()
+                    .OrderBy(ymlField => Levenshtein.Compute(field.Name, ymlField))
+                    .First();
 
+                GUILayout.BeginHorizontal();
+
+
+                GUILayout.TextField(field.Name);
+                GUILayout.TextField(closest);
+
+                GUILayout.EndHorizontal();
+            }
         }
 
         return base.DrawWizardGUI();

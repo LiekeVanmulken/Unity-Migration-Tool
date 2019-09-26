@@ -1,5 +1,4 @@
-﻿
-using System.Linq;
+﻿using System.Linq;
 #if UNITY_EDITOR
 using System;
 using UnityEngine;
@@ -52,7 +51,7 @@ namespace importerexporter
 
         private static List<FileData> oldFileDatas;
         private static string[] lastSceneExport;
-        private static List<ImportExportUtility.FoundField> foundFields;
+        private static List<ImportExportUtility.FoundScript> foundScripts;
         private static MergingWizard mergingWizard;
 
         void OnGUI()
@@ -89,7 +88,7 @@ namespace importerexporter
                     lastSceneExport =
                         ImportExportUtility.ImportClassDataAndTransformIDsInScene(scenePath, oldIDs, currentIDs);
 
-                    foundFields = ImportExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
+                    foundScripts = ImportExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
 
 
                     var now = DateTime.Now;
@@ -105,9 +104,12 @@ namespace importerexporter
                 }
             }
 
-            if (ImportWindow.foundFields != null && lastSceneExport != null && mergingWizard == null)
+            if (foundScripts != null && lastSceneExport != null && mergingWizard == null)
             {
-                mergingWizard = MergingWizard.CreateWizard(foundFields.Where(field => !field.HasBeenMapped).ToList());
+                List<ImportExportUtility.FoundScript> scripts =
+                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.fileData.Name)
+                        .Select(group => group.First()).ToList();
+                mergingWizard = MergingWizard.CreateWizard(scripts);
             }
 
             EditorGUI.EndDisabledGroup();

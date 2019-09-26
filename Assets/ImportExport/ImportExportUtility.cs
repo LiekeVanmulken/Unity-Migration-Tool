@@ -174,10 +174,10 @@ namespace importerexporter
             return linesToChange;
         }
 
-        public static List<FoundField> FindFieldsToMigrate(string[] linesToChange, List<FileData> currentIDs)
+        public static List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<FileData> currentIDs)
         {
             EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
-            List<FoundField> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
+            List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
             EditorUtility.ClearProgressBar();
 
             return generateFieldMapping;
@@ -201,14 +201,14 @@ namespace importerexporter
         /// <param name="linesToChange"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        private static List<FoundField> GenerateFieldMapping(string[] linesToChange, List<FileData> currentIDs)
+        private static List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<FileData> currentIDs)
         {
             string content = string.Join("\n", linesToChange);
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(content));
 
-            List<FoundField> foundFields = new List<FoundField>();
+            List<FoundScript> foundScripts = new List<FoundScript>();
             
             for (var i = 0; i < yamlStream.Documents.Count; i++)
             {
@@ -230,25 +230,25 @@ namespace importerexporter
                 FileData currentFileData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
 
 //                linesToChange = findFieldMappings(linesToChange, script, currentFileData.FieldDatas);
-                foundFields.Add(new FoundField(currentFileData, script));
+                foundScripts.Add(new FoundScript(currentFileData, script));
 
                 
             }
-            return foundFields;
+            return foundScripts;
         }
 
         [Serializable]
-        public class FoundField
+        public class FoundScript
         {
             public FileData fileData;
             public YamlNode yamlOptions;
             public bool HasBeenMapped;
             
-            public FoundField()
+            public FoundScript()
             {
             }
 
-            public FoundField(FileData fileData, YamlNode yamlOptions)
+            public FoundScript(FileData fileData, YamlNode yamlOptions)
             {
                 this.fileData = fileData;
                 this.yamlOptions = yamlOptions;
