@@ -1,37 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using importerexporter;
 using UnityEditor;
 using UnityEngine;
 
 public class MergingWizard : ScriptableWizard
 {
     [MenuItem("WizardTest/Wizard")]
-    public static MergingWizard CreateWizard(KeyValuePair<string,string>[] mergeVariables)
+    public static MergingWizard CreateWizard(List<ImportExportUtility.FoundField> mergeVariables)
     {
         
         var wizard = ScriptableWizard.DisplayWizard<MergingWizard>("Create Light", "Create");
-        wizard.mergeVariables = mergeVariables;
+        
+        wizard.foundFields = mergeVariables;
+        
         return wizard;
 
-        //If you don't want to use the secondary button simply leave it out:
-        //ScriptableWizard.DisplayWizard<WizardCreateLight>("Create Light", "Create");
     }
 
 
-    private KeyValuePair<string, string>[] mergeVariables;
+    private List<ImportExportUtility.FoundField> foundFields; 
+    
     public bool done = false;
 
     protected override bool DrawWizardGUI()
     {
-        for (var i = 0; i < mergeVariables.Length; i++)
+        
+        
+        for (var i = 0; i < foundFields.Count; i++)
         {
-            KeyValuePair<string, string> mergeVariable = mergeVariables[i];
-            GUILayout.BeginHorizontal();
-            var key = GUILayout.TextField(mergeVariable.Key);
-            var value = GUILayout.TextField(mergeVariable.Value);
-            mergeVariables[i] = new KeyValuePair<string, string>(key, value);
+            ImportExportUtility.FoundField mergeVariable = foundFields[i];
 
-            GUILayout.EndHorizontal();
+            foreach (var field in foundFields)
+            {
+                GUILayout.BeginHorizontal();
+                
+                var key = GUILayout.TextField(mergeVariable.Key);
+                var value = GUILayout.TextField(mergeVariable.Value);
+                
+                foundFields[i] = new KeyValuePair<string, string>(key, value);    
+                GUILayout.EndHorizontal();
+                
+            }
+
         }
 
         return base.DrawWizardGUI();

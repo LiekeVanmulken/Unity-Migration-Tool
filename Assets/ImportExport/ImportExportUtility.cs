@@ -131,26 +131,6 @@ namespace importerexporter
             return linesToChange;
         }
 
-        public static string[] MigrateFields(string[] linesToChange, List<FileData> currentIDs)
-        {
-            EditorUtility.DisplayProgressBar("", "Importing progress bar.", 0.5f);
-            linesToChange = MigrateFieldNames(linesToChange, currentIDs);
-            EditorUtility.ClearProgressBar();
-
-            return linesToChange;
-        }
-
-        /// <summary>
-        /// Test method to call the migrateFieldData without calling the rest
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="currentIDS"></param>
-        /// <returns></returns>
-        public static string[] TestVariableMapping(string path, List<FileData> currentIDS)
-        {
-            string[] lines = File.ReadAllLines(path);
-            return MigrateFieldNames(lines, currentIDS);
-        }
 
         /// <summary>
         /// Replaces the GUID and fileID, matching the oldIDs with the currentIDs
@@ -194,19 +174,42 @@ namespace importerexporter
             return linesToChange;
         }
 
+        public static List<FoundField> FindFieldsToMigrate(string[] linesToChange, List<FileData> currentIDs)
+        {
+            EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
+            List<FoundField> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
+            EditorUtility.ClearProgressBar();
+
+            return generateFieldMapping;
+        }
+
+//        /// <summary>
+//        /// Test method to call the migrateFieldData without calling the rest
+//        /// </summary>
+//        /// <param name="path"></param>
+//        /// <param name="currentIDS"></param>
+//        /// <returns></returns>
+//        public static string[] TestVariableMapping(string path, List<FileData> currentIDS)
+//        {
+//            string[] lines = File.ReadAllLines(path);
+//            return MigrateFieldNames(lines, currentIDS);
+//        }
+
         /// <summary>
         /// Helper method to change the fields to the corresponding new name
         /// </summary>
         /// <param name="linesToChange"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        private static string[] MigrateFieldNames(string[] linesToChange, List<FileData> currentIDs)
+        private static List<FoundField> GenerateFieldMapping(string[] linesToChange, List<FileData> currentIDs)
         {
             string content = string.Join("\n", linesToChange);
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(content));
 
+            List<FoundField> foundFields = new List<FoundField>();
+            
             for (var i = 0; i < yamlStream.Documents.Count; i++)
             {
                 YamlDocument document = yamlStream.Documents[i];
@@ -226,62 +229,72 @@ namespace importerexporter
                 //    get corresponding fileData
                 FileData currentFileData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
 
-                linesToChange = MapFields(linesToChange, script, currentFileData.FieldDatas);
+//                linesToChange = findFieldMappings(linesToChange, script, currentFileData.FieldDatas);
+                foundFields.Add(new FoundField(currentFileData, script));
+
+                
             }
-
-
-            return linesToChange;
+            return foundFields;
         }
 
-
-        private static string[] MapFields(string[] linesToChange, YamlNode script, MemberData[] members)
+        [Serializable]
+        public class FoundField
         {
-            List<MemberData> unmapped = new List<MemberData>();
-            IDictionary<YamlNode, YamlNode> sceneFileMembers = script.GetChildren();
-
-            // check if all fields are present
-            foreach (MemberData member in members)
+            public FileData fileData;
+            public YamlNode yamlOptions;
+            public bool HasBeenMapped;
+            
+            public FoundField()
             {
-                if (!sceneFileMembers.ContainsKey(member.Name))
-                {
-                    unmapped.Add(member);
-                }
             }
 
-            //if not check and use a mapping
-            List<string> yamlMembers = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
-            List<string> replaced = new List<string>();
-            foreach (MemberData member in unmapped)
+            public FoundField(FileData fileData, YamlNode yamlOptions)
             {
-                string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
-                    .First();
-                if (replaced.Contains(closest))
-                {
-                    Debug.LogError("Tried to map " + closest + " to " + member.Name + " but it was already mapped");
-                    continue;
-                }
+                this.fileData = fileData;
+                this.yamlOptions = yamlOptions;
+                this.HasBeenMapped = hasBeenMapped(fileData.FieldDatas, yamlOptions);
 
-                replaced.Add(closest);
-
-                var foundLine = script[closest].Start.Line - 1;
-                linesToChange[foundLine] = linesToChange[foundLine].ReplaceFirst(closest, member.Name);
-
-                Debug.LogWarning("Replaced fieldName: " + closest + " with " + member.Name + " on line " + foundLine);
             }
 
-            //Replace for all subobjects
-            foreach (var member in members)
+            private bool hasBeenMapped(FieldData[] datas, YamlNode node)
             {
-                if (member.Children != null && member.Children.Length > 0)
+                IDictionary<YamlNode, YamlNode> possibilities = node.GetChildren();
+                foreach (FieldData fieldData in datas)
                 {
-                    string closest = yamlMembers.OrderBy(yamlMember => Levenshtein.Compute(member.Name, yamlMember))
-                        .First();
-                    linesToChange = MapFields(linesToChange, script[closest], member.Children);
+                    KeyValuePair<YamlNode, YamlNode> found = possibilities.FirstOrDefault(pos => (string)pos.Key == fieldData.Name); //todo : check if this works
+                    if (found.Key == null)//todo : check if this works
+                    {
+                        return false;
+                    }
+                    if (!hasBeenMapped(fieldData.Children, node[found.Key]))
+                    {
+                        return false;
+                    }
                 }
+                return true;
+
             }
 
-            return linesToChange;
         }
+
+//        private static List<FoundField> findFieldMappings(string[] linesToChange, YamlNode script, FileData fileData)
+//        {
+//            List<FoundField> foundFields = new List<FoundField>();
+//            
+//            //Get all fields in the document of the script in the scene file
+////            List<string> yamlFields = script.GetChildren().Select(pair => pair.Key.ToString()).ToList();
+//
+//
+////            foreach (FieldData member in unmapped)
+////            {
+////                var found = yamlFields.FirstOrDefault(yamlMember => member.Name == yamlMember);
+//
+//                foundFields.Add(new FoundField(fileData, script));
+////            }
+//
+//
+//            return linesToChange;
+//        }
 
         #region old map data
 

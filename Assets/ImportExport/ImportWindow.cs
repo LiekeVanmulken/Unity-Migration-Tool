@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿
+using System.Linq;
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using UnityEditor;
@@ -49,19 +51,12 @@ namespace importerexporter
         private Vector2 scrollPosition;
 
         private static List<FileData> oldFileDatas;
+        private static string[] lastSceneExport;
+        private static List<ImportExportUtility.FoundField> foundFields;
+        private static MergingWizard mergingWizard;
 
         void OnGUI()
         {
-//            if (GUILayout.Button("Test variableMapping"))
-//            {
-//                string path = EditorUtility.OpenFilePanel("title", Application.dataPath, "*");
-//                oldFileDatas = oldFileDatas == null ? ImportExportUtility.ExportClassData(Application.dataPath) : oldFileDatas;
-//                oldFileDatas =  ImportExportUtility.ExportClassData(Application.dataPath);
-////                Debug.Log(JsonConvert.SerializeObject(oldFileDatas));
-//                Debug.Log(ImportExportUtility.TestVariableMapping(path, oldFileDatas));
-//            }
-
-
             GUILayout.Label("Old Assets folder : " + oldProjectPath);
             if (GUILayout.Button("Set old project path"))
             {
@@ -85,23 +80,34 @@ namespace importerexporter
                     }
                 }
 
-                string path = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
-                if (path.Length != 0)
+                string scenePath = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
+                if (scenePath.Length != 0)
                 {
-                    List<FileData> oldFileDatas = ImportExportUtility.ExportClassData(oldProjectPath);
-                    string[] newScene = ImportExportUtility.ImportClassDataAndTransformIDsInScene(path, oldFileDatas);
+                    List<FileData> oldIDs = ImportExportUtility.ExportClassData(oldProjectPath);
+                    List<FileData> currentIDs = ImportExportUtility.ExportClassData(Application.dataPath);
+
+                    lastSceneExport =
+                        ImportExportUtility.ImportClassDataAndTransformIDsInScene(scenePath, oldIDs, currentIDs);
+
+                    foundFields = ImportExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
+
 
                     var now = DateTime.Now;
-                    string newScenePath = path + "_imported_" + now.Hour + "_" + now.Minute + "_" +
+                    string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
                                           now.Second + ".unity";
                     File.WriteAllLines(newScenePath
-                        , newScene);
+                        , lastSceneExport);
                     EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
                 }
                 else
                 {
                     Debug.LogWarning("No path was selected");
                 }
+            }
+
+            if (ImportWindow.foundFields != null && lastSceneExport != null && mergingWizard == null)
+            {
+                mergingWizard = MergingWizard.CreateWizard(foundFields.Where(field => !field.HasBeenMapped).ToList());
             }
 
             EditorGUI.EndDisabledGroup();

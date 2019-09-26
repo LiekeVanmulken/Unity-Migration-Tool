@@ -18,7 +18,7 @@ namespace importerexporter
         [SerializeField] public string FileID;
         [SerializeField] public string Guid;
 
-        [SerializeField] public MemberData[] FieldDatas;
+        [SerializeField] public FieldData[] FieldDatas;
 
         public FileData()
         {
@@ -34,17 +34,17 @@ namespace importerexporter
     }
 
     [Serializable]
-    public class MemberData
+    public class FieldData
     {
         [SerializeField] public string Name;
         [SerializeField] public string Type;
-        [SerializeField] public MemberData[] Children;
+        [SerializeField] public FieldData[] Children;
 
-        public MemberData()
+        public FieldData()
         {
         }
 
-        public MemberData(string name, Type type, int iteration)
+        public FieldData(string name, Type type, int iteration)
         {
             this.Name = name;
             this.Type = type.FullName;
@@ -75,7 +75,7 @@ namespace importerexporter
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static MemberData[] GenerateFieldData(string name)
+        public static FieldData[] GenerateFieldData(string name)
         {
             Type type = assemblies.SelectMany(x => x.GetTypes())
                 .FirstOrDefault(x => x.FullName == name);
@@ -94,10 +94,10 @@ namespace importerexporter
         /// <param name="type"></param>
         /// <param name="iteration">Times it has ran, used to recursively get the children</param>
         /// <returns></returns>
-        public static MemberData[] GenerateFieldData(Type type, int iteration)
+        public static FieldData[] GenerateFieldData(Type type, int iteration)
         {
             iteration++;
-            List<MemberData> values = new List<MemberData>();
+            List<FieldData> values = new List<FieldData>();
 
 
             FieldInfo[] publicFields =
@@ -118,7 +118,7 @@ namespace importerexporter
                     var a = 1;
                 }
 
-                values.Add(new MemberData(member.Name, member.FieldType, iteration));
+                values.Add(new FieldData(member.Name, member.FieldType, iteration));
             }
 
             return values.ToArray();
