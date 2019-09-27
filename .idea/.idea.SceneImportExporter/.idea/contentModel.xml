@@ -19,6 +19,7 @@
           <e p="ImportWindow.cs" t="Include" />
           <e p="Levenshtein.cs" t="Include" />
           <e p="MD4.cs" t="Include" />
+          <e p="MergingWizard.cs" t="Include" />
         </e>
         <e p="JsonDotNet" t="Include">
           <e p="link.xml" t="Include" />
@@ -271,6 +272,9 @@
         </e>
         <e p="TestScript.cs" t="Include" />
         <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
+        <e p="WizardTest" t="Include">
+          <e p="MergingWizardEditorWindow.cs" t="Include" />
+        </e>
         <e p="YamlTestScript.cs" t="Include" />
       </e>
       <e p="obj" t="ExcludeRecursive" />

@@ -68,37 +68,37 @@ namespace importerexporter
             }
 
             // Loop through dlls
-
-            foreach (string metaFile in dllMetaFiles)
-            {
-                progress++;
-                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
-                    progress / totalFiles);
-                string text = File.ReadAllText(metaFile);
-                Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
-                Match match = regex.Match(text);
-                if (!match.Success)
-                {
-                    throw new NotImplementedException("Could not parse the guid from the dll meta file. File : " +
-                                                      metaFile);
-                }
-
-                var file = metaFile.Replace(".meta", "");
-                try
-                {
-                    Assembly assembly = Assembly.LoadFile(file);
-                    foreach (Type type in assembly.GetTypes())
-                    {
-                        EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
-                            progress / totalFiles);
-                        data.Add(new FileData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
-                }
-            }
+//
+//            foreach (string metaFile in dllMetaFiles)
+//            {
+//                progress++;
+//                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+//                    progress / totalFiles);
+//                string text = File.ReadAllText(metaFile);
+//                Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
+//                Match match = regex.Match(text);
+//                if (!match.Success)
+//                {
+//                    throw new NotImplementedException("Could not parse the guid from the dll meta file. File : " +
+//                                                      metaFile);
+//                }
+//
+//                var file = metaFile.Replace(".meta", "");
+//                try
+//                {
+//                    Assembly assembly = Assembly.LoadFile(file);
+//                    foreach (Type type in assembly.GetTypes())
+//                    {
+//                        EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
+//                            progress / totalFiles);
+//                        data.Add(new FileData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+//                    }
+//                }
+//                catch (Exception e)
+//                {
+//                    Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
+//                }
+//            }
 
             EditorUtility.ClearProgressBar();
             return data;

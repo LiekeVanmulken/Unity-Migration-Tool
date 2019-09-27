@@ -54,6 +54,8 @@ namespace importerexporter
         private static List<ImportExportUtility.FoundScript> foundScripts;
         private static MergingWizard mergingWizard;
 
+        private bool debug = true;
+
         void OnGUI()
         {
             GUILayout.Label("Old Assets folder : " + oldProjectPath);
@@ -83,13 +85,13 @@ namespace importerexporter
                 if (scenePath.Length != 0)
                 {
                     List<FileData> oldIDs = ImportExportUtility.ExportClassData(oldProjectPath);
-                    List<FileData> currentIDs = ImportExportUtility.ExportClassData(Application.dataPath);
+                    List<FileData> currentIDs =
+                        debug ? oldIDs : ImportExportUtility.ExportClassData(Application.dataPath);
 
                     lastSceneExport =
                         ImportExportUtility.ImportClassDataAndTransformIDsInScene(scenePath, oldIDs, currentIDs);
-
+                    
                     foundScripts = ImportExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
-
 
                     var now = DateTime.Now;
                     string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +

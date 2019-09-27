@@ -36,6 +36,8 @@ namespace importerexporter
     [Serializable]
     public class FieldData
     {
+        private const int RECURSION_DEPTH = 3;
+        
         [SerializeField] public string Name;
         [SerializeField] public string Type;
         [SerializeField] public FieldData[] Children;
@@ -48,7 +50,7 @@ namespace importerexporter
         {
             this.Name = name;
             this.Type = type.FullName;
-            if (iteration > 3)
+            if (iteration > RECURSION_DEPTH)
             {
                 return;
             }
@@ -63,6 +65,11 @@ namespace importerexporter
             }
 
             this.Children = MemberDataGeneration.GenerateFieldData(type, iteration);
+        }
+
+        public string[] GenerateFieldNames()
+        {
+            return Children.Select(field => field.Name).ToArray();
         }
     }
 
