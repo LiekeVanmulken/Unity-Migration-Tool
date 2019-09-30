@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using static MergingWizard;
 #if UNITY_EDITOR
 using System;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace importerexporter
         /// </summary>
         private Vector2 scrollPosition;
 
-        private static List<FileData> oldFileDatas;
+        private static List<ClassData> oldFileDatas;
         private static string[] lastSceneExport;
         private static List<ImportExportUtility.FoundScript> foundScripts;
         private static MergingWizard mergingWizard;
@@ -84,13 +85,13 @@ namespace importerexporter
                 string scenePath = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
                 if (scenePath.Length != 0)
                 {
-                    List<FileData> oldIDs = ImportExportUtility.ExportClassData(oldProjectPath);
-                    List<FileData> currentIDs =
+                    List<ClassData> oldIDs = ImportExportUtility.ExportClassData(oldProjectPath);
+                    List<ClassData> currentIDs =
                         debug ? oldIDs : ImportExportUtility.ExportClassData(Application.dataPath);
 
                     lastSceneExport =
-                        ImportExportUtility.ImportClassDataAndTransformIDsInScene(scenePath, oldIDs, currentIDs);
-                    
+                        ImportExportUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
+
                     foundScripts = ImportExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
 
                     var now = DateTime.Now;
@@ -109,12 +110,23 @@ namespace importerexporter
             if (foundScripts != null && lastSceneExport != null && mergingWizard == null)
             {
                 List<ImportExportUtility.FoundScript> scripts =
-                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.fileData.Name)
+                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.classData.Name)
                         .Select(group => group.First()).ToList();
-                mergingWizard = MergingWizard.CreateWizard(scripts);
+                mergingWizard = CreateWizard(scripts);
+
+                mergingWizard.onComplete += (sender, list) => { MergingWizardCompleted(list); };
             }
 
             EditorGUI.EndDisabledGroup();
+        }
+
+        private void MergingWizardCompleted(List<MergeNode> mergeNodes)
+        {
+            string[] currentSceneExport = lastSceneExport;
+            string[] newSceneExport =
+                ImportExportUtility.ReplaceFieldsByFoundScripts(currentSceneExport, mergeNodes);
+            Debug.Log(string.Join("\n", newSceneExport));
+            
         }
     }
 }

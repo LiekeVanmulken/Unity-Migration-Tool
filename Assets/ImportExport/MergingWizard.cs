@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using ExtensionMethods;
@@ -10,25 +11,28 @@ using FoundScript = importerexporter.ImportExportUtility.FoundScript;
 
 public class MergingWizard : ScriptableWizard
 {
-    public bool done;
     private List<FoundScript> foundScripts;
-    private List<RecursiveObject> recursiveObjects;
+    private List<MergeNode> mergeNodes;
+    public event EventHandler<List<MergeNode>> onComplete;
 
-    private class RecursiveObject
+
+    public class MergeNode
     {
         public string YamlKey;
-        public string Selected;
-        public List<RecursiveObject> RecursiveObjects = new List<RecursiveObject>();
-        public bool IsRoot;
+        public string ValueToExportTo;
+        public List<MergeNode> MergeNodes = new List<MergeNode>();
 
-        public RecursiveObject()
+        public bool IsRoot;
+        public FoundScript FoundScript;
+
+        public MergeNode()
         {
         }
 
-        public RecursiveObject(string yamlKey, string selected)
+        public MergeNode(string yamlKey, string valueToExportTo)
         {
             YamlKey = yamlKey;
-            Selected = selected;
+            ValueToExportTo = valueToExportTo;
         }
     }
 
@@ -39,50 +43,50 @@ public class MergingWizard : ScriptableWizard
         var wizard = DisplayWizard<MergingWizard>("Merge variables", "Merge");
         wizard.foundScripts = mergeVariables;
 
-        wizard.recursiveObjects = new List<RecursiveObject>();
+        wizard.mergeNodes = new List<MergeNode>();
         foreach (FoundScript script in mergeVariables)
         {
-            wizard.recursiveObjects.Add(wizard.init(script.fileData.FieldDatas, script.yamlOptions, true));
+            MergeNode mergeNode = wizard.init(script.classData.FieldDatas, script.yamlOptions, true);
+            mergeNode.FoundScript = script;
+            wizard.mergeNodes.Add(mergeNode);
         }
 
         return wizard;
     }
 
-    private RecursiveObject init(FieldData[] fieldDatas, YamlNode yamlNode, bool IsRoot = false)
+    private MergeNode init(FieldData[] fieldDatas, YamlNode yamlNode, bool IsRoot = false)
     {
-        RecursiveObject root = new RecursiveObject();
-        root.IsRoot = IsRoot;
+        MergeNode root = new MergeNode();
+        if (IsRoot)
+        {
+            root.IsRoot = IsRoot;
+        }
 
         IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
         foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
         {
-            RecursiveObject recursiveObject = new RecursiveObject();
+            MergeNode mergeNode = new MergeNode();
 
-            recursiveObject.YamlKey = pair.Key.ToString();
+            mergeNode.YamlKey = pair.Key.ToString();
             string closest = fieldDatas.OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name))
                 .First().Name;
-            if (closest.StartsWith("_m"))
+            if (mergeNode.YamlKey.StartsWith("m_"))
             {
                 closest = "";
             }
 
-            recursiveObject.Selected = closest;
-            if (pair.Value is YamlMappingNode && pair.Value.GetChildren().Count>0)
+            mergeNode.ValueToExportTo = closest;
+            if (pair.Value is YamlMappingNode && pair.Value.GetChildren().Count > 0 &&
+                !mergeNode.YamlKey.StartsWith("m_")) //todo : fix the startswith
             {
-//                IDictionary<YamlNode, YamlNode> dictionary = pair.Key.GetChildren();
-//                List<RecursiveObject> children = new List<RecursiveObject>();
-//                foreach (KeyValuePair<YamlNode, YamlNode> child in dictionary[closest].GetChildren())
-//                {
-                    recursiveObject.RecursiveObjects.Add(
-                        init(
-                            fieldDatas.First(data => data.Name == closest).Children,                    //todo : crashes unity
-                            pair.Value));
-//                }
-
-//                recursiveObject.RecursiveObjects = children;
+                FieldData[] children = fieldDatas.First(data => data.Name == closest).Children;
+                if (children != null)
+                {
+                    mergeNode.MergeNodes.Add(init(children, pair.Value));
+                }
             }
 
-            root.RecursiveObjects.Add(recursiveObject);
+            root.MergeNodes.Add(mergeNode);
         }
 
         return root;
@@ -90,57 +94,68 @@ public class MergingWizard : ScriptableWizard
 
     protected override bool DrawWizardGUI()
     {
-        if (recursiveObjects.Count == 0 || recursiveObjects.Count != foundScripts.Count)
+        if (mergeNodes.Count == 0 || mergeNodes.Count != foundScripts.Count)
         {
             Debug.LogError("Init is not working properly");
             return base.DrawWizardGUI();
         }
 
-        for (var i = 0; i < recursiveObjects.Count; i++)
+        for (var i = 0; i < mergeNodes.Count; i++)
         {
             FoundScript script = foundScripts[i];
-            RecursiveObject recursiveObject = recursiveObjects[i];
+            MergeNode mergeNode = mergeNodes[i];
 
-            GUILayout.Label("class : " + script.fileData.Name);
-            recursiveOnGUI(recursiveObject);
+            GUILayout.Label("Class : " + script.classData.Name);
+
+            GUILayout.Space(10);
+            recursiveOnGUI(mergeNode);
+            GUILayout.Space(20);
         }
 
         return base.DrawWizardGUI();
     }
 
-    private void recursiveOnGUI(RecursiveObject recursiveObject)
+    private const int indent = 20;
+
+    private void recursiveOnGUI(MergeNode mergeNode)
     {
-        if (!recursiveObject.IsRoot)
+        if (!mergeNode.IsRoot && !string.IsNullOrEmpty(mergeNode.YamlKey))
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(recursiveObject.YamlKey);
-            if (recursiveObject.YamlKey.StartsWith("m_"))
+            GUILayout.Label(mergeNode.YamlKey);
+            if (mergeNode.YamlKey.StartsWith("m_"))
             {
-                GUILayout.Label(recursiveObject.Selected);
+                GUILayout.Label(mergeNode.ValueToExportTo);
             }
             else
             {
-                recursiveObject.Selected = GUILayout.TextField(recursiveObject.Selected);
+                mergeNode.ValueToExportTo = GUILayout.TextField(mergeNode.ValueToExportTo);
             }
 
             GUILayout.EndHorizontal();
         }
 
-        if (recursiveObject.RecursiveObjects != null && recursiveObject.RecursiveObjects.Count > 0)
+        if (mergeNode.MergeNodes != null && mergeNode.MergeNodes.Count > 0)
         {
-            EditorGUI.indentLevel++;
-            foreach (RecursiveObject child in recursiveObject.RecursiveObjects)
+            EditorGUI.indentLevel += indent;
+            foreach (MergeNode child in mergeNode.MergeNodes)
             {
                 recursiveOnGUI(child);
             }
 
-            EditorGUI.indentLevel--;
+            EditorGUI.indentLevel -= indent;
         }
     }
 
     void OnWizardCreate()
     {
-        done = true;
+        //Remove the empty values
+        List<MergeNode> nodesToRemove =
+            mergeNodes.Where(mergeNode => string.IsNullOrEmpty(mergeNode.ValueToExportTo) && !mergeNode.IsRoot)
+                .ToList();
+        nodesToRemove.ForEach(node => mergeNodes.Remove(node));
+
+        onComplete(this, mergeNodes);
         Debug.Log("Create button clicked");
     }
 }

@@ -11,7 +11,7 @@ namespace importerexporter
     /// Using in the <see cref="NewProjectImportWindow"/> and in the <see cref="OldProjectExportWindow"/>
     /// </summary>
     [Serializable]
-    public class FileData
+    public class ClassData
     {
         //Has public setters because json.net won't be able to set the properties otherwise 
         [SerializeField] public string Name;
@@ -20,11 +20,11 @@ namespace importerexporter
 
         [SerializeField] public FieldData[] FieldDatas;
 
-        public FileData()
+        public ClassData()
         {
         }
 
-        public FileData(string name, string guid, string fileID = "11500000")
+        public ClassData(string name, string guid, string fileID = "11500000")
         {
             this.Name = name;
             this.Guid = guid;
@@ -120,11 +120,6 @@ namespace importerexporter
             for (var i = 0; i < members.Count; i++)
             {
                 FieldInfo member = members[i];
-                if (member.Name == "Empty")
-                {
-                    var a = 1;
-                }
-
                 values.Add(new FieldData(member.Name, member.FieldType, iteration));
             }
 

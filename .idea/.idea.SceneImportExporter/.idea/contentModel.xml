@@ -14,7 +14,7 @@
         <e p="ExtensionMethods.cs" t="Include" />
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
-          <e p="FileData.cs" t="Include" />
+          <e p="ClassData.cs" t="Include" />
           <e p="ImportExportUtility.cs" t="Include" />
           <e p="ImportWindow.cs" t="Include" />
           <e p="Levenshtein.cs" t="Include" />
@@ -271,6 +271,7 @@
           </e>
         </e>
         <e p="TestScript.cs" t="Include" />
+        <e p="TestScript2.cs" t="Include" />
         <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
         <e p="WizardTest" t="Include">
           <e p="MergingWizardEditorWindow.cs" t="Include" />
