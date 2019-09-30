@@ -44,6 +44,7 @@ namespace importerexporter
 
 
         [SerializeField] private static string oldProjectPath;
+        private ImportExportUtility importExportUtility = ImportExportUtility.Instance;
 
         /// <summary>
         /// Position of the scroll for the UI
@@ -54,8 +55,7 @@ namespace importerexporter
         private static string[] lastSceneExport;
         private static List<ImportExportUtility.FoundScript> foundScripts;
         private static MergingWizard mergingWizard;
-
-        private bool debug = true;
+        private Constants constants = Constants.Instance;
 
         void OnGUI()
         {
@@ -85,21 +85,7 @@ namespace importerexporter
                 string scenePath = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
                 if (scenePath.Length != 0)
                 {
-                    List<ClassData> oldIDs = ImportExportUtility.ExportClassData(oldProjectPath);
-                    List<ClassData> currentIDs =
-                        debug ? oldIDs : ImportExportUtility.ExportClassData(Application.dataPath);
-
-                    lastSceneExport =
-                        ImportExportUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
-
-                    foundScripts = ImportExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
-
-                    var now = DateTime.Now;
-                    string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
-                                          now.Second + ".unity";
-                    File.WriteAllLines(newScenePath
-                        , lastSceneExport);
-                    EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+                    Import(scenePath);
                 }
                 else
                 {
@@ -107,26 +93,69 @@ namespace importerexporter
                 }
             }
 
-            if (foundScripts != null && lastSceneExport != null && mergingWizard == null)
+            EditorGUI.EndDisabledGroup();
+        }
+
+        /// <summary>
+        /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
+        /// </summary>
+        /// <param name="scenePath"></param>
+        private void Import(string scenePath)
+        {
+            List<ClassData> oldIDs = importExportUtility.ExportClassData(oldProjectPath);
+            List<ClassData> currentIDs =
+                constants.Debug ? oldIDs : importExportUtility.ExportClassData(Application.dataPath);
+
+            lastSceneExport =
+                importExportUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
+
+            foundScripts = importExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
+
+
+            if (foundScripts.Count > 0)
             {
                 List<ImportExportUtility.FoundScript> scripts =
                     foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.classData.Name)
                         .Select(group => group.First()).ToList();
                 mergingWizard = CreateWizard(scripts);
 
-                mergingWizard.onComplete += (sender, list) => { MergingWizardCompleted(list); };
+                mergingWizard.onComplete += (sender, list) => { MergingWizardCompleted(list, scenePath, lastSceneExport); };
             }
-
-            EditorGUI.EndDisabledGroup();
+            else
+            {
+                SaveFile(scenePath,lastSceneExport);
+            }
         }
 
-        private void MergingWizardCompleted(List<MergeNode> mergeNodes)
+        /// <summary>
+        /// Save 
+        /// </summary>
+        /// <param name="scenePath"></param>
+        /// <param name="linesToWrite"></param>
+        private void SaveFile(string scenePath, string[] linesToWrite)
         {
-            string[] currentSceneExport = lastSceneExport;
+            var now = DateTime.Now;
+            string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
+                                  now.Second + ".unity";
+            File.WriteAllLines(newScenePath
+                , linesToWrite);
+            EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+        }
+
+        /// <summary>
+        /// Change the fields after merging with the merging window
+        /// </summary>
+        /// <param name="mergeNodes"></param>
+        /// <param name="scenePath"></param>
+        /// <param name="linesToChange"></param>
+        private void MergingWizardCompleted(List<MergeNode> mergeNodes, string scenePath, string[] linesToChange)
+        {
             string[] newSceneExport =
-                ImportExportUtility.ReplaceFieldsByFoundScripts(currentSceneExport, mergeNodes);
+                importExportUtility.ReplaceFieldsByFoundScripts(linesToChange, mergeNodes);
+            
             Debug.Log(string.Join("\n", newSceneExport));
             
+            SaveFile(scenePath, linesToChange);
         }
     }
 }

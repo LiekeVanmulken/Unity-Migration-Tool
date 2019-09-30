@@ -15,6 +15,7 @@
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="ClassData.cs" t="Include" />
+          <e p="Constants.cs" t="Include" />
           <e p="ImportExportUtility.cs" t="Include" />
           <e p="ImportWindow.cs" t="Include" />
           <e p="Levenshtein.cs" t="Include" />

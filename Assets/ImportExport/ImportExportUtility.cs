@@ -16,14 +16,38 @@ namespace importerexporter
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public static class ImportExportUtility // todo : make this a singleton
+    public class ImportExportUtility // todo : make this a singleton
     {
+        private static ImportExportUtility instance = null;
+        
+        private static readonly object padlock = new object();
+
+        ImportExportUtility()
+        {
+        }
+
+        public static ImportExportUtility Instance
+        {
+            get
+            {
+                lock (padlock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new ImportExportUtility();
+                    }
+
+                    return instance;
+                }
+            }
+        }
+        private Constants constants = Constants.Instance;
+
         /// <summary>
         /// Cached field of all assemblies to loop through
         /// </summary>
-        private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        private Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        private const bool debug = true;
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
@@ -31,7 +55,7 @@ namespace importerexporter
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static List<ClassData> ExportClassData(string path)
+        public List<ClassData> ExportClassData(string path)
         {
             float progress = 0;
 
@@ -70,7 +94,7 @@ namespace importerexporter
             }
 
             // Loop through dlls  
-            if (!debug)
+            if (!constants.Debug)
             {
                 foreach (string metaFile in dllMetaFiles)
                 {
@@ -117,7 +141,7 @@ namespace importerexporter
         /// <param name="oldIDs"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassData> oldIDs,
+        public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassData> oldIDs,
             List<ClassData> newIDs = null)
         {
             EditorUtility.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
@@ -143,7 +167,7 @@ namespace importerexporter
         /// <param name="currentIDs">List of GUIDs and FileID for all currently in the project classes.</param>
         /// <param name="oldIDs">List of GUIDs and FileID for all classes in the previous project.</param>
         /// <returns></returns>
-        private static string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassData> currentIDs,
+        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassData> currentIDs,
             List<ClassData> oldIDs)
         {
             for (var i = 0; i < linesToChange.Length; i++)
@@ -184,7 +208,7 @@ namespace importerexporter
         /// <param name="linesToChange"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        public static List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> currentIDs)
+        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> currentIDs)
         {
             EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
             List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
@@ -199,7 +223,7 @@ namespace importerexporter
         /// <param name="linesToChange"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        private static List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<ClassData> currentIDs)
+        private List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<ClassData> currentIDs)
         {
             string content = string.Join("\n", linesToChange);
 
@@ -292,7 +316,7 @@ namespace importerexporter
         /// </summary>
         /// <param name="path">The path of the meta file we're getting the name from</param>
         /// <returns></returns>
-        private static string getTypeByMetafileFileName(string path)
+        private string getTypeByMetafileFileName(string path)
         {
             string fileName = Path.GetFileName(path);
             fileName = fileName.Replace(".cs.meta", "");
@@ -356,7 +380,7 @@ namespace importerexporter
         /// <param name="fileId"></param>
         /// <param name="oldGuid"></param>
         /// <returns></returns>
-        private static ClassData findNewID(List<ClassData> oldData, List<ClassData> newData, string fileId,
+        private ClassData findNewID(List<ClassData> oldData, List<ClassData> newData, string fileId,
             string oldGuid)
         {
             ClassData oldClassData = null;
@@ -380,7 +404,7 @@ namespace importerexporter
             return null;
         }
 
-        public static string[]
+        public string[]
             ReplaceFieldsByFoundScripts(string[] scene, List<MergeNode> mergeNodes) //todo : this needs a new name!
         {
             string sceneContent = string.Join("\n", scene);
@@ -405,7 +429,8 @@ namespace importerexporter
             return scene;
         }
 
-        private static string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes, YamlNode rootYamlNode)
+        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes,
+            YamlNode rootYamlNode)
         {
             IDictionary<YamlNode, YamlNode> yamlChildren = rootYamlNode.GetChildren();
             foreach (KeyValuePair<YamlNode, YamlNode> yamlNode in yamlChildren)
@@ -413,7 +438,7 @@ namespace importerexporter
                 string yamlNodeKey = (string) yamlNode.Key;
                 int line = yamlNode.Key.Start.Line - 1;
                 var currentMergeNode = currentMergeNodes.First(node => node.YamlKey == yamlNodeKey);
-                
+
                 if (!string.IsNullOrEmpty(currentMergeNode.ValueToExportTo))
                 {
                     scene[line] = scene[line].ReplaceFirst(currentMergeNode.YamlKey, currentMergeNode.ValueToExportTo);
@@ -429,7 +454,8 @@ namespace importerexporter
 
                     foreach (MergeNode child in currentMergeNode.MergeNodes)
                     {
-                        recursiveReplaceField(scene, child.MergeNodes, yamlNode.Value); //todo : fix this whack recursion
+                        recursiveReplaceField(scene, child.MergeNodes,
+                            yamlNode.Value); //todo : fix this whack recursion
                     }
                 }
             }
