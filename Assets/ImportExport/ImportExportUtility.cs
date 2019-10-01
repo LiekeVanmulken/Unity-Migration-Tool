@@ -1,5 +1,4 @@
-﻿using static MergingWizard;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using ExtensionMethods;
 using System;
 using UnityEngine;
@@ -10,16 +9,19 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using YamlDotNet.RepresentationModel;
+using static importerexporter.MergingWizard;
 
 namespace importerexporter
 {
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public class ImportExportUtility // todo : make this a singleton
+    public class ImportExportUtility
     {
+        #region Singleton
+
         private static ImportExportUtility instance = null;
-        
+
         private static readonly object padlock = new object();
 
         ImportExportUtility()
@@ -41,6 +43,9 @@ namespace importerexporter
                 }
             }
         }
+
+        #endregion
+
         private Constants constants = Constants.Instance;
 
         /// <summary>
@@ -94,7 +99,7 @@ namespace importerexporter
             }
 
             // Loop through dlls  
-            if (!constants.Debug)
+            if (!constants.DEBUG)
             {
                 foreach (string metaFile in dllMetaFiles)
                 {
@@ -250,10 +255,45 @@ namespace importerexporter
 
                 //    get corresponding classData
                 ClassData currentClassData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
-                foundScripts.Add(new FoundScript(currentClassData, script));
+                FoundScript found = new FoundScript(currentClassData, script);
+                if (!found.HasBeenMapped)
+                {
+                    foundScripts.Add(found);
+                }
             }
 
             return foundScripts;
+        }
+
+        /// <summary>
+        /// Replaces the Fields on the monobehaviours according to the mergeNode data
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="mergeNodes"></param>
+        /// <returns></returns>
+        public string[]
+            ReplaceFieldsByMergeNodes(string[] scene, List<MergeNode> mergeNodes) //todo : this needs a new name!
+        {
+            string sceneContent = string.Join("\n", scene);
+
+            YamlStream yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(sceneContent));
+            List<YamlDocument> yamlDocuments =
+                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
+            foreach (YamlDocument document in yamlDocuments)
+            {
+                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
+
+                string fileID = (string) script["m_Script"]["fileID"];
+                string guid = (string) script["m_Script"]["guid"];
+
+                MergeNode rootMergeNode =
+                    mergeNodes.First(node =>
+                        node.FoundScript.classData.Guid == guid && node.FoundScript.classData.FileID == fileID);
+                scene = recursiveReplaceField(scene, rootMergeNode.MergeNodes, script);
+            }
+
+            return scene;
         }
 
         /// <summary>
@@ -301,7 +341,7 @@ namespace importerexporter
                         return false;
                     }
 
-                    if (!hasBeenMapped(fieldData.Children, node[found.Key]))
+                    if (fieldData.Children != null && !hasBeenMapped(fieldData.Children, node[found.Key]))
                     {
                         return false;
                     }
@@ -404,31 +444,14 @@ namespace importerexporter
             return null;
         }
 
-        public string[]
-            ReplaceFieldsByFoundScripts(string[] scene, List<MergeNode> mergeNodes) //todo : this needs a new name!
-        {
-            string sceneContent = string.Join("\n", scene);
 
-            YamlStream yamlStream = new YamlStream();
-            yamlStream.Load(new StringReader(sceneContent));
-            List<YamlDocument> yamlDocuments =
-                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
-            foreach (YamlDocument document in yamlDocuments)
-            {
-                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
-
-                string fileID = (string) script["m_Script"]["fileID"];
-                string guid = (string) script["m_Script"]["guid"];
-
-                MergeNode rootMergeNode =
-                    mergeNodes.First(node =>
-                        node.FoundScript.classData.Guid == guid && node.FoundScript.classData.FileID == fileID);
-                scene = recursiveReplaceField(scene, rootMergeNode.MergeNodes, script);
-            }
-
-            return scene;
-        }
-
+        /// <summary>
+        /// Helper method for the<see cref="ReplaceFieldsByMergeNodes"/> to replace the fields in the scripts.
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="currentMergeNodes"></param>
+        /// <param name="rootYamlNode"></param>
+        /// <returns></returns>
         private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes,
             YamlNode rootYamlNode)
         {
@@ -444,7 +467,8 @@ namespace importerexporter
                     scene[line] = scene[line].ReplaceFirst(currentMergeNode.YamlKey, currentMergeNode.ValueToExportTo);
                 }
 
-                if (yamlNode.Value is YamlMappingNode && !((string) yamlNode.Key).StartsWith("m_"))
+                if (yamlNode.Value is YamlMappingNode &&
+                    !constants.MonoBehaviourFieldExclusionList.Contains((string) yamlNode.Key))
                 {
                     var recursiveChildren = yamlNode.Value.GetChildren();
                     if (recursiveChildren == null || recursiveChildren.Count == 0)

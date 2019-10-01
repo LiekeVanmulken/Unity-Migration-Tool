@@ -1,12 +1,11 @@
-﻿using System.Linq;
-using static MergingWizard;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using System.Linq;
 using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
+using MergeNode = importerexporter.MergingWizard.MergeNode;
 
 namespace importerexporter
 {
@@ -22,6 +21,10 @@ namespace importerexporter
     [Serializable]
     public class ImportWindow : EditorWindow
     {
+        [SerializeField] private static string oldProjectPath;
+        private readonly ImportExportUtility importExportUtility = ImportExportUtility.Instance;
+
+
         [MenuItem("Window/Scene import window")]
         public static void ShowWindow()
         {
@@ -42,9 +45,6 @@ namespace importerexporter
             EditorPrefs.SetString(EDITORPREFS_KEY, oldProjectPath);
         }
 
-
-        [SerializeField] private static string oldProjectPath;
-        private ImportExportUtility importExportUtility = ImportExportUtility.Instance;
 
         /// <summary>
         /// Position of the scroll for the UI
@@ -104,7 +104,7 @@ namespace importerexporter
         {
             List<ClassData> oldIDs = importExportUtility.ExportClassData(oldProjectPath);
             List<ClassData> currentIDs =
-                constants.Debug ? oldIDs : importExportUtility.ExportClassData(Application.dataPath);
+                constants.DEBUG ? oldIDs : importExportUtility.ExportClassData(Application.dataPath);
 
             lastSceneExport =
                 importExportUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
@@ -117,13 +117,17 @@ namespace importerexporter
                 List<ImportExportUtility.FoundScript> scripts =
                     foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.classData.Name)
                         .Select(group => group.First()).ToList();
-                mergingWizard = CreateWizard(scripts);
+                
+                mergingWizard = MergingWizard.CreateWizard(scripts);
 
-                mergingWizard.onComplete += (sender, list) => { MergingWizardCompleted(list, scenePath, lastSceneExport); };
+                mergingWizard.onComplete += (sender, list) =>
+                {
+                    MergingWizardCompleted(list, scenePath, lastSceneExport);
+                };
             }
             else
             {
-                SaveFile(scenePath,lastSceneExport);
+                SaveFile(scenePath, lastSceneExport);
             }
         }
 
@@ -148,13 +152,14 @@ namespace importerexporter
         /// <param name="mergeNodes"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<MergeNode> mergeNodes, string scenePath, string[] linesToChange)
+        private void MergingWizardCompleted(List<MergeNode> mergeNodes, string scenePath,
+            string[] linesToChange)
         {
             string[] newSceneExport =
-                importExportUtility.ReplaceFieldsByFoundScripts(linesToChange, mergeNodes);
-            
+                importExportUtility.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
+
             Debug.Log(string.Join("\n", newSceneExport));
-            
+
             SaveFile(scenePath, linesToChange);
         }
     }

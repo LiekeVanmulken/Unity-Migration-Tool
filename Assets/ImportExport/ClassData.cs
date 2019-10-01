@@ -29,14 +29,14 @@ namespace importerexporter
             this.Name = name;
             this.Guid = guid;
             this.FileID = fileID;
-            this.FieldDatas = MemberDataGeneration.GenerateFieldData(name);
+            this.FieldDatas = FieldDataGenerationUtility.GenerateFieldData(name);
         }
     }
 
     [Serializable]
     public class FieldData
     {
-        private const int RECURSION_DEPTH = 3;
+        private Constants constants = Constants.Instance;
         
         [SerializeField] public string Name;
         [SerializeField] public string Type;
@@ -50,7 +50,7 @@ namespace importerexporter
         {
             this.Name = name;
             this.Type = type.FullName;
-            if (iteration > RECURSION_DEPTH)
+            if (iteration > constants.RECURSION_DEPTH)
             {
                 return;
             }
@@ -64,16 +64,16 @@ namespace importerexporter
                 return;
             }
 
-            this.Children = MemberDataGeneration.GenerateFieldData(type, iteration);
+            this.Children = FieldDataGenerationUtility.GenerateFieldData(type, iteration);
         }
 
-        public string[] GenerateFieldNames()
-        {
-            return Children.Select(field => field.Name).ToArray();
-        }
+//        public string[] GenerateFieldNames()
+//        {
+//            return Children.Select(field => field.Name).ToArray();
+//        }
     }
 
-    public static class MemberDataGeneration
+    public static class FieldDataGenerationUtility
     {
         private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
