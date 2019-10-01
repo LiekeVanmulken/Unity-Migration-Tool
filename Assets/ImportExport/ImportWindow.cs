@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿
+using static importerexporter.ImportExportUtility;
+#if UNITY_EDITOR
 using System.Linq;
 using System;
 using UnityEngine;
@@ -22,7 +24,7 @@ namespace importerexporter
     public class ImportWindow : EditorWindow
     {
         [SerializeField] private static string oldProjectPath;
-        private readonly ImportExportUtility importExportUtility = ImportExportUtility.Instance;
+        private readonly ImportExportUtility importExportUtility = Instance;
 
 
         [MenuItem("Window/Scene import window")]
@@ -53,7 +55,7 @@ namespace importerexporter
 
         private static List<ClassData> oldFileDatas;
         private static string[] lastSceneExport;
-        private static List<ImportExportUtility.FoundScript> foundScripts;
+        private static List<FoundScript> foundScripts;
         private static MergingWizard mergingWizard;
         private Constants constants = Constants.Instance;
 
@@ -114,7 +116,7 @@ namespace importerexporter
 
             if (foundScripts.Count > 0)
             {
-                List<ImportExportUtility.FoundScript> scripts =
+                List<FoundScript> scripts =
                     foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.classData.Name)
                         .Select(group => group.First()).ToList();
                 
@@ -152,7 +154,7 @@ namespace importerexporter
         /// <param name="mergeNodes"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<MergeNode> mergeNodes, string scenePath,
+        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string scenePath,
             string[] linesToChange)
         {
             string[] newSceneExport =

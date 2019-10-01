@@ -269,10 +269,10 @@ namespace importerexporter
         /// Replaces the Fields on the monobehaviours according to the mergeNode data
         /// </summary>
         /// <param name="scene"></param>
-        /// <param name="mergeNodes"></param>
+        /// <param name="foundScripts"></param>
         /// <returns></returns>
         public string[]
-            ReplaceFieldsByMergeNodes(string[] scene, List<MergeNode> mergeNodes) //todo : this needs a new name!
+            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts) //todo : this needs a new name!
         {
             string sceneContent = string.Join("\n", scene);
 
@@ -287,10 +287,10 @@ namespace importerexporter
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
 
-                MergeNode rootMergeNode =
-                    mergeNodes.First(node =>
-                        node.FoundScript.classData.Guid == guid && node.FoundScript.classData.FileID == fileID);
-                scene = recursiveReplaceField(scene, rootMergeNode.MergeNodes, script);
+                FoundScript scriptType =
+                    foundScripts.First(node =>
+                        node.classData.Guid == guid && node.classData.FileID == fileID);
+                scene = recursiveReplaceField(scene, scriptType.MergeNodes, script);
             }
 
             return scene;
@@ -310,6 +310,7 @@ namespace importerexporter
             public ClassData classData;
             public YamlNode yamlOptions;
             public bool HasBeenMapped;
+            public List<MergeNode> MergeNodes = new List<MergeNode>();
 
             public FoundScript()
             {
@@ -476,11 +477,7 @@ namespace importerexporter
                         continue;
                     }
 
-                    foreach (MergeNode child in currentMergeNode.MergeNodes)
-                    {
-                        recursiveReplaceField(scene, child.MergeNodes,
-                            yamlNode.Value); //todo : fix this whack recursion
-                    }
+                    recursiveReplaceField(scene, currentMergeNode.MergeNodes, yamlNode.Value);
                 }
             }
 

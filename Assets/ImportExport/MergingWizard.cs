@@ -15,9 +15,11 @@ namespace importerexporter
     public class MergingWizard : ScriptableWizard
     {
         private Constants constants = Constants.Instance;
+
         private List<FoundScript> foundScripts;
-        private List<MergeNode> mergeNodes;
-        public event EventHandler<List<MergeNode>> onComplete;
+
+//        private List<MergeNode> mergeNodes;
+        public event EventHandler<List<FoundScript>> onComplete;
 
 
         public class MergeNode
@@ -42,29 +44,29 @@ namespace importerexporter
 
 
         [MenuItem("WizardTest/Wizard")]
-        public static MergingWizard CreateWizard(List<FoundScript> mergeVariables)
+        public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
             var wizard = DisplayWizard<MergingWizard>("Merge variables", "Merge");
-            wizard.foundScripts = mergeVariables;
+            wizard.foundScripts = scriptsToMerge;
 
-            wizard.mergeNodes = new List<MergeNode>();
-            foreach (FoundScript script in mergeVariables)
+//            wizard.mergeNodes = new List<MergeNode>();
+
+
+            MergeNode root = new MergeNode();
+            root.IsRoot = true;
+
+            foreach (FoundScript script in scriptsToMerge)
             {
-                MergeNode mergeNode = wizard.init(script.classData.FieldDatas, script.yamlOptions, true);
-                mergeNode.FoundScript = script;
-                wizard.mergeNodes.Add(mergeNode);
+                List<MergeNode> mergeNodes = wizard.init(script.classData.FieldDatas, script.yamlOptions);
+                script.MergeNodes.AddRange(mergeNodes);
             }
 
             return wizard;
         }
 
-        private MergeNode init(FieldData[] fieldDatas, YamlNode yamlNode, bool IsRoot = false)
+        private List<MergeNode> init(FieldData[] fieldDatas, YamlNode yamlNode)
         {
-            MergeNode root = new MergeNode();
-            if (IsRoot)
-            {
-                root.IsRoot = IsRoot;
-            }
+            List<MergeNode> mergeNodes = new List<MergeNode>();
 
             IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
             foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
@@ -74,45 +76,57 @@ namespace importerexporter
                 mergeNode.YamlKey = pair.Key.ToString();
                 string closest = fieldDatas.OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name))
                     .First().Name;
+
+                //check if it's one of the default fields that don't really change
                 if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
                 {
                     closest = "";
                 }
 
+                //Set the value that the fields needs to be changed to, to the closest
                 mergeNode.ValueToExportTo = closest;
-                if (pair.Value is YamlMappingNode && pair.Value.GetChildren().Count > 0 &&
-                    !constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
+
+                //Do the same for all the child fields of this node
+                if (pair.Value is YamlMappingNode && //Check that it has potentially children 
+                    pair.Value.GetChildren().Count > 0 &&
+                    !string.IsNullOrEmpty(mergeNode.ValueToExportTo)) //check that it isn't one of the defaults
                 {
+                    // Get the children of the current field
                     FieldData[] children = fieldDatas.First(data => data.Name == closest).Children;
                     if (children != null)
                     {
-                        mergeNode.MergeNodes.Add(init(children, pair.Value));
+                        mergeNode.MergeNodes.AddRange(init(children, pair.Value));
                     }
                 }
 
-                root.MergeNodes.Add(mergeNode);
+                mergeNodes.Add(mergeNode);
             }
 
-            return root;
+            return mergeNodes;
         }
 
         protected override bool DrawWizardGUI()
         {
-            if (mergeNodes.Count == 0 || mergeNodes.Count != foundScripts.Count)
+            if (foundScripts == null || foundScripts.Count == 0)
             {
                 Debug.LogError("Init is not working properly");
                 return base.DrawWizardGUI();
             }
 
-            for (var i = 0; i < mergeNodes.Count; i++)
+            for (var i = 0; i < foundScripts.Count; i++)
             {
                 FoundScript script = foundScripts[i];
-                MergeNode mergeNode = mergeNodes[i];
+                List<MergeNode> mergeNodes = script.MergeNodes;
 
                 GUILayout.Label("Class : " + script.classData.Name);
 
                 GUILayout.Space(10);
-                recursiveOnGUI(mergeNode);
+                
+                foreach (MergeNode mergeNode in mergeNodes)
+                {
+                    recursiveOnGUI(mergeNode);
+                }
+
                 GUILayout.Space(20);
             }
 
@@ -153,13 +167,7 @@ namespace importerexporter
 
         void OnWizardCreate()
         {
-            //Remove the empty values
-            List<MergeNode> nodesToRemove =
-                mergeNodes.Where(mergeNode => string.IsNullOrEmpty(mergeNode.ValueToExportTo) && !mergeNode.IsRoot)
-                    .ToList();
-            nodesToRemove.ForEach(node => mergeNodes.Remove(node));
-
-            onComplete(this, mergeNodes);
+            onComplete(this, foundScripts);
             Debug.Log("Create button clicked");
         }
     }
