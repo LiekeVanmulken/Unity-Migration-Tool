@@ -14,13 +14,20 @@
         <e p="ExtensionMethods.cs" t="Include" />
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
-          <e p="ClassData.cs" t="Include" />
-          <e p="Constants.cs" t="Include" />
+          <e p="FoundScriptSerializer.FoundScriptSerializer.cs" t="Include" />
           <e p="ImportExportUtility.cs" t="Include" />
           <e p="ImportWindow.cs" t="Include" />
-          <e p="Levenshtein.cs" t="Include" />
-          <e p="MD4.cs" t="Include" />
           <e p="MergingWizard.cs" t="Include" />
+          <e p="Models" t="Include">
+            <e p="ClassData.cs" t="Include" />
+            <e p="FoundScript.cs" t="Include" />
+            <e p="MergeNode.cs" t="Include" />
+          </e>
+          <e p="Utility" t="Include">
+            <e p="Constants.cs" t="Include" />
+            <e p="Levenshtein.cs" t="Include" />
+            <e p="MD4.cs" t="Include" />
+          </e>
         </e>
         <e p="JsonDotNet" t="Include">
           <e p="link.xml" t="Include" />

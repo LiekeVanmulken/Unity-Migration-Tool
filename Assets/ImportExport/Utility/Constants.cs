@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace importerexporter
+namespace importerexporter.utility
 {
     public class Constants
     {

@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using importerexporter.utility;
+using Newtonsoft.Json;
 using UnityEngine;
 
-namespace importerexporter
+namespace importerexporter.models
 {
     /// <summary>
     /// Stores the data of a class that has been parsed
@@ -17,8 +19,7 @@ namespace importerexporter
         [SerializeField] public string Name;
         [SerializeField] public string FileID;
         [SerializeField] public string Guid;
-
-        [SerializeField] public FieldData[] FieldDatas;
+        [JsonIgnore] [SerializeField] public FieldData[] FieldDatas;
 
         public ClassData()
         {
@@ -37,7 +38,7 @@ namespace importerexporter
     public class FieldData
     {
         private Constants constants = Constants.Instance;
-        
+
         [SerializeField] public string Name;
         [SerializeField] public string Type;
         [SerializeField] public FieldData[] Children;
@@ -55,10 +56,10 @@ namespace importerexporter
                 return;
             }
 
-            if (type == typeof(string) 
-                || type == typeof(int) 
-                || type == typeof(float) 
-                || type == typeof(bool) 
+            if (type == typeof(string)
+                || type == typeof(int)
+                || type == typeof(float)
+                || type == typeof(bool)
                 || type == typeof(double))
             {
                 return;
@@ -66,11 +67,6 @@ namespace importerexporter
 
             this.Children = FieldDataGenerationUtility.GenerateFieldData(type, iteration);
         }
-
-//        public string[] GenerateFieldNames()
-//        {
-//            return Children.Select(field => field.Name).ToArray();
-//        }
     }
 
     public static class FieldDataGenerationUtility
@@ -108,9 +104,11 @@ namespace importerexporter
 
 
             FieldInfo[] publicFields =
-                type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static |
+                               BindingFlags.FlattenHierarchy);
             FieldInfo[] privateSerializedFields = type
-                .GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)
+                .GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static |
+                           BindingFlags.FlattenHierarchy)
                 .Where(info => Attribute.IsDefined(info, typeof(SerializeField))).ToArray();
 
             List<FieldInfo> members = new List<FieldInfo>();

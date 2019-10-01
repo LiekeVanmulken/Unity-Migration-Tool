@@ -1,4 +1,7 @@
 ﻿#if UNITY_EDITOR
+
+using importerexporter.models;
+using importerexporter.utility;
 using ExtensionMethods;
 using System;
 using UnityEngine;
@@ -16,7 +19,7 @@ namespace importerexporter
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public class ImportExportUtility
+    public partial class ImportExportUtility
     {
         #region Singleton
 
@@ -211,9 +214,10 @@ namespace importerexporter
         /// Finds all fields that need to be migrated from the yaml
         /// </summary>
         /// <param name="linesToChange"></param>
+        /// <param name="oldIDs"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> currentIDs)
+        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange,List<ClassData> currentIDs)
         {
             EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
             List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
@@ -223,9 +227,10 @@ namespace importerexporter
         }
 
         /// <summary>
-        /// Helper method to change the fields to the corresponding new name
+        /// Helper method to change the fields in the yaml to the corresponding new name
         /// </summary>
         /// <param name="linesToChange"></param>
+        /// <param name="oldIDs"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
         private List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<ClassData> currentIDs)
@@ -253,8 +258,8 @@ namespace importerexporter
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
 
-                //    get corresponding classData
-                ClassData currentClassData = currentIDs.First(data => data.FileID == fileID && data.Guid == guid);
+                ClassData currentClassData = currentIDs.First(data => data.Guid == guid && data.FileID == fileID);
+
                 FoundScript found = new FoundScript(currentClassData, script);
                 if (!found.HasBeenMapped)
                 {
@@ -289,67 +294,11 @@ namespace importerexporter
 
                 FoundScript scriptType =
                     foundScripts.First(node =>
-                        node.classData.Guid == guid && node.classData.FileID == fileID);
+                        node.ClassData.Guid == guid && node.ClassData.FileID == fileID);
                 scene = recursiveReplaceField(scene, scriptType.MergeNodes, script);
             }
 
             return scene;
-        }
-
-        /// <summary>
-        /// Class used to return the scripts that need to be remapped by the user.
-        /// When the fielnames in the yaml do not match the fields in the class.
-        /// The reason this is reaturnes is because this needs to be filled in by the user and as such
-        /// cannot be done in the importExportUtility as this needs user input.
-        ///
-        /// Used in the <see cref="ImportExportUtility.GenerateFieldMapping"/> and the <seealso cref="MergingWizard"/>
-        /// </summary>
-        [Serializable]
-        public class FoundScript
-        {
-            public ClassData classData;
-            public YamlNode yamlOptions;
-            public bool HasBeenMapped;
-            public List<MergeNode> MergeNodes = new List<MergeNode>();
-
-            public FoundScript()
-            {
-            }
-
-            public FoundScript(ClassData classData, YamlNode yamlOptions)
-            {
-                this.classData = classData;
-                this.yamlOptions = yamlOptions;
-                this.HasBeenMapped = hasBeenMapped(classData.FieldDatas, yamlOptions);
-            }
-
-            /// <summary>
-            /// Checks if the field has a exact match between the yaml and the classField
-            /// </summary>
-            /// <param name="datas"></param>
-            /// <param name="node"></param>
-            /// <returns></returns>
-            private bool hasBeenMapped(FieldData[] datas, YamlNode node)
-            {
-                IDictionary<YamlNode, YamlNode> possibilities = node.GetChildren();
-                foreach (FieldData fieldData in datas)
-                {
-                    KeyValuePair<YamlNode, YamlNode> found =
-                        possibilities.FirstOrDefault(pos =>
-                            (string) pos.Key == fieldData.Name); //todo : check if this works
-                    if (found.Key == null) //todo : check if this works
-                    {
-                        return false;
-                    }
-
-                    if (fieldData.Children != null && !hasBeenMapped(fieldData.Children, node[found.Key]))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
         }
 
         /// <summary>
@@ -418,17 +367,17 @@ namespace importerexporter
         /// </summary>
         /// <param name="oldData"></param>
         /// <param name="newData"></param>
-        /// <param name="fileId"></param>
+        /// <param name="oldFileID"></param>
         /// <param name="oldGuid"></param>
         /// <returns></returns>
-        private ClassData findNewID(List<ClassData> oldData, List<ClassData> newData, string fileId,
+        private ClassData findNewID(List<ClassData> oldData, List<ClassData> newData, string oldFileID,
             string oldGuid)
         {
             ClassData oldClassData = null;
             foreach (ClassData currentOldFileData in oldData)
             {
-                if ((currentOldFileData.Guid.Equals(oldGuid) && string.IsNullOrEmpty(fileId))
-                    || (currentOldFileData.Guid.Equals(oldGuid) && currentOldFileData.FileID.Equals(fileId)))
+                if ((currentOldFileData.Guid.Equals(oldGuid) && string.IsNullOrEmpty(oldFileID))
+                    || (currentOldFileData.Guid.Equals(oldGuid) && currentOldFileData.FileID.Equals(oldFileID)))
                 {
                     oldClassData = currentOldFileData;
                     break;
@@ -441,7 +390,8 @@ namespace importerexporter
                 return newFileData;
             }
 
-            Debug.Log("Could not find old guid that matches the class with guid: " + oldGuid + " fileID : " + fileId);
+            Debug.Log("Could not find old guid that matches the class with guid: " + oldGuid + " fileID : " +
+                      oldFileID);
             return null;
         }
 
@@ -453,8 +403,7 @@ namespace importerexporter
         /// <param name="currentMergeNodes"></param>
         /// <param name="rootYamlNode"></param>
         /// <returns></returns>
-        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes,
-            YamlNode rootYamlNode)
+        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes,YamlNode rootYamlNode)
         {
             IDictionary<YamlNode, YamlNode> yamlChildren = rootYamlNode.GetChildren();
             foreach (KeyValuePair<YamlNode, YamlNode> yamlNode in yamlChildren)

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace importerexporter
+namespace importerexporter.utility
 {
     /// <summary>
     /// Source https://forum.unity.com/threads/yaml-fileid-hash-function-for-dll-scripts.252075/ - lambda knight 11-6-2014

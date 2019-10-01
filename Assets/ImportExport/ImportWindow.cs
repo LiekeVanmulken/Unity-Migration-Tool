@@ -1,4 +1,5 @@
-﻿
+﻿using importerexporter.models;
+using importerexporter.utility;
 using static importerexporter.ImportExportUtility;
 #if UNITY_EDITOR
 using System.Linq;
@@ -7,7 +8,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
-using MergeNode = importerexporter.MergingWizard.MergeNode;
+using Newtonsoft.Json;
 
 namespace importerexporter
 {
@@ -59,8 +60,22 @@ namespace importerexporter
         private static MergingWizard mergingWizard;
         private Constants constants = Constants.Instance;
 
+
         void OnGUI()
         {
+            if (GUILayout.Button("export IDs"))
+            {
+                List<ClassData> oldIDs = importExportUtility.ExportClassData(oldProjectPath);
+                EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
+                var jsonSerializerSettings = new JsonSerializerSettings
+                {
+                    PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                };
+                string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+                EditorUtility.ClearProgressBar();
+                Debug.Log(json);
+            }
+
             GUILayout.Label("Old Assets folder : " + oldProjectPath);
             if (GUILayout.Button("Set old project path"))
             {
@@ -117,9 +132,9 @@ namespace importerexporter
             if (foundScripts.Count > 0)
             {
                 List<FoundScript> scripts =
-                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.classData.Name)
+                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
                         .Select(group => group.First()).ToList();
-                
+
                 mergingWizard = MergingWizard.CreateWizard(scripts);
 
                 mergingWizard.onComplete += (sender, list) =>
