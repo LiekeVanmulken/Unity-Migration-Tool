@@ -15,10 +15,7 @@
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="FieldMappingUtility.cs" t="Include" />
-          <e p="FoundScriptSerializer.FoundScriptSerializer.cs" t="Include" />
           <e p="IDUtility.cs" t="Include" />
-          <e p="ImportWindow.cs" t="Include" />
-          <e p="MergingWizard.cs" t="Include" />
           <e p="Models" t="Include">
             <e p="ClassData.cs" t="Include" />
             <e p="FoundScript.cs" t="Include" />
@@ -28,6 +25,10 @@
             <e p="Constants.cs" t="Include" />
             <e p="Levenshtein.cs" t="Include" />
             <e p="MD4.cs" t="Include" />
+          </e>
+          <e p="Windows" t="Include">
+            <e p="ImportWindow.cs" t="Include" />
+            <e p="MergingWizard.cs" t="Include" />
           </e>
         </e>
         <e p="JsonDotNet" t="Include">

@@ -11,7 +11,9 @@ namespace importerexporter.models
         [SerializeField] public string YamlKey;
         [SerializeField] public string NameToExportTo;
         [SerializeField] public string SampleValue;
-//        [SerializeField] public string Type;
+        [SerializeField] public string Type;
+        [SerializeField] public string[] Options;
+
         [JsonProperty("FieldsToMerge")]
         [SerializeField] public List<MergeNode> MergeNodes;
 

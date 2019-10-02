@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ExtensionMethods;
@@ -47,12 +46,14 @@ namespace importerexporter
         /// </summary>
         /// <param name="linesToChange"></param>
         /// <param name="oldIDs"></param>
+        /// <param name="oldIDs"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> currentIDs)
+        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> oldIDs,
+            List<ClassData> currentIDs)
         {
             EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
-            List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
+            List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, oldIDs, currentIDs);
             EditorUtility.ClearProgressBar();
 
             return generateFieldMapping;
@@ -63,9 +64,11 @@ namespace importerexporter
         /// </summary>
         /// <param name="linesToChange"></param>
         /// <param name="oldIDs"></param>
+        /// <param name="oldClassData"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        private List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<ClassData> currentIDs)
+        private List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<ClassData> oldIDs,
+            List<ClassData> currentIDs)
         {
             string content = string.Join("\n", linesToChange);
 
@@ -85,14 +88,16 @@ namespace importerexporter
                     continue;
                 }
 
-                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"];
+                YamlNode scriptYaml = document.RootNode.GetChildren()["MonoBehaviour"];
 
-                string fileID = (string) script["m_Script"]["fileID"];
-                string guid = (string) script["m_Script"]["guid"];
+                string fileID = (string) scriptYaml["m_Script"]["fileID"];
+                string guid = (string) scriptYaml["m_Script"]["guid"];
 
                 ClassData currentClassData = currentIDs.First(data => data.Guid == guid && data.FileID == fileID);
+                ClassData oldClassData = oldIDs.First(data => data.Name == currentClassData.Name);
 
-                FoundScript found = new FoundScript(currentClassData, script);
+                FoundScript found = new FoundScript(oldClassData: oldClassData, newClassData: currentClassData,
+                    yamlOptions: scriptYaml);
                 if (!found.HasBeenMapped)
                 {
                     foundScripts.Add(found);

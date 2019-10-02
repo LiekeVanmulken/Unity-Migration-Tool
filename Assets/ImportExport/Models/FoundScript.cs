@@ -23,6 +23,7 @@ namespace importerexporter.models
         Constants constants = Constants.Instance;
 
         public ClassData ClassData;
+        public ClassData OldClassData;
         [JsonIgnore] public YamlNode YamlOptions;
         [JsonIgnore] public bool HasBeenMapped;
 
@@ -33,15 +34,17 @@ namespace importerexporter.models
         {
         }
 
-        public FoundScript(ClassData newclassData, YamlNode yamlOptions)
+        public FoundScript(ClassData oldClassData, ClassData newClassData, YamlNode yamlOptions)
         {
-            this.ClassData = newclassData;
+            this.ClassData = newClassData;
+            this.OldClassData = oldClassData; // todo : implement the generateMergeNodesRecursively 
             this.YamlOptions = yamlOptions;
-            this.HasBeenMapped = checkHasBeenMapped(newclassData.FieldDatas, yamlOptions);
+            this.HasBeenMapped = checkHasBeenMapped(newClassData.FieldDatas, yamlOptions);
 
             if (!this.HasBeenMapped)
             {
-                MergeNodes = GenerateMergeNodesRecursively(newclassData.FieldDatas, this.YamlOptions);
+                MergeNodes = GenerateMergeNodesRecursively(oldClassData.FieldDatas, newClassData.FieldDatas,
+                    this.YamlOptions);
             }
         }
 
@@ -73,7 +76,15 @@ namespace importerexporter.models
             return true;
         }
 
-        private List<MergeNode> GenerateMergeNodesRecursively(FieldData[] fieldDatas, YamlNode yamlNode)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oldFieldDatas"></param>
+        /// <param name="newFieldDatas"></param>
+        /// <param name="yamlNode"></param>
+        /// <returns></returns>
+        private List<MergeNode> GenerateMergeNodesRecursively(FieldData[] oldFieldDatas, FieldData[] newFieldDatas,
+            YamlNode yamlNode)
         {
             List<MergeNode> mergeNodes = new List<MergeNode>();
 
@@ -81,15 +92,19 @@ namespace importerexporter.models
             foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
             {
                 MergeNode mergeNode = new MergeNode();
-
                 mergeNode.MergeNodes = new List<MergeNode>();
                 mergeNode.YamlKey = pair.Key.ToString();
                 mergeNode.SampleValue = pair.Value.ToString();
 
-                FieldData closestFieldData = fieldDatas
-                    .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name))
-                    .First();
-                string closest = closestFieldData.Name;
+                FieldData[] closestFieldDatas = newFieldDatas
+                    .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).ToArray();
+
+                string closest = closestFieldDatas.First().Name;
+
+                mergeNode.Type = oldFieldDatas.First(data => data.Name == mergeNode.YamlKey).ToString();
+                mergeNode.Options = newFieldDatas.Where(data => data.Type == mergeNode.Type).Select(data => data.Name)
+                    .ToArray();
+
 
                 //check if it's one of the default fields that don't really change
                 if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
@@ -106,17 +121,41 @@ namespace importerexporter.models
                     !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
                 {
                     // Get the children of the current field
-                    FieldData[] children = fieldDatas.First(data => data.Name == closest).Children;
-                    if (children != null)
+                    FieldData[] newChildren = newFieldDatas.First(data => data.Name == closest).Children;
+                    FieldData[] oldChildren = oldFieldDatas.First(data => data.Name == closest).Children;
+                    if (newChildren != null)
                     {
-                        mergeNode.MergeNodes.AddRange(GenerateMergeNodesRecursively(children, pair.Value));
+                        mergeNode.MergeNodes.AddRange(GenerateMergeNodesRecursively(oldChildren, newChildren,
+                            pair.Value));
                     }
-                }
+                } //todo : look for all classes and make mappings fot them
 
                 mergeNodes.Add(mergeNode);
-            }
+            } 
 
             return mergeNodes;
+        }
+
+        private ClassData[] findClosestMatching(YamlNode yamlNode, List<ClassData> classDatas)
+        {
+            IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
+            KeyValuePair<YamlNode, YamlNode>[] yamlFieldsArray = AllYamlFields.ToArray();
+
+            foreach (ClassData classData in classDatas)
+            {
+                classData.FieldDatas[0]
+
+                foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
+                {
+                    string Key = pair.Key.ToString();
+                    YamlNode value = pair.Value;
+
+                    foreach (ClassData classData in classDatas)
+                    {
+                        classData
+                    }
+                }
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace importerexporter
+namespace importerexporter.windows
 {
     /// <summary>
     /// Changes the GUIDS and fileIDS to the new GUIDS and fileIDs.
@@ -41,7 +41,7 @@ namespace importerexporter
         {
             hideFlags = HideFlags.HideAndDontSave;
             oldProjectPath = EditorPrefs.GetString(EDITORPREFS_KEY);
-            wordWrapStyle = new GUIStyle() {wordWrap = true};
+            wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
         }
 
         protected void OnDisable()
@@ -63,23 +63,24 @@ namespace importerexporter
 
         void OnGUI()
         {
-            if (GUILayout.Button("export IDs"))
-            {
-                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
-                EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
+//            if (GUILayout.Button("export IDs"))
+//            {
+//                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
+//                EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
+//
+//                var jsonSerializerSettings = new JsonSerializerSettings
+//                {
+//                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+//                    PreserveReferencesHandling = PreserveReferencesHandling.Objects
+//                };
+//                string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+//                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(json, jsonSerializerSettings);
+//                EditorUtility.ClearProgressBar();
+//                Debug.Log(json);
+//            }
 
-                var jsonSerializerSettings = new JsonSerializerSettings
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                    PreserveReferencesHandling = PreserveReferencesHandling.Objects
-                };
-                string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(json, jsonSerializerSettings);
-                EditorUtility.ClearProgressBar();
-                Debug.Log(json);
-            }
 
-            GUILayout.Label("Old Assets folder : " + oldProjectPath, wordWrapStyle);
+            GUILayout.Label("Old Assets folder : \n" + oldProjectPath, wordWrapStyle);
             if (GUILayout.Button("Set old project path"))
             {
                 string path = EditorUtility.OpenFolderPanel("title", Application.dataPath, "");
@@ -129,7 +130,7 @@ namespace importerexporter
             lastSceneExport =
                 idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
 
-            foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
+            foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport,oldIDs, currentIDs);
 
 
             if (foundScripts.Count > 0)
@@ -156,7 +157,7 @@ namespace importerexporter
         }
 
         /// <summary>
-        /// Save 
+        /// Saves the <param name="linesToWrite"/> to a new file at the <param name="scenePath"/>
         /// </summary>
         /// <param name="scenePath"></param>
         /// <param name="linesToWrite"></param>
