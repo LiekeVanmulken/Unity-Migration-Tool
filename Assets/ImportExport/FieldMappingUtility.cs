@@ -1,0 +1,173 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using ExtensionMethods;
+using importerexporter.models;
+using importerexporter.utility;
+using UnityEditor;
+using YamlDotNet.RepresentationModel;
+
+namespace importerexporter
+{
+    public class FieldMappingUtility
+    {
+        #region Singleton
+
+        private static FieldMappingUtility instance = null;
+
+        private static readonly object padlock = new object();
+
+        FieldMappingUtility()
+        {
+        }
+
+        public static FieldMappingUtility Instance
+        {
+            get
+            {
+                lock (padlock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new FieldMappingUtility();
+                    }
+
+                    return instance;
+                }
+            }
+        }
+
+        #endregion
+
+        private Constants constants = Constants.Instance;
+
+        /// <summary>
+        /// Finds all fields that need to be migrated from the yaml
+        /// </summary>
+        /// <param name="linesToChange"></param>
+        /// <param name="oldIDs"></param>
+        /// <param name="currentIDs"></param>
+        /// <returns></returns>
+        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> currentIDs)
+        {
+            EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
+            List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, currentIDs);
+            EditorUtility.ClearProgressBar();
+
+            return generateFieldMapping;
+        }
+
+        /// <summary>
+        /// Helper method to change the fields in the yaml to the corresponding new name
+        /// </summary>
+        /// <param name="linesToChange"></param>
+        /// <param name="oldIDs"></param>
+        /// <param name="currentIDs"></param>
+        /// <returns></returns>
+        private List<FoundScript> GenerateFieldMapping(string[] linesToChange, List<ClassData> currentIDs)
+        {
+            string content = string.Join("\n", linesToChange);
+
+            YamlStream yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(content));
+
+            List<FoundScript> foundScripts = new List<FoundScript>();
+
+            for (var i = 0; i < yamlStream.Documents.Count; i++)
+            {
+                YamlDocument document = yamlStream.Documents[i];
+
+                //Only change it if it's a MonoBehaviour as unity script won't be as easily broken
+                string type = document.GetName();
+                if (type != "MonoBehaviour")
+                {
+                    continue;
+                }
+
+                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"];
+
+                string fileID = (string) script["m_Script"]["fileID"];
+                string guid = (string) script["m_Script"]["guid"];
+
+                ClassData currentClassData = currentIDs.First(data => data.Guid == guid && data.FileID == fileID);
+
+                FoundScript found = new FoundScript(currentClassData, script);
+                if (!found.HasBeenMapped)
+                {
+                    foundScripts.Add(found);
+                }
+            }
+
+            return foundScripts;
+        }
+
+        /// <summary>
+        /// Replaces the Fields on the monobehaviours according to the mergeNode data
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="foundScripts"></param>
+        /// <returns></returns>
+        public string[]
+            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts) //todo : this needs a new name!
+        {
+            string sceneContent = string.Join("\n", scene);
+
+            YamlStream yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(sceneContent));
+            List<YamlDocument> yamlDocuments =
+                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
+            foreach (YamlDocument document in yamlDocuments)
+            {
+                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
+
+                string fileID = (string) script["m_Script"]["fileID"];
+                string guid = (string) script["m_Script"]["guid"];
+
+                FoundScript scriptType =
+                    foundScripts.First(node =>
+                        node.ClassData.Guid == guid && node.ClassData.FileID == fileID);
+                scene = recursiveReplaceField(scene, scriptType.MergeNodes, script);
+            }
+
+            return scene;
+        }
+
+        /// <summary>
+        /// Helper method for the<see cref="ReplaceFieldsByMergeNodes"/> to replace the fields in the scripts.
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="currentMergeNodes"></param>
+        /// <param name="rootYamlNode"></param>
+        /// <returns></returns>
+        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes, YamlNode rootYamlNode)
+        {
+            IDictionary<YamlNode, YamlNode> yamlChildren = rootYamlNode.GetChildren();
+            foreach (KeyValuePair<YamlNode, YamlNode> yamlNode in yamlChildren)
+            {
+                string yamlNodeKey = (string) yamlNode.Key;
+                int line = yamlNode.Key.Start.Line - 1;
+                var currentMergeNode = currentMergeNodes.First(node => node.YamlKey == yamlNodeKey);
+
+                if (!string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
+                {
+                    scene[line] = scene[line].ReplaceFirst(currentMergeNode.YamlKey, currentMergeNode.NameToExportTo);
+                }
+
+                if (yamlNode.Value is YamlMappingNode &&
+                    !constants.MonoBehaviourFieldExclusionList.Contains((string) yamlNode.Key))
+                {
+                    var recursiveChildren = yamlNode.Value.GetChildren();
+                    if (recursiveChildren == null || recursiveChildren.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    recursiveReplaceField(scene, currentMergeNode.MergeNodes, yamlNode.Value);
+                }
+            }
+
+            return scene;
+        }
+    }
+}

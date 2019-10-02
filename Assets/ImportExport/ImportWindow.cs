@@ -1,7 +1,6 @@
-﻿using importerexporter.models;
+﻿#if UNITY_EDITOR
+using importerexporter.models;
 using importerexporter.utility;
-using static importerexporter.ImportExportUtility;
-#if UNITY_EDITOR
 using System.Linq;
 using System;
 using UnityEngine;
@@ -25,7 +24,9 @@ namespace importerexporter
     public class ImportWindow : EditorWindow
     {
         [SerializeField] private static string oldProjectPath;
-        private readonly ImportExportUtility importExportUtility = Instance;
+        private readonly IDUtility idUtility = IDUtility.Instance;
+        private readonly FieldMappingUtility fieldMappingUtility = FieldMappingUtility.Instance;
+        private GUIStyle wordWrapStyle;
 
 
         [MenuItem("Window/Scene import window")]
@@ -39,8 +40,8 @@ namespace importerexporter
         protected void OnEnable()
         {
             hideFlags = HideFlags.HideAndDontSave;
-            string savedOldProjectPath = EditorPrefs.GetString(EDITORPREFS_KEY);
-            oldProjectPath = savedOldProjectPath;
+            oldProjectPath = EditorPrefs.GetString(EDITORPREFS_KEY);
+            wordWrapStyle = new GUIStyle() {wordWrap = true};
         }
 
         protected void OnDisable()
@@ -60,23 +61,25 @@ namespace importerexporter
         private static MergingWizard mergingWizard;
         private Constants constants = Constants.Instance;
 
-
         void OnGUI()
         {
             if (GUILayout.Button("export IDs"))
             {
-                List<ClassData> oldIDs = importExportUtility.ExportClassData(oldProjectPath);
+                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
                 EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
+
                 var jsonSerializerSettings = new JsonSerializerSettings
                 {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                     PreserveReferencesHandling = PreserveReferencesHandling.Objects
                 };
                 string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(json, jsonSerializerSettings);
                 EditorUtility.ClearProgressBar();
                 Debug.Log(json);
             }
 
-            GUILayout.Label("Old Assets folder : " + oldProjectPath);
+            GUILayout.Label("Old Assets folder : " + oldProjectPath, wordWrapStyle);
             if (GUILayout.Button("Set old project path"))
             {
                 string path = EditorUtility.OpenFolderPanel("title", Application.dataPath, "");
@@ -119,14 +122,14 @@ namespace importerexporter
         /// <param name="scenePath"></param>
         private void Import(string scenePath)
         {
-            List<ClassData> oldIDs = importExportUtility.ExportClassData(oldProjectPath);
+            List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
             List<ClassData> currentIDs =
-                constants.DEBUG ? oldIDs : importExportUtility.ExportClassData(Application.dataPath);
+                constants.DEBUG ? oldIDs : idUtility.ExportClassData(Application.dataPath);
 
             lastSceneExport =
-                importExportUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
+                idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
 
-            foundScripts = importExportUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
+            foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
 
 
             if (foundScripts.Count > 0)
@@ -134,6 +137,10 @@ namespace importerexporter
                 List<FoundScript> scripts =
                     foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
                         .Select(group => group.First()).ToList();
+
+                EditorUtility.DisplayDialog("Merging fields necessary",
+                    "Could not merge all the fields to the class in the new project. You'll have to manually match old fields with the new fields",
+                    "Open merge window");
 
                 mergingWizard = MergingWizard.CreateWizard(scripts);
 
@@ -173,7 +180,7 @@ namespace importerexporter
             string[] linesToChange)
         {
             string[] newSceneExport =
-                importExportUtility.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
+                fieldMappingUtility.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
 
             Debug.Log(string.Join("\n", newSceneExport));
 

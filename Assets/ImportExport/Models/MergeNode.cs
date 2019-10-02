@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace importerexporter.models
@@ -8,19 +9,21 @@ namespace importerexporter.models
     public class MergeNode
     {
         [SerializeField] public string YamlKey;
-        [SerializeField] public string ValueToExportTo;
+        [SerializeField] public string NameToExportTo;
+        [SerializeField] public string SampleValue;
 //        [SerializeField] public string Type;
+        [JsonProperty("FieldsToMerge")]
         [SerializeField] public List<MergeNode> MergeNodes;
 
         public MergeNode()
         {
         }
 
-        public MergeNode(string yamlKey, string valueToExportTo)
+        public MergeNode(string yamlKey, string nameToExportTo)
         {
             MergeNodes = new List<MergeNode>();
             YamlKey = yamlKey;
-            ValueToExportTo = valueToExportTo;
+            NameToExportTo = nameToExportTo;
         }
     }
 }

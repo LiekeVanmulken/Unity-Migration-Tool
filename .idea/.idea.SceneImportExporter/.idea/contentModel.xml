@@ -14,8 +14,9 @@
         <e p="ExtensionMethods.cs" t="Include" />
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
+          <e p="FieldMappingUtility.cs" t="Include" />
           <e p="FoundScriptSerializer.FoundScriptSerializer.cs" t="Include" />
-          <e p="ImportExportUtility.cs" t="Include" />
+          <e p="IDUtility.cs" t="Include" />
           <e p="ImportWindow.cs" t="Include" />
           <e p="MergingWizard.cs" t="Include" />
           <e p="Models" t="Include">

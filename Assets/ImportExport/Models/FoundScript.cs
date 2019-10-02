@@ -23,11 +23,11 @@ namespace importerexporter.models
         Constants constants = Constants.Instance;
 
         public ClassData ClassData;
-        [JsonIgnore]
-        public YamlNode YamlOptions;
-        [JsonIgnore]
-        public bool HasBeenMapped;
-        [SerializeField] public List<MergeNode> MergeNodes = new List<MergeNode>();
+        [JsonIgnore] public YamlNode YamlOptions;
+        [JsonIgnore] public bool HasBeenMapped;
+
+        [JsonProperty("FieldsToMerge")] [SerializeField]
+        public List<MergeNode> MergeNodes = new List<MergeNode>();
 
         public FoundScript()
         {
@@ -58,8 +58,8 @@ namespace importerexporter.models
             {
                 KeyValuePair<YamlNode, YamlNode> found =
                     possibilities.FirstOrDefault(pos =>
-                        (string) pos.Key == fieldData.Name); //todo : check if this works
-                if (found.Key == null) //todo : check if this works
+                        (string) pos.Key == fieldData.Name);
+                if (found.Key == null)
                 {
                     return false;
                 }
@@ -81,9 +81,11 @@ namespace importerexporter.models
             foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
             {
                 MergeNode mergeNode = new MergeNode();
-                mergeNode.MergeNodes = new List<MergeNode>();
 
+                mergeNode.MergeNodes = new List<MergeNode>();
                 mergeNode.YamlKey = pair.Key.ToString();
+                mergeNode.SampleValue = pair.Value.ToString();
+
                 FieldData closestFieldData = fieldDatas
                     .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name))
                     .First();
@@ -96,12 +98,12 @@ namespace importerexporter.models
                 }
 
                 //Set the value that the fields needs to be changed to, to the closest
-                mergeNode.ValueToExportTo = closest;
+                mergeNode.NameToExportTo = closest;
 
                 //Do the same for all the child fields of this node
                 if (pair.Value is YamlMappingNode && //Check that it has potentially children 
                     pair.Value.GetChildren().Count > 0 &&
-                    !string.IsNullOrEmpty(mergeNode.ValueToExportTo)) //check that it isn't one of the defaults
+                    !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
                 {
                     // Get the children of the current field
                     FieldData[] children = fieldDatas.First(data => data.Name == closest).Children;

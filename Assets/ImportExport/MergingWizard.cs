@@ -12,6 +12,9 @@ using UnityEngine;
 
 namespace importerexporter
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class MergingWizard : ScriptableWizard
     {
         private Constants constants = Constants.Instance;
@@ -22,11 +25,15 @@ namespace importerexporter
 //        private List<MergeNode> mergeNodes;
         public event EventHandler<List<FoundScript>> onComplete;
 
+        GUIStyle richtextStyle;
+
 
         [MenuItem("WizardTest/Wizard")]
         public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
-            var wizard = DisplayWizard<MergingWizard>("Merge variables", "Merge");
+            GUI.skin.label.wordWrap = true;
+            
+            var wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
             wizard.foundScripts = scriptsToMerge;
 
             var settings = new JsonSerializerSettings
@@ -40,17 +47,39 @@ namespace importerexporter
             return wizard;
         }
 
+        private void OnEnable()
+        {
+            
+            richtextStyle = new GUIStyle() {richText = true, wordWrap = true,padding = new RectOffset(10,10,10,10)};
+        }
+
         private string syntax(string scripts)
         {
-            string pattern = "\".*?\"";
-            return Regex.Replace(scripts, pattern, "<color=green> $1 $2 </color>");
+            string keyPattern = "\".*?\"(?=.*:)";
+            scripts = Regex.Replace(scripts, keyPattern, "<color=darkblue>$0</color>");
+            
+            string valuePattern = "(?<=:.*)\".*?\"";
+            return Regex.Replace(scripts, valuePattern, "<color=green>$0</color>");
+        }
+        private string removeSyntax(string scripts)
+        {
+            string beginPattern = "<color=[A-z0-9#]*>";
+            string endPattern = "</color>";
+            string beginRemoved = Regex.Replace(scripts, beginPattern, "");
+            string endRemoved = Regex.Replace(beginRemoved, endPattern, "");
+            return endRemoved;
         }
 
         protected override bool DrawWizardGUI()
         {
-            GUIStyle style = new GUIStyle ();
-            style.richText = true;
-            cachedFoundScripts = GUILayout.TextArea(cachedFoundScripts,style);
+            EditorGUILayout.LabelField("Set the <color=green>\"ValueToExportTo\"</color> field in any MergeNode to change the name of the field to the new name.",richtextStyle);
+            EditorGUILayout.LabelField("THE <color=green>\"ValueToExportTo\"</color> MIGHT NOT BE CORRECT. Make sure that these are correct to change the field to the new value.",richtextStyle);
+            EditorGUILayout.LabelField("To completely ignore the field set the <color=green>\"ValueToExportTo\"</color> to an empty string (\"\").",richtextStyle);
+            
+            EditorGUILayout.Space();
+            EditorGUILayout.Separator();
+            
+            cachedFoundScripts = GUILayout.TextArea(cachedFoundScripts,richtextStyle);
 
 
             return base.DrawWizardGUI();
@@ -94,11 +123,11 @@ namespace importerexporter
                 GUILayout.Label(mergeNode.YamlKey);
                 if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
                 {
-                    GUILayout.Label(mergeNode.ValueToExportTo);
+                    GUILayout.Label(mergeNode.NameToExportTo);
                 }
                 else
                 {
-                    mergeNode.ValueToExportTo = GUILayout.TextField(mergeNode.ValueToExportTo);
+                    mergeNode.NameToExportTo = GUILayout.TextField(mergeNode.NameToExportTo);
                 }
 
                 GUILayout.EndHorizontal();
@@ -118,6 +147,8 @@ namespace importerexporter
 
         void OnWizardCreate()
         {
+            string export = removeSyntax(cachedFoundScripts);
+            foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(export);
             onComplete(this, foundScripts);
             Debug.Log("Create button clicked");
         }
