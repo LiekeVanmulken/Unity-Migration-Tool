@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [Serializable]
-public class TestScript : MonoBehaviour
+public class TestScript1 : MonoBehaviour
 {
     public string test;
     

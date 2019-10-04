@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExtensionMethods;
 using importerexporter.models;
 using importerexporter.utility;
 using UnityEditor;
@@ -9,6 +9,10 @@ using YamlDotNet.RepresentationModel;
 
 namespace importerexporter
 {
+    /// <summary>
+    /// Maps fields to move values.
+    /// This should always be run after the transform as it assumes that the IDs have been set to the current IDs!!!
+    /// </summary>
     public class FieldMappingUtility
     {
         #region Singleton
@@ -93,7 +97,13 @@ namespace importerexporter
                 string fileID = (string) scriptYaml["m_Script"]["fileID"];
                 string guid = (string) scriptYaml["m_Script"]["guid"];
 
-                ClassData currentClassData = currentIDs.First(data => data.Guid == guid && data.FileID == fileID);
+                ClassData currentClassData = currentIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
+                if (currentClassData == null)
+                {
+                    ClassData scriptNotPorted = oldIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
+                    throw new NotImplementedException("Could not find the IDs of the class. The class names might not match between projects. Old script : " + scriptNotPorted );
+                }
+
                 ClassData oldClassData = oldIDs.First(data => data.Name == currentClassData.Name);
 
                 FoundScript found = new FoundScript(oldClassData: oldClassData, newClassData: currentClassData,
