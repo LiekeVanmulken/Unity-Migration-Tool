@@ -69,7 +69,7 @@ namespace importerexporter.windows
         {
             if (GUILayout.Button("Export IDs"))
             {
-                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
+                List<ClassData> oldIDs = idUtility.ExportClassData(Application.dataPath);//todo : change?
                 var jsonSerializerSettings = new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -78,7 +78,8 @@ namespace importerexporter.windows
                 };
                 jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
                 File.WriteAllText(Application.dataPath + "/test.json", jsonField);
-                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
+//                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
+                List<ClassData> classDatas = ClassData.Parse(jsonField);
                 
                 GUIUtility.systemCopyBuffer = jsonField;
             }

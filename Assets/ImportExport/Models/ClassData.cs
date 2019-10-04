@@ -52,28 +52,46 @@ namespace importerexporter.models
             return "Name : " + Name + "; GUID : " + Guid + "; fileID : " + FileID;
         }
 
-//
-//        public string getJSON()
-//        {
-//            return string.Format("{\"Name\":{0}, \"Guid\":{1}, \"FileID\":{2}, \"Fields\":{3}  }", Name, Guid, FileID,
-//                getFields());
-//        }
-//
-//        public string getFields()
-//        {
-//            string json = "[";
-//            foreach (FieldData fieldData in FieldDatas)
-//            {
-//                json += "{";
-//                json += "\"Name\":\"" +  fieldData.Name + "\",";
-//                json += "\"Type\":\"" +  fieldData.Type + "\",";
-//                
-//                json += "}";
-//            }
-//
-//            json += "]";
-//            return json;
-//        }
+        public static List<ClassData> Parse(string json)
+        {
+            List<ClassData> list = new List<ClassData>();
+            JArray all = JArray.Parse(json);
+            foreach (JObject classData in all)
+            {
+                list.Add(Parse(classData));
+            }
+
+            return list;
+        }
+
+        public static ClassData Parse(JObject classData)
+        {
+            ClassData current = new ClassData();
+            current.Name = (string) classData["Name"];
+            current.Guid = (string) classData["Guid"];
+            current.FileID = (string) classData["FileID"];
+            
+            List<FieldData> currentFields = new List<FieldData>();
+            foreach (JObject field in classData["Fields"])
+            {
+                FieldData currentField = new FieldData();
+                currentField.Name = (string) field["Name"];
+                currentField.Type = new ClassData();
+                currentField.Type.Name = (string) field["Name"];
+
+                JToken classDataChild;
+                if (field.TryGetValue("ClassDataFields", out classDataChild))
+                {
+                    JObject classDataField = (JObject) classDataChild;
+                    currentField.Type = Parse(classDataField);
+                }
+                currentFields.Add(currentField);
+            }
+
+            current.FieldDatas = currentFields.ToArray();
+
+            return current;
+        }
     }
 
     public class ClassDataConverter : JsonConverter
@@ -134,96 +152,127 @@ namespace importerexporter.models
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
-            if (objectType != typeof(ClassData))
-            {
-                throw new NotImplementedException();
-            }
-
-            List<ClassData> classDatas = new List<ClassData>();
-            while (reader.TokenType != JsonToken.EndArray)
-            {
-                this.Next(reader);
-                classDatas.Add(ParseClassData(reader));
-                this.Next(reader);
-            }
-
-            return classDatas;
+            throw new NotImplementedException("Cannot deserialize this way, please use the ClassData.Parse method");
+//            if (objectType != typeof(ClassData))
+//            {
+//                throw new NotImplementedException();
+//            }
+//
+//            List<ClassData> classDatas = new List<ClassData>();
+//            while (reader.TokenType != JsonToken.EndArray)
+//            {
+//                this.Next(reader);
+//                classDatas.Add(ParseClassData(reader));
+//                this.Next(reader);
+//            }
+//
+//            return classDatas;
         }
-
-        private ClassData ParseClassData(JsonReader reader)
-        {
-            ClassData classData = new ClassData();
-            classData.Name = (string) readPair(reader).Value;
-            classData.Guid = (string) readPair(reader).Value;
-            classData.FileID = (string) readPair(reader).Value;
-
-
-            //open the array
-            this.Next(reader);
-
-            //read the "Fields" attribute of the array 
-            this.Next(reader);
-
-            List<FieldData> fieldDatas = new List<FieldData>();
-            while (true)
-            {
-                FieldData fieldData = new FieldData();
-
-                //open the object in the array
-                this.Next(reader);
-                fieldData.Name = (string) readPair(reader).Value;
-                fieldData.Type = new ClassData();
-                fieldData.Type.Name = (string) readPair(reader).Value;
-                if (reader.TokenType != JsonToken.EndObject)
-                {
-                    Next(reader);
-                    Next(reader);
-                    fieldData.Type = ParseClassData(reader);
-                    Next(reader);
-                    Next(reader);
-                }
-
-                if (fieldData.Name == "privateString_")
-                {
-                    Debug.Log("test");
-                }
-
-                fieldDatas.Add(fieldData);
-                if (reader.TokenType == JsonToken.EndArray)
-                {
-                    Next(reader);
-                    break;
-                }
-            }
-
-            this.Next(reader); // close the array
-            classData.FieldDatas = fieldDatas.ToArray();
-            return classData;
-        }
-
-        private List<string> logs = new List<string>();
-
-        private void Next(JsonReader reader)
-        {
-            string log = getReaderValue(reader);
-            logs.Add(log);
-            Debug.Log(log);
-            reader.Read();
-        }
-
-        private string getReaderValue(JsonReader reader)
-        {
-            return "Value : " + reader.Value + "; Type: " + reader.TokenType;
-        }
-
-        private KeyValuePair<string, Object> readPair(JsonReader reader)
-        {
-            string key = (string) reader.Value;
-            this.Next(reader);
-            Object Value = reader.Value;
-            this.Next(reader);
-            return new KeyValuePair<string, object>(key, Value);
-        }
+//
+//        private ClassData ParseClassData(JsonReader reader)
+//        {
+//            ClassData classData = new ClassData();
+//            classData.Name = (string) readPair(reader).Value;
+//            classData.Guid = (string) readPair(reader).Value;
+//            classData.FileID = (string) readPair(reader).Value;
+//            if (classData.Name == "TestScriptSubClass")
+//            {
+//                Debug.Log("test");
+//            }
+//
+//            bool throwException = false;
+//            if (throwException)
+//            {
+//                throw new Exception("Exit loop");
+//            }
+//
+//            //open the array
+//            this.Next(reader);
+//
+//            //read the "Fields" attribute of the array 
+//            this.Next(reader);
+//            if (reader.TokenType == JsonToken.EndArray) //fieldDatas is empty
+//            {
+//                Next(reader);
+//                return classData;
+//            }
+//
+//            List<FieldData> fieldDatas = new List<FieldData>();
+//            bool isNext = false;
+//            while (true)
+//            {
+//                FieldData fieldData = new FieldData();
+//
+//                if (!isNext)
+//                {
+//                    //open the object in the array
+//                    this.Next(reader);
+//                }
+//
+//
+//                fieldData.Name = (string) readPair(reader).Value;
+//                if (fieldData.Name == "testScriptSubClass")
+//                {
+//                    Debug.Log("test");
+//                }
+//
+//                fieldData.Type = new ClassData();
+//                fieldData.Type.Name = (string) readPair(reader).Value;
+//                if (reader.TokenType != JsonToken.EndObject)
+//                {
+//                    Next(reader);
+//                    Next(reader);
+//                    Next(reader);
+//                    fieldData.Type = ParseClassData(reader);
+//                    Next(reader);
+//                    Next(reader);
+//                    Next(reader);
+//                }
+//
+//                fieldDatas.Add(
+//                    fieldData); //todo : something still looks to be going wrong with the ClassDataFields looks like its behind by 1 
+//                Next(reader);
+//                isNext = true;
+////                if (reader.TokenType == JsonToken.StartObject)
+////                {
+////                    Next(reader);
+////                }
+//
+//                if (reader.TokenType == JsonToken.EndArray)
+//                {
+//                    break;
+//                }
+//            }
+//
+//            this.Next(reader); // close the array
+//            classData.FieldDatas = fieldDatas.ToArray();
+//
+//            return classData;
+//        }
+//
+//        private List<string> logs = new List<string>();
+//
+//        private void Next(JsonReader reader)
+//        {
+//            string log = getReaderValue(reader);
+//            logs.Add(log);
+//            Debug.Log(log);
+//            reader.Read();
+//        }
+//
+//        private string getReaderValue(JsonReader reader)
+//        {
+//            return "Value : " + reader.Value + "; Type: " + reader.TokenType;
+//        }
+//
+//        private KeyValuePair<string, Object> readPair(JsonReader reader)
+//        {
+//            string key = (string) reader.Value;
+//            this.Next(reader);
+//            Object Value = reader.Value;
+//            this.Next(reader);
+//            return new KeyValuePair<string, object>(key, Value);
+//        }
 
         public override bool CanConvert(Type objectType)
         {
