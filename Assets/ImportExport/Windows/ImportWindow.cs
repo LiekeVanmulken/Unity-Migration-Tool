@@ -77,9 +77,9 @@ namespace importerexporter.windows
                     Formatting = Formatting.Indented
                 };
                 jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-                File.WriteAllText(Application.dataPath + "/test.json", jsonField);
-//                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
-                List<ClassData> classDatas = ClassData.Parse(jsonField);
+                File.WriteAllText(Application.dataPath + "/ImportExport/Exports/test.json", jsonField);
+                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
+//                List<ClassData> classDatas = ClassData.Parse(jsonField);
                 
                 GUIUtility.systemCopyBuffer = jsonField;
             }
@@ -111,7 +111,7 @@ namespace importerexporter.windows
 //                
 //            }
 
-            EditorGUI.BeginDisabledGroup(String.IsNullOrEmpty(oldProjectPath));
+//            EditorGUI.BeginDisabledGroup(String.IsNullOrEmpty(oldProjectPath));
             if (GUILayout.Button("Import IDs"))
             {
 //                if (string.IsNullOrEmpty(oldProjectPath))
@@ -123,19 +123,30 @@ namespace importerexporter.windows
 //                        return;
 //                    }
 //                }
-
-                string scenePath = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*"); //todo : check if this is in the current project
-                if (scenePath.Length != 0)
+                string IDPath = EditorUtility.OpenFilePanel("ID export (old project assets/ImportExport/Exports/test.json)", Application.dataPath, "*"); //todo : check if this is in the current project
+                if (IDPath.Length != 0)
                 {
-                    List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
-                    Import(oldIDs, scenePath);
+                    List<ClassData> oldIDs = ClassData.Parse(File.ReadAllText(IDPath));
+   
+                    string scenePath =
+                        EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
+                            "*"); //todo : check if this is in the current project
+                    if (scenePath.Length != 0)
+                    {
+//                        List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
+                        Import(oldIDs, scenePath);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("No path was selected");
+                    }
                 }
                 else
                 {
                     Debug.LogWarning("No path was selected");
                 }
             }
-            EditorGUI.EndDisabledGroup();
+//            EditorGUI.EndDisabledGroup();
 //            jsonField = EditorGUILayout.TextArea(jsonField);
         }
 

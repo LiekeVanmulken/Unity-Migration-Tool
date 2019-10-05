@@ -22,12 +22,16 @@ namespace importerexporter.models
         Constants constants = Constants.Instance;
 
         public ClassData ClassData;
-        public ClassData OldClassData;
+
+        public ClassData
+            OldClassData; // todo : the normal serialization won't work here, find a way to get the parse method
+
         [JsonIgnore] public YamlNode YamlOptions;
         [JsonIgnore] public bool HasBeenMapped;
 
         [JsonProperty("FieldsToMerge")] [SerializeField]
         public List<MergeNode> MergeNodes = new List<MergeNode>();
+
 
         public FoundScript()
         {
@@ -88,7 +92,7 @@ namespace importerexporter.models
                 mergeNode.MergeNodes = new List<MergeNode>();
                 mergeNode.YamlKey = pair.Key.ToString();
                 mergeNode.SampleValue = pair.Value.ToString();
-                
+
                 if (newClassData != null && !constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
                 {
                     mergeNode.Type = oldClassData.FieldDatas.First(data => data.Name == mergeNode.YamlKey)?.Type?.Name;
@@ -99,18 +103,18 @@ namespace importerexporter.models
                         .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).First().Name;
                 }
 
-////                //Do the same for all the child fields of this node
-//                if (pair.Value is YamlMappingNode && //Check that it has potentially children 
-//                    pair.Value.GetChildren().Count > 0 &&
-//                    !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
-//                {
-//                    if (newChildren != null)
-//                    {
-//                        mergeNode.MergeNodes.AddRange(generateFlattenedMergeNodes(ref mergeNodes, oldChildren,
-//                            newChildren,
-//                            pair.Value));
-//                    }
-//                }
+//todo this doesn't work yet
+                //Do the same for all the child fields of this node
+                if (pair.Value is YamlMappingNode && //Check that it has potentially children 
+                    pair.Value.GetChildren().Count > 0 &&
+                    !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
+                {
+                    ClassData oldMappingNode =
+                        oldClassData.FieldDatas.First(data => data.Name == mergeNode.YamlKey).Type;
+                    ClassData newMappingNode = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
+                        .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).FirstOrDefault()?.Type;
+                    generateFlattenedMergeNodes(ref mergeNodes, oldMappingNode, newMappingNode, pair.Value);
+                }
 
                 mergeNodes.Add(mergeNode);
             }

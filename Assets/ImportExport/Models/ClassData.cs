@@ -29,11 +29,6 @@ namespace importerexporter.models
 
         public ClassData(string name, string guid, string fileID = "11500000")
         {
-            if (name.ToLower().Contains("testscript"))
-            {
-                Debug.Log(name);
-            }
-
             this.Name = name;
             this.Guid = guid;
             this.FileID = fileID;
@@ -70,14 +65,14 @@ namespace importerexporter.models
             current.Name = (string) classData["Name"];
             current.Guid = (string) classData["Guid"];
             current.FileID = (string) classData["FileID"];
-            
+
             List<FieldData> currentFields = new List<FieldData>();
             foreach (JObject field in classData["Fields"])
             {
                 FieldData currentField = new FieldData();
                 currentField.Name = (string) field["Name"];
                 currentField.Type = new ClassData();
-                currentField.Type.Name = (string) field["Name"];
+                currentField.Type.Name = (string) field["Type"];
 
                 JToken classDataChild;
                 if (field.TryGetValue("ClassDataFields", out classDataChild))
@@ -85,6 +80,7 @@ namespace importerexporter.models
                     JObject classDataField = (JObject) classDataChild;
                     currentField.Type = Parse(classDataField);
                 }
+
                 currentFields.Add(currentField);
             }
 
@@ -152,6 +148,15 @@ namespace importerexporter.models
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
+            if (objectType == typeof(ClassData))
+            {
+                JObject classData = JObject.Load(reader);
+                return ClassData.Parse(classData);
+            }
+
+            throw new NotImplementedException("Not an ClassData object");
+
+
             throw new NotImplementedException("Cannot deserialize this way, please use the ClassData.Parse method");
 //            if (objectType != typeof(ClassData))
 //            {
