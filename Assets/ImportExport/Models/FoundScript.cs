@@ -37,7 +37,7 @@ namespace importerexporter.models
         {
         }
 
-        public FoundScript(ClassData oldClassData, ClassData newClassData, YamlNode yamlOptions)
+        public FoundScript(List<ClassData> newIDs,ClassData oldClassData, ClassData newClassData, YamlNode yamlOptions)
         {
             this.ClassData = newClassData;
             this.OldClassData = oldClassData; // todo : implement the generateMergeNodesRecursively 
@@ -47,7 +47,7 @@ namespace importerexporter.models
             if (!this.HasBeenMapped)
             {
                 List<MergeNode> mergeNodes = new List<MergeNode>();
-                generateFlattenedMergeNodes(ref mergeNodes, oldClassData, newClassData, this.YamlOptions);
+                generateFlattenedMergeNodes(newIDs,ref mergeNodes, oldClassData, newClassData, this.YamlOptions);
                 this.MergeNodes = mergeNodes;
             }
         }
@@ -81,46 +81,6 @@ namespace importerexporter.models
             return true;
         }
 
-        private void generateFlattenedMergeNodes(ref List<MergeNode> mergeNodes, ClassData oldClassData,
-            ClassData newClassData,
-            YamlNode yamlNode)
-        {
-            IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
-            foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
-            {
-                MergeNode mergeNode = new MergeNode();
-                mergeNode.MergeNodes = new List<MergeNode>();
-                mergeNode.YamlKey = pair.Key.ToString();
-                mergeNode.SampleValue = pair.Value.ToString();
-
-                if (newClassData != null && !constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
-                {
-                    mergeNode.Type = oldClassData.FieldDatas.First(data => data.Name == mergeNode.YamlKey)?.Type?.Name;
-                    mergeNode.Options = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
-                        .Select(data => data.Name).ToArray();
-
-                    mergeNode.NameToExportTo = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
-                        .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).First().Name;
-                }
-
-//todo this doesn't work yet
-                //Do the same for all the child fields of this node
-                if (pair.Value is YamlMappingNode && //Check that it has potentially children 
-                    pair.Value.GetChildren().Count > 0 &&
-                    !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
-                {
-                    ClassData oldMappingNode =
-                        oldClassData.FieldDatas.First(data => data.Name == mergeNode.YamlKey).Type;
-                    ClassData newMappingNode = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
-                        .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).FirstOrDefault()?.Type;
-                    generateFlattenedMergeNodes(ref mergeNodes, oldMappingNode, newMappingNode, pair.Value);
-                }
-
-                mergeNodes.Add(mergeNode);
-            }
-
-//            return mergeNodes;
-        }
 
 //
 //        private List<MergeNode> GenerateMergeNodesRecursively(FieldData[] oldFieldDatas, FieldData[] newFieldDatas,

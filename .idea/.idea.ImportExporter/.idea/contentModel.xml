@@ -282,6 +282,7 @@
         </e>
         <e p="TestScript1.cs" t="Include" />
         <e p="TestScript2.cs" t="Include" />
+        <e p="TestScriptSubClass.cs" t="Include" />
         <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
         <e p="WizardTest" t="Include">
           <e p="MergingWizardEditorWindow.cs" t="Include" />

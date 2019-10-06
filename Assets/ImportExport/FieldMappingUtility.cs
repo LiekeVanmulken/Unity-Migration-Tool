@@ -106,8 +106,8 @@ namespace importerexporter
 
                 ClassData oldClassData = oldIDs.First(data => data.Name == currentClassData.Name);
 
-                FoundScript found = new FoundScript(oldClassData: oldClassData, newClassData: currentClassData,
-                    yamlOptions: scriptYaml);
+                FoundScript found = new FoundScript(currentIDs,oldClassData: oldClassData, newClassData: currentClassData,yamlOptions: scriptYaml);
+                generateFlattenedMergeNodes(currentIDs,);
                 if (!found.HasBeenMapped)
                 {
                     foundScripts.Add(found);
@@ -117,6 +117,51 @@ namespace importerexporter
             return foundScripts;
         }
 
+        private void generateFlattenedMergeNodes(List<ClassData> newIDs, ref List<MergeNode> mergeNodes,
+            ClassData oldClassData,
+            ClassData newClassData,
+            YamlNode yamlNode)
+        {
+            IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
+            foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
+            {
+                MergeNode mergeNode = new MergeNode();
+                mergeNode.MergeNodes = new List<MergeNode>();
+                mergeNode.YamlKey = pair.Key.ToString();
+                mergeNode.SampleValue = pair.Value.ToString();
+
+                if (newClassData != null && !constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
+                {
+                    mergeNode.Type = oldClassData.FieldDatas.First(data => data.Name == mergeNode.YamlKey)?.Type?.Name;
+                    mergeNode.Options = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
+                        .Select(data => data.Name).ToArray();
+
+                    mergeNode.NameToExportTo = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
+                        .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).First().Name;
+                }
+
+//todo this doesn't work yet
+                //Do the same for all the child fields of this node
+                if (pair.Value is YamlMappingNode && //Check that it has potentially children 
+                    pair.Value.GetChildren().Count > 0 &&
+                    !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
+                {
+                    //todo : subclass can't be found as it;s in a different file (private class)
+                    ClassData oldMappingNode =
+                        oldClassData.FieldDatas.First(data => data.Name == mergeNode.YamlKey).Type;
+                    
+                    ClassData newMappingNode = newIDs.FirstOrDefault(data => data.Name == oldMappingNode.Name);
+//                    ClassData newMappingNode = newClassData.FieldDatas?.Where(data => data.Type.Name == mergeNode.Type)
+//                        .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).FirstOrDefault()?.Type;
+                    generateFlattenedMergeNodes(newIDs, ref mergeNodes, oldMappingNode, newMappingNode, pair.Value);
+                }
+
+                mergeNodes.Add(mergeNode);
+            }
+
+//            return mergeNodes;
+        }
+        
         /// <summary>
         /// Replaces the Fields on the monobehaviours according to the mergeNode data
         /// </summary>
