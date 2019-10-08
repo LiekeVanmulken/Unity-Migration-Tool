@@ -22,10 +22,8 @@ namespace importerexporter.models
         Constants constants = Constants.Instance;
 
         public ClassData ClassData;
-
-        public ClassData
-            OldClassData; // todo : the normal serialization won't work here, find a way to get the parse method
-
+        public ClassData OldClassData;
+        
         [JsonIgnore] public YamlNode YamlOptions;
         [JsonIgnore] public bool HasBeenMapped;
 
@@ -37,18 +35,19 @@ namespace importerexporter.models
         {
         }
 
-        public FoundScript(List<ClassData> newIDs,ClassData oldClassData, ClassData newClassData, YamlNode yamlOptions)
+        public FoundScript(List<ClassData> newIDs, ClassData oldClassData, ClassData newClassData, YamlNode yamlOptions)
         {
             this.ClassData = newClassData;
-            this.OldClassData = oldClassData; // todo : implement the generateMergeNodesRecursively 
+            this.OldClassData = oldClassData; 
             this.YamlOptions = yamlOptions;
-            this.HasBeenMapped = checkHasBeenMapped(newClassData.FieldDatas, yamlOptions);
+            this.HasBeenMapped = checkHasBeenMapped(newClassData.Fields, yamlOptions);
 
             if (!this.HasBeenMapped)
             {
-                List<MergeNode> mergeNodes = new List<MergeNode>();
-                generateFlattenedMergeNodes(newIDs,ref mergeNodes, oldClassData, newClassData, this.YamlOptions);
-                this.MergeNodes = mergeNodes;
+//                List<MergeNode> mergeNodes = new List<MergeNode>();
+//                generateFlattenedMergeNodes(newIDs, ref mergeNodes, oldClassData, newClassData, this.YamlOptions);
+//                this.MergeNodes = mergeNodes;
+                //todo : does this need to be done????????
             }
         }
 
@@ -71,8 +70,8 @@ namespace importerexporter.models
                     return false;
                 }
 
-                if (fieldData.Type != null && fieldData.Type.FieldDatas != null &&
-                    !checkHasBeenMapped(fieldData.Type.FieldDatas, node[found.Key]))
+                if (fieldData.Type != null && fieldData.Type.Fields != null &&
+                    !checkHasBeenMapped(fieldData.Type.Fields, node[found.Key]))
                 {
                     return false;
                 }
