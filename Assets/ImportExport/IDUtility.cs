@@ -1,5 +1,8 @@
-﻿#if UNITY_EDITOR
+﻿
 
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
+#if UNITY_EDITOR
 using importerexporter.models;
 using importerexporter.utility;
 using System;
@@ -76,6 +79,11 @@ namespace importerexporter
             List<ClassData> data = new List<ClassData>();
             foreach (string file in classMetaFiles)
             {
+                if (file.ToLower().Contains("testscript"))
+                {
+                    Debug.Log(file);
+                }
+
                 progress++;
                 EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
                     progress / totalFiles);
@@ -97,47 +105,47 @@ namespace importerexporter
                     }
                 }
             }
-
-            // Loop through dlls  
-            if (!constants.DEBUG)
-            {
-                foreach (string metaFile in dllMetaFiles)
-                {
-                    progress++;
-                    EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
-                        progress / totalFiles);
-                    string text = File.ReadAllText(metaFile);
-                    Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
-                    Match match = regex.Match(text);
-                    if (!match.Success)
-                    {
-                        Debug.LogError("Could not parse the guid from the dll meta file. File : " +
-                                       metaFile);
-                    }
-
-                    var file = metaFile.Replace(".meta", "");
-                    try
-                    {
-                        Assembly assembly = Assembly.LoadFile(file);
-                        foreach (Type type in assembly.GetTypes())
-                        {
-                            EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
-                                progress / totalFiles);
-                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
-                    }
-                }
-            }
+            //todo : uncomment, commented for speed with debugging
+//            // Loop through dlls  
+//            if (!constants.DEBUG)
+//            {
+//                foreach (string metaFile in dllMetaFiles)
+//                {
+//                    progress++;
+//                    EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+//                        progress / totalFiles);
+//                    string text = File.ReadAllText(metaFile);
+//                    Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
+//                    Match match = regex.Match(text);
+//                    if (!match.Success)
+//                    {
+//                        Debug.LogError("Could not parse the guid from the dll meta file. File : " +
+//                                       metaFile);
+//                    }
+//
+//                    var file = metaFile.Replace(".meta", "");
+//                    try
+//                    {
+//                        Assembly assembly = Assembly.LoadFile(file);
+//                        foreach (Type type in assembly.GetTypes())
+//                        {
+//                            EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
+//                                progress / totalFiles);
+//                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+//                        }
+//                    }
+//                    catch (Exception e)
+//                    {
+//                        Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
+//                    }
+//                }
+//            }
 
             EditorUtility.ClearProgressBar();
             return data;
         }
 
-
+       
         /// <summary>
         /// Replaces all old GUIDs and old fileIDs with the new GUID and fileID and returns a the new scenefile.
         /// This can be saved as an .unity file and then be opened in the editor.
@@ -192,7 +200,7 @@ namespace importerexporter
                 ClassData replacementClassData = findNewID(oldIDs, currentIDs, fileID, matchGuid.Value);
                 if (replacementClassData == null)
                 {
-                    continue;
+                    continue; // TODO : this should crash when a monobehaviour cannot be replaced!!!!!!!!
                 }
 
                 // Replace the Guid

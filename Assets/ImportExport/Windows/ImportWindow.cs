@@ -1,4 +1,6 @@
 ﻿#if UNITY_EDITOR
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
 using importerexporter.models;
 using importerexporter.utility;
 using System.Linq;
@@ -8,8 +10,9 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using System.CodeDom;
 
-namespace importerexporter
+namespace importerexporter.windows
 {
     /// <summary>
     /// Changes the GUIDS and fileIDS to the new GUIDS and fileIDs.
@@ -41,7 +44,7 @@ namespace importerexporter
         {
             hideFlags = HideFlags.HideAndDontSave;
             oldProjectPath = EditorPrefs.GetString(EDITORPREFS_KEY);
-            wordWrapStyle = new GUIStyle() {wordWrap = true};
+            wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
         }
 
         protected void OnDisable()
@@ -61,75 +64,106 @@ namespace importerexporter
         private static MergingWizard mergingWizard;
         private Constants constants = Constants.Instance;
 
-        void OnGUI()
+        private string jsonField;
+        void OnGUI() 
         {
-            if (GUILayout.Button("export IDs"))
+            if (GUILayout.Button("Export IDs"))
             {
-                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
-                EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
-
+                List<ClassData> oldIDs = idUtility.ExportClassData(Application.dataPath);//todo : change?
                 var jsonSerializerSettings = new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                    PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                    PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                    Formatting = Formatting.Indented
                 };
-                string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(json, jsonSerializerSettings);
-                EditorUtility.ClearProgressBar();
-                Debug.Log(json);
+                jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+                File.WriteAllText(Application.dataPath + "/ImportExport/Exports/test.json", jsonField);
+                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
+//                List<ClassData> classDatas = ClassData.Parse(jsonField);
+                
+                GUIUtility.systemCopyBuffer = jsonField;
             }
+//            if (GUILayout.Button("export IDs"))
+//            {
+//                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
+//                EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
+//
+//                var jsonSerializerSettings = new JsonSerializerSettings
+//                {
+//                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+//                    PreserveReferencesHandling = PreserveReferencesHandling.Objects
+//                };
+//                string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+//                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(json, jsonSerializerSettings);
+//                EditorUtility.ClearProgressBar();
+//                Debug.Log(json);
+//            }
 
-            GUILayout.Label("Old Assets folder : " + oldProjectPath, wordWrapStyle);
-            if (GUILayout.Button("Set old project path"))
-            {
-                string path = EditorUtility.OpenFolderPanel("title", Application.dataPath, "");
-                if (path.Length != 0)
-                {
-                    oldProjectPath = path;
-                }
-            }
 
-            EditorGUI.BeginDisabledGroup(String.IsNullOrEmpty(oldProjectPath));
-            if (GUILayout.Button("Import"))
+//            GUILayout.Label("Old Assets folder : \n" + oldProjectPath, wordWrapStyle);
+//            if (GUILayout.Button("Set old project path"))
+//            {
+//                string path = EditorUtility.OpenFolderPanel("title", Application.dataPath, "");
+//                if (path.Length != 0)
+//                {
+//                    oldProjectPath = path;
+//                }
+//                
+//            }
+
+//            EditorGUI.BeginDisabledGroup(String.IsNullOrEmpty(oldProjectPath));
+            if (GUILayout.Button("Import IDs"))
             {
-                if (string.IsNullOrEmpty(oldProjectPath))
+//                if (string.IsNullOrEmpty(oldProjectPath))
+//                {
+//                    if (EditorUtility.DisplayDialog("New Project import window",
+//                        "Please select the path of the old project before proceeding.",
+//                        "Ok"))
+//                    {
+//                        return;
+//                    }
+//                }
+                string IDPath = EditorUtility.OpenFilePanel("ID export (old project assets/ImportExport/Exports/test.json)", Application.dataPath, "*"); //todo : check if this is in the current project
+                if (IDPath.Length != 0)
                 {
-                    if (EditorUtility.DisplayDialog("New Project import window",
-                        "Please select the path of the old project before proceeding.",
-                        "Ok"))
+                    List<ClassData> oldIDs = ClassData.Parse(File.ReadAllText(IDPath));
+   
+                    string scenePath =
+                        EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
+                            "*"); //todo : check if this is in the current project
+                    if (scenePath.Length != 0)
                     {
-                        return;
+//                        List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
+                        Import(oldIDs, scenePath);
                     }
-                }
-
-                string scenePath = EditorUtility.OpenFilePanel("Scene to import", Application.dataPath, "*");
-                if (scenePath.Length != 0)
-                {
-                    Import(scenePath);
+                    else
+                    {
+                        Debug.LogWarning("No path was selected");
+                    }
                 }
                 else
                 {
                     Debug.LogWarning("No path was selected");
                 }
             }
-
-            EditorGUI.EndDisabledGroup();
+//            EditorGUI.EndDisabledGroup();
+//            jsonField = EditorGUILayout.TextArea(jsonField);
         }
 
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void Import(string scenePath)
+        private void Import(List<ClassData> oldIDs, string scenePath)
         {
-            List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
+//            List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
             List<ClassData> currentIDs =
                 constants.DEBUG ? oldIDs : idUtility.ExportClassData(Application.dataPath);
 
             lastSceneExport =
                 idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
 
-            foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, currentIDs);
+            foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
 
 
             if (foundScripts.Count > 0)
@@ -156,7 +190,7 @@ namespace importerexporter
         }
 
         /// <summary>
-        /// Save 
+        /// Saves the <param name="linesToWrite"/> to a new file at the <param name="scenePath"/>
         /// </summary>
         /// <param name="scenePath"></param>
         /// <param name="linesToWrite"></param>

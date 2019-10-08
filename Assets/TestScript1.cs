@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [Serializable]
-public class TestScript : MonoBehaviour
+public class TestScript1 : MonoBehaviour
 {
     public string test;
     
@@ -20,18 +20,5 @@ public class TestScript : MonoBehaviour
     void Update()
     {
         
-    }
-}
-
-[Serializable]
-public class TestScriptSubClass
-{
-    [SerializeField] private string privateString;
-    public string publicString;
-
-    public TestScriptSubClass(string privateString, string publicString)
-    {
-        this.privateString = privateString;
-        this.publicString = publicString;
     }
 }
