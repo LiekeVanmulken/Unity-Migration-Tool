@@ -77,7 +77,7 @@ namespace importerexporter.windows
                     Formatting = Formatting.Indented
                 };
                 jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-                File.WriteAllText(Application.dataPath + "/ImportExport/Exports/test.json", jsonField);
+                File.WriteAllText(Application.dataPath + "/ImportExport/Exports/Export.json", jsonField);
                 List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
 //                List<ClassData> classDatas = ClassData.Parse(jsonField);
                 
