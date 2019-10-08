@@ -1,3 +1,5 @@
+# Outdated!!!, check the readme in the root folder
+
 # Scene Import Export Tool
 
 This is a tool to import scenes between projects.

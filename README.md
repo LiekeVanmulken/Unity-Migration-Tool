@@ -10,17 +10,19 @@ The most helpful information about this issue can be found on the unity forum [h
 ## How to use
 
 ### Installation:
-
-1. Copy the `Assets/ImportExport/` folder to your project.
-2. Import json.net from the unity assetstore
-3. Import YamlDotNet from the unity assetstore
+1. Have two projects, the old project and the new project. (The old project will have the scene we'll export)
+2. Copy the `Assets/ImportExport/` folder to both projects.
+3. Import [json.net](https://assetstore.unity.com/packages/tools/input-management/json-net-for-unity-11347) from the unity assetstore
+4. Import [YamlDotNet](https://assetstore.unity.com/packages/tools/integration/yamldotnet-for-unity-36292) from the unity assetstore
 
 ### Usage
 
-1. Go to `Window/Scene import window` on the menubar and open the window.
-2. Click the `Set old project path` button and select the old project path.
-3. Click Import, the tool will open a window to select which scene to update.
-4. Select the scenefile you wish to update.
+1. In the old project go to `Window/Scene import window` on the menubar and open the window.
+2. Click the `Export IDs` button and the project will start to export the IDs (these will be saved to `<project_path>/Assets/ImportExport/Export/Export.json`).
+3. When the IDs have been exported in the old project, open up the new project and open the `Window/Scene import window` window.
+4. Click `Import IDs` the tool will open a window to select which export to use, go to your old project and select the `<project_path>/Assets/ImportExport/Export/Export.json` file.
+5. The tool will then open a window to select which scene to use.
+6. Select the scenefile you wish to update.
 
 The Tool will make a copy of the file and write it to the same folder as the original folder.
 In case the fields on the class cannot be matched to the fields on the new class, a merge window will appear where you can select what to do with these fields.
