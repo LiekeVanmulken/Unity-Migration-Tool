@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using System.CodeDom;
+using System.Threading;
 
 namespace importerexporter.windows
 {
@@ -26,10 +27,25 @@ namespace importerexporter.windows
     [Serializable]
     public class ImportWindow : EditorWindow
     {
-        [SerializeField] private static string oldProjectPath;
+        private readonly Constants constants = Constants.Instance;
         private readonly IDUtility idUtility = IDUtility.Instance;
         private readonly FieldMappingUtility fieldMappingUtility = FieldMappingUtility.Instance;
+
+        private static List<ClassData> oldFileDatas;
+
+        private static string[] lastSceneExport;
+        private static List<FoundScript> foundScripts;
+
         private GUIStyle wordWrapStyle;
+        private static MergingWizard mergingWizard;
+        private string jsonField;
+
+        private Thread calculationThread;
+
+        private List<KeyValuePair<string, bool>> dllFiles;
+
+        private string progressBarMessage;
+//        private Vector2 dllFilesScroll = Vector2.zero;
 
 
         [MenuItem("Window/Scene import window")]
@@ -38,154 +54,144 @@ namespace importerexporter.windows
             EditorWindow.GetWindow(typeof(ImportWindow));
         }
 
-        private const string EDITORPREFS_KEY = "ImportExportWindow";
-
         protected void OnEnable()
         {
-            hideFlags = HideFlags.HideAndDontSave;
-            oldProjectPath = EditorPrefs.GetString(EDITORPREFS_KEY);
             wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
+//            dllFiles = new List<KeyValuePair<string, bool>>();     
+//            var dllFilePaths = Directory.GetFiles(Application.dataPath, "*" +".dll", SearchOption.AllDirectories);
+//            foreach (string dllFilePath in dllFilePaths)
+//            {
+//                dllFiles.Add(new KeyValuePair<string, bool>(dllFilePath, true));
+//            }
         }
 
-        protected void OnDisable()
+        void OnGUI()
         {
-            EditorPrefs.SetString(EDITORPREFS_KEY, oldProjectPath);
-        }
-
-
-        /// <summary>
-        /// Position of the scroll for the UI
-        /// </summary>
-        private Vector2 scrollPosition;
-
-        private static List<ClassData> oldFileDatas;
-        private static string[] lastSceneExport;
-        private static List<FoundScript> foundScripts;
-        private static MergingWizard mergingWizard;
-        private Constants constants = Constants.Instance;
-
-        private string jsonField;
-        void OnGUI() 
-        {
-            if (GUILayout.Button("Export IDs"))
+            if (GUILayout.Button("Export current project's Class Data"))
             {
-                List<ClassData> oldIDs = idUtility.ExportClassData(Application.dataPath);//todo : change?
-                var jsonSerializerSettings = new JsonSerializerSettings
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                    PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-                    Formatting = Formatting.Indented
-                };
-                jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-                File.WriteAllText(Application.dataPath + "/ImportExport/Exports/Export.json", jsonField);
-                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
-//                List<ClassData> classDatas = ClassData.Parse(jsonField);
-                
-                GUIUtility.systemCopyBuffer = jsonField;
+                ExportCurrentClassData();
             }
-//            if (GUILayout.Button("export IDs"))
-//            {
-//                List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
-//                EditorUtility.DisplayProgressBar("Serializing json", "Serializing json", 0.2f);
-//
-//                var jsonSerializerSettings = new JsonSerializerSettings
-//                {
-//                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-//                    PreserveReferencesHandling = PreserveReferencesHandling.Objects
-//                };
-//                string json = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-//                List<ClassData> test = JsonConvert.DeserializeObject<List<ClassData>>(json, jsonSerializerSettings);
-//                EditorUtility.ClearProgressBar();
-//                Debug.Log(json);
-//            }
-
-
-//            GUILayout.Label("Old Assets folder : \n" + oldProjectPath, wordWrapStyle);
-//            if (GUILayout.Button("Set old project path"))
-//            {
-//                string path = EditorUtility.OpenFolderPanel("title", Application.dataPath, "");
-//                if (path.Length != 0)
-//                {
-//                    oldProjectPath = path;
-//                }
-//                
-//            }
-
-//            EditorGUI.BeginDisabledGroup(String.IsNullOrEmpty(oldProjectPath));
-            if (GUILayout.Button("Import IDs"))
+            if (GUILayout.Button("Import Class Data and scene"))
             {
-//                if (string.IsNullOrEmpty(oldProjectPath))
-//                {
-//                    if (EditorUtility.DisplayDialog("New Project import window",
-//                        "Please select the path of the old project before proceeding.",
-//                        "Ok"))
-//                    {
-//                        return;
-//                    }
-//                }
-                string IDPath = EditorUtility.OpenFilePanel("ID export (old project assets/ImportExport/Exports/test.json)", Application.dataPath, "*"); //todo : check if this is in the current project
-                if (IDPath.Length != 0)
+                ImportClassDataAndScene();
+            }
+
+//            EditorGUILayout.LabelField("Dll to map classes from");
+//            EditorGUILayout.BeginScrollView(dllFilesScroll);
+//            for (var i = 0; i < dllFiles.Count; i++)
+//            {
+//                KeyValuePair<string, bool> pair = dllFiles[i];
+//
+//
+//                EditorGUILayout.BeginHorizontal();
+//
+//                dllFiles[i] = new KeyValuePair<string, bool>(pair.Key, EditorGUILayout.Toggle(pair.Value));
+//                EditorGUILayout.LabelField(pair.Key.Replace(Application.dataPath, ""), wordWrapStyle);
+//
+//                EditorGUILayout.EndHorizontal();
+//            }
+//
+//            EditorGUILayout.EndScrollView();
+
+
+        }
+
+        private void ExportCurrentClassData()
+        {
+            List<ClassData> oldIDs = idUtility.ExportClassData(Application.dataPath);
+            var jsonSerializerSettings = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                Formatting = Formatting.Indented
+            };
+
+            jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+            File.WriteAllText(Application.dataPath + "/ImportExport/Exports/Export.json", jsonField);
+
+            GUIUtility.systemCopyBuffer = jsonField;
+        }
+
+        private void ImportClassDataAndScene()
+        {
+            if (calculationThread != null)
+            {
+                EditorUtility.DisplayDialog("Already running import",
+                    "Can't Start new import while import is running", "Ok");
+            }
+
+            string IDPath = EditorUtility.OpenFilePanel(
+                "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
+                "*"); //todo : check if this is in the current project
+            if (IDPath.Length != 0)
+            {
+                List<ClassData> oldIDs = ClassData.Parse(File.ReadAllText(IDPath));
+
+                string scenePath =
+                    EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
+                        "*"); //todo : check if this is in the current project
+                if (scenePath.Length != 0)
                 {
-                    List<ClassData> oldIDs = ClassData.Parse(File.ReadAllText(IDPath));
-   
-                    string scenePath =
-                        EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
-                            "*"); //todo : check if this is in the current project
-                    if (scenePath.Length != 0)
-                    {
-//                        List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(jsonField);
-                        Import(oldIDs, scenePath);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("No path was selected");
-                    }
+                    string rootPath = Application.dataPath;
+                    calculationThread = new Thread(() => this.Import(rootPath, oldIDs, scenePath,
+                        (message) => progressBarMessage = message));
+                    calculationThread.Start();
                 }
                 else
                 {
                     Debug.LogWarning("No path was selected");
                 }
             }
-//            EditorGUI.EndDisabledGroup();
-//            jsonField = EditorGUILayout.TextArea(jsonField);
+            else
+            {
+                Debug.LogWarning("No path was selected");
+            }
         }
 
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void Import(List<ClassData> oldIDs, string scenePath)
+        private void Import(string rootPath, List<ClassData> oldIDs, string scenePath, Action<string> setProgressBar)
         {
+            try
+            {
 //            List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
-            List<ClassData> currentIDs =
-                constants.DEBUG ? oldIDs : idUtility.ExportClassData(Application.dataPath);
+                List<ClassData> currentIDs =
+                    constants.DEBUG ? oldIDs : idUtility.ExportClassData(rootPath);
 
-            lastSceneExport =
-                idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs);
+                lastSceneExport =
+                    idUtility.ImportClassDataAndTransformIDs(rootPath, scenePath, oldIDs, currentIDs);
 
-            foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
+                foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
 
 
-            if (foundScripts.Count > 0)
-            {
-                List<FoundScript> scripts =
-                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
-                        .Select(group => group.First()).ToList();
-
-                EditorUtility.DisplayDialog("Merging fields necessary",
-                    "Could not merge all the fields to the class in the new project. You'll have to manually match old fields with the new fields",
-                    "Open merge window");
-
-                mergingWizard = MergingWizard.CreateWizard(scripts);
-
-                mergingWizard.onComplete += (sender, list) =>
+                if (foundScripts.Count > 0)
                 {
-                    MergingWizardCompleted(list, scenePath, lastSceneExport);
-                };
+                    List<FoundScript> scripts =
+                        foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
+                            .Select(group => group.First()).ToList();
+
+                    EditorUtility.DisplayDialog("Merging fields necessary",
+                        "Could not merge all the fields to the class in the new project. You'll have to manually match old fields with the new fields",
+                        "Open merge window");
+
+                    mergingWizard = MergingWizard.CreateWizard(scripts);
+
+                    mergingWizard.onComplete += (sender, list) =>
+                    {
+                        MergingWizardCompleted(list, scenePath, lastSceneExport);
+                    };
+                }
+                else
+                {
+                    SaveFile(scenePath, lastSceneExport);
+                }
             }
-            else
+            catch (Exception e)
             {
-                SaveFile(scenePath, lastSceneExport);
+                Debug.LogError(e);
+                throw;
             }
         }
 
@@ -199,8 +205,7 @@ namespace importerexporter.windows
             var now = DateTime.Now;
             string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
                                   now.Second + ".unity";
-            File.WriteAllLines(newScenePath
-                , linesToWrite);
+            File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
             EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
         }
 
@@ -220,6 +225,15 @@ namespace importerexporter.windows
 
             SaveFile(scenePath, linesToChange);
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
 }
 #endif

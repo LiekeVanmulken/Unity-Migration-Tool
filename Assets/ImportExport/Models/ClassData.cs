@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using importerexporter.utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -181,17 +182,21 @@ namespace importerexporter.models
             this.Name = name;
             //todo : check if this recursion still works properly!
             if (iteration > constants.RECURSION_DEPTH
-                || type == typeof(string)
-                || type == typeof(int)
-                || type == typeof(float)
-                || type == typeof(bool)
-                || type == typeof(double))
+                || isStandardClass(type.FullName) || type.IsEnum)
             {
                 this.Type = new ClassData();
                 this.Type.Name = type.FullName;
                 return;
             }
+
             this.Type = new ClassData(type, iteration);
+        }
+
+        Regex standardRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
+
+        private bool isStandardClass(string toCheck)
+        {
+            return standardRegex.Match(toCheck).Length == toCheck.Length;
         }
     }
 

@@ -33,10 +33,10 @@ namespace importerexporter.windows
         {
             GUI.skin.label.wordWrap = true;
             
-            var wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
+            MergingWizard wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
             wizard.foundScripts = scriptsToMerge;
 
-            var settings = new JsonSerializerSettings
+            JsonSerializerSettings settings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects
@@ -49,7 +49,6 @@ namespace importerexporter.windows
 
         private void OnEnable()
         {
-            
             richtextStyle = new GUIStyle() {richText = true, wordWrap = true,padding = new RectOffset(10,10,10,10)};
         }
 
