@@ -31,8 +31,6 @@ namespace importerexporter.windows
         [MenuItem("WizardTest/Wizard")]
         public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
-            GUI.skin.label.wordWrap = true;
-            
             MergingWizard wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
             wizard.foundScripts = scriptsToMerge;
 

@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using importerexporter.models;
 using importerexporter.utility;
-using UnityEditor;
+using importerexporter.windows;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -57,9 +59,9 @@ namespace importerexporter
         public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> oldIDs,
             List<ClassData> currentIDs)
         {
-            EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
+            ImportWindow.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
             List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, oldIDs, currentIDs);
-            EditorUtility.ClearProgressBar();
+            ImportWindow.ClearProgressBar();
 
             return generateFieldMapping;
         }
@@ -160,7 +162,7 @@ namespace importerexporter
 
                 mergeNode.NameToExportTo = newDocumentClassData.Fields?
                     .Where(data => data.Type.Name == mergeNode.Type)
-                    .OrderBy(newField =>
+                    .OrderByDescending(newField =>
                         Levenshtein.Compute(
                             field.Key.ToString(),
                             newField.Name))
@@ -276,3 +278,4 @@ namespace importerexporter
         }
     }
 }
+#endif

@@ -1,6 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
 using importerexporter.models;
 using importerexporter.utility;
 using System.Linq;
@@ -10,7 +8,6 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using System.CodeDom;
 using System.Threading;
 
 namespace importerexporter.windows
@@ -25,7 +22,7 @@ namespace importerexporter.windows
     /// For a more detailed explanation read the README.MD
     /// </summary>
     [Serializable]
-    public class ImportWindow : EditorWindow
+    public class ImportWindow : MainThreadDispatcherEditorWindow
     {
         private readonly Constants constants = Constants.Instance;
         private readonly IDUtility idUtility = IDUtility.Instance;
@@ -37,8 +34,9 @@ namespace importerexporter.windows
         private static List<FoundScript> foundScripts;
 
         private GUIStyle wordWrapStyle;
+
         private static MergingWizard mergingWizard;
-        private string jsonField;
+//        private string jsonField;
 
         private Thread calculationThread;
 
@@ -67,10 +65,16 @@ namespace importerexporter.windows
 
         void OnGUI()
         {
-            if (GUILayout.Button("Export current project's Class Data"))
+            if (GUILayout.Button("Export Class Data of the current project"))
             {
-                ExportCurrentClassData();
+                string rootPath = Application.dataPath;
+                new Thread(() =>
+                    {
+                        ExportCurrentClassData(rootPath);
+                    }
+                ).Start(); // todo : put this somewhere else
             }
+
             if (GUILayout.Button("Import Class Data and scene"))
             {
                 ImportClassDataAndScene();
@@ -92,13 +96,11 @@ namespace importerexporter.windows
 //            }
 //
 //            EditorGUILayout.EndScrollView();
-
-
         }
 
-        private void ExportCurrentClassData()
+        private void ExportCurrentClassData(string rootPath)
         {
-            List<ClassData> oldIDs = idUtility.ExportClassData(Application.dataPath);
+            List<ClassData> oldIDs = idUtility.ExportClassData(rootPath);
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -106,10 +108,11 @@ namespace importerexporter.windows
                 Formatting = Formatting.Indented
             };
 
-            jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-            File.WriteAllText(Application.dataPath + "/ImportExport/Exports/Export.json", jsonField);
+            var jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+            string filePath = rootPath + "/ImportExport/Exports/Export.json";
+            File.WriteAllText(filePath, jsonField);
 
-            GUIUtility.systemCopyBuffer = jsonField;
+            DisplayDialog("Export complete", "All classes were exported to " + filePath + " . Open up the new project and import the scene.");
         }
 
         private void ImportClassDataAndScene()
@@ -118,6 +121,7 @@ namespace importerexporter.windows
             {
                 EditorUtility.DisplayDialog("Already running import",
                     "Can't Start new import while import is running", "Ok");
+                return;
             }
 
             string IDPath = EditorUtility.OpenFilePanel(
@@ -160,38 +164,47 @@ namespace importerexporter.windows
                 List<ClassData> currentIDs =
                     constants.DEBUG ? oldIDs : idUtility.ExportClassData(rootPath);
 
-                lastSceneExport =
+                var lastSceneExport =
                     idUtility.ImportClassDataAndTransformIDs(rootPath, scenePath, oldIDs, currentIDs);
 
-                foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
+                var foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
 
-
-                if (foundScripts.Count > 0)
-                {
-                    List<FoundScript> scripts =
-                        foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
-                            .Select(group => group.First()).ToList();
-
-                    EditorUtility.DisplayDialog("Merging fields necessary",
-                        "Could not merge all the fields to the class in the new project. You'll have to manually match old fields with the new fields",
-                        "Open merge window");
-
-                    mergingWizard = MergingWizard.CreateWizard(scripts);
-
-                    mergingWizard.onComplete += (sender, list) =>
-                    {
-                        MergingWizardCompleted(list, scenePath, lastSceneExport);
-                    };
-                }
-                else
-                {
-                    SaveFile(scenePath, lastSceneExport);
-                }
+                Instance().Enqueue(() => { ImportMainThread(scenePath, foundScripts, lastSceneExport); });
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
                 throw;
+            }
+        }
+
+        private void
+            ImportMainThread(string scenePath, List<FoundScript> foundScripts,
+                string[] lastSceneExport) //todo : terrible name, rename! - 10-10-2019 - Wouter
+        {
+            ImportWindow.foundScripts = foundScripts;
+            ImportWindow.lastSceneExport = lastSceneExport;
+
+            if (foundScripts.Count > 0)
+            {
+                List<FoundScript> scripts =
+                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
+                        .Select(group => group.First()).ToList();
+
+                EditorUtility.DisplayDialog("Merging fields necessary",
+                    "Could not merge all the fields to the class in the new project. You'll have to manually match old fields with the new fields",
+                    "Open merge window");
+
+                mergingWizard = MergingWizard.CreateWizard(scripts);
+
+                mergingWizard.onComplete += (sender, list) =>
+                {
+                    MergingWizardCompleted(list, scenePath, lastSceneExport);
+                };
+            }
+            else
+            {
+                SaveFile(scenePath, lastSceneExport);
             }
         }
 
@@ -225,15 +238,45 @@ namespace importerexporter.windows
 
             SaveFile(scenePath, linesToChange);
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+        public static string OpenOptionsWindow(string label, string original, string[] options)
+        {
+            string result = null;
+            bool completed = false;
+            Instance().Enqueue(() =>
+            {
+                Action<string> onComplete = wizardResult =>
+                {
+                    result = wizardResult;
+                    completed = true;
+                };
+                Action onIgnore = () => { completed = true; };
+
+                OptionsWizard optionsWizard =
+                    OptionsWizard.CreateWizard(label, original, options, onComplete, onIgnore);
+            });
+
+            while (!completed)
+            {
+                Thread.Sleep(100);
+            }
+
+            Debug.Log("OptionsWindow result : " + result);
+            return result;
+        }
+        public static void DisplayDialog(string title, string info)
+        {
+            Instance().Enqueue(() => { EditorUtility.DisplayDialog(title, info, "Ok"); });
+        }
+        public static void DisplayProgressBar(string title, string info, float progress)
+        {
+            Instance().Enqueue(() => { EditorUtility.DisplayProgressBar(title, info, progress); });
+        }
+
+        public static void ClearProgressBar()
+        {
+            Instance().Enqueue(EditorUtility.ClearProgressBar);
+        }
     }
 }
 #endif

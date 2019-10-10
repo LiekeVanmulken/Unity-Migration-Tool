@@ -69,10 +69,10 @@ namespace importerexporter
             float progress = 0;
 
             //Get all meta files
-            var classMetaFiles = Directory.GetFiles(path, "*" +
+            string[] classMetaFiles = Directory.GetFiles(path, "*" +
                                                           ".cs.meta", SearchOption.AllDirectories);
             //Get all dlls
-            var dllMetaFiles = Directory.GetFiles(path, "*" +
+            string[] dllMetaFiles = Directory.GetFiles(path, "*" +
                                                         ".dll.meta", SearchOption.AllDirectories);
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
@@ -81,9 +81,9 @@ namespace importerexporter
             foreach (string file in classMetaFiles)
             {
                 progress++;
-//                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
-//                    progress / totalFiles);
-                var lines = File.ReadAllLines(file);
+                ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
+                    progress / totalFiles);
+                string[] lines = File.ReadAllLines(file);
 
                 foreach (string line in lines)
                 {
@@ -109,8 +109,8 @@ namespace importerexporter
                 foreach (string metaFile in dllMetaFiles)
                 {
                     progress++;
-//                    EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
-//                        progress / totalFiles);
+                    ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+                        progress / totalFiles);
                     string text = File.ReadAllText(metaFile);
                     Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
                     Match match = regex.Match(text);
@@ -120,14 +120,14 @@ namespace importerexporter
                                        metaFile);
                     }
 
-                    var file = metaFile.Replace(".meta", "");
+                    string file = metaFile.Replace(".meta", "");
                     try
                     {
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
-//                            EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
-//                                progress / totalFiles);
+                            ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
+                                progress / totalFiles);
                             data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
                         }
                     }
@@ -138,7 +138,7 @@ namespace importerexporter
                 }
             }
 
-//            EditorUtility.ClearProgressBar();
+            ImportWindow.ClearProgressBar();
             return data;
         }
 
@@ -154,17 +154,17 @@ namespace importerexporter
         public string[] ImportClassDataAndTransformIDs(string rootPath, string fileToChange, List<ClassData> oldIDs,
             List<ClassData> newIDs = null)
         {
-//            EditorUtility.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
+            ImportWindow.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
             if (oldIDs == null)
             {
                 throw new NotImplementedException("ExistingData is null");
             }
 
             var currentIDs = newIDs ?? ExportClassData(rootPath);
-            var linesToChange = File.ReadAllLines(fileToChange);
+            string[] linesToChange = File.ReadAllLines(fileToChange);
 
             linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, currentIDs, oldIDs);
-//            EditorUtility.ClearProgressBar();
+            ImportWindow.ClearProgressBar();
 
             return linesToChange;
         }
@@ -222,16 +222,15 @@ namespace importerexporter
         {
             string fileName = Path.GetFileName(path);
             fileName = fileName.Replace(".cs.meta", "");
-            Type[] types = assemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.Name.ToLower() == fileName.ToLower()).ToArray();
+            List<Type> types = assemblies.SelectMany(x => x.GetTypes())
+                .Where(x => x.Name.ToLower() == fileName.ToLower()).ToList();
 
-            if (types.Length == 0)
+            if (types.Count == 0)
             {
-                Debug.Log("Checked for type  \"" + fileName + "\" no types were found.");
-                return null;
+                Debug.Log("Checked for type  \"" + fileName + "\" no types were found."); //todo : should this also give a popup?
+                return null; 
             }
-
-            if (types.Length == 1)
+            if (types.Count == 1)
             {
                 return types[0].FullName;
             }
@@ -243,35 +242,24 @@ namespace importerexporter
                 if (type.IsSubclassOf(typeof(MonoBehaviour)) &&
                     // Apparently we sometimes use the same dll in the same project causing the same classes(including same namespace), using the same name.
                     // As this causes the same fileID we just use the first one
-                    monoBehaviours.FirstOrDefault(mono => mono.FullName == type.FullName) == null)
+                    monoBehaviours.FirstOrDefault(mono => mono.Name == type.Name) == null)
                 {
                     monoBehaviours.Add(type);
                 }
             }
-
+            if(monoBehaviours.Count == 0)
+            {
+                Debug.LogWarning("Class : " + fileName + " could not be found and is not an MonoBehaviour so will skip" );
+                return null;
+            }
             if (monoBehaviours.Count == 1)
             {
                 return monoBehaviours[0].FullName;
             }
+            string[] options = monoBehaviours.Select(type => type.FullName).ToArray();
 
-
-            string[] options = monoBehaviours.Count == 0
-                ? types.Select(type => type.FullName).ToArray()
-                : monoBehaviours.Select(type => type.FullName).ToArray();
-
-            string result = null;
-
-            OptionsWizard optionsWizard =
-                OptionsWizard.CreateWizard("Class cannot be found, select which one to choose", fileName, options);
-
-            optionsWizard.onComplete += (sender, wizardResult) => { result = wizardResult; };
-
-            while (!string.IsNullOrEmpty(result))
-            {
-                Thread.Sleep(100);
-            }
-
-            return result;
+            return ImportWindow.OpenOptionsWindow("Class cannot be found, select which one to choose", fileName,
+                options);
         }
 
         /// <summary>
@@ -303,23 +291,21 @@ namespace importerexporter
                 var newFileData = newData.FirstOrDefault(filedata => filedata.Name.Equals(oldClassData.Name));
                 if (newFileData == null)
                 {
-                    ClassData[] closest = newData.OrderBy(data => Levenshtein.Compute(data.Name, oldClassData.Name))
+                    ClassData[] closest = newData.OrderByDescending(data => Levenshtein.Compute(data.Name, oldClassData.Name))
                         .ToArray();
 
-                    string result = null;
-                    OptionsWizard optionsWizard =
-                        OptionsWizard.CreateWizard("Class cannot be found, select which one to choose",
-                            oldClassData.Name, closest.Select(data => data.Name).ToArray());
-
-                    optionsWizard.onComplete += (sender, wizardResult) => { result = wizardResult; };
-
-                    while (!string.IsNullOrEmpty(result))
+                    string result = ImportWindow.OpenOptionsWindow(
+                        "Could not find class, please select which class to use",
+                        oldClassData.Name,
+                        closest.Select(data => data.Name).ToArray()
+                    );
+                    if (!string.IsNullOrEmpty(result))
                     {
-                        Thread.Sleep(100);
+                        return closest.First(data => data.Name == result);
                     }
 
-                    Debug.LogError("Could not find new class for " + oldClassData.Name + "; closest : " +
-                                   closest.FirstOrDefault()?.Name);
+                    Debug.LogError("[Data loss] Could not find class for : " + oldClassData.Name +
+                                   " and no new class was chosen. This script will not be migrated!");
                 }
 
                 return newFileData;

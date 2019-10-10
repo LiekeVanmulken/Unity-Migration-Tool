@@ -180,7 +180,6 @@ namespace importerexporter.models
         public FieldData(string name, Type type, int iteration)
         {
             this.Name = name;
-            //todo : check if this recursion still works properly!
             if (iteration > constants.RECURSION_DEPTH
                 || isStandardClass(type.FullName) || type.IsEnum)
             {

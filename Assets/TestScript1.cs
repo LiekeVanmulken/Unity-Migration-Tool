@@ -21,4 +21,21 @@ public class TestScript1 : MonoBehaviour
     {
         
     }
+
+    public class testingSubClass
+    {
+        [SerializeField]
+        private string test;
+
+        public string publicTest;
+
+    }
+}
+public class testingSubClass2
+{
+    [SerializeField]
+    private string test;
+
+    public string publicTest;
+
 }
