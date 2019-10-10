@@ -68,10 +68,7 @@ namespace importerexporter.windows
             if (GUILayout.Button("Export Class Data of the current project"))
             {
                 string rootPath = Application.dataPath;
-                new Thread(() =>
-                    {
-                        ExportCurrentClassData(rootPath);
-                    }
+                new Thread(() => { ExportCurrentClassData(rootPath); }
                 ).Start(); // todo : put this somewhere else
             }
 
@@ -112,7 +109,8 @@ namespace importerexporter.windows
             string filePath = rootPath + "/ImportExport/Exports/Export.json";
             File.WriteAllText(filePath, jsonField);
 
-            DisplayDialog("Export complete", "All classes were exported to " + filePath + " . Open up the new project and import the scene.");
+            DisplayDialog("Export complete",
+                "All classes were exported to " + filePath + " . Open up the new project and import the scene.");
         }
 
         private void ImportClassDataAndScene()
@@ -169,7 +167,7 @@ namespace importerexporter.windows
 
                 var foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
 
-                Instance().Enqueue(() => { ImportMainThread(scenePath, foundScripts, lastSceneExport); });
+                Instance().Enqueue(() => { ImportMainThread(rootPath, scenePath, foundScripts, lastSceneExport); });
             }
             catch (Exception e)
             {
@@ -179,7 +177,7 @@ namespace importerexporter.windows
         }
 
         private void
-            ImportMainThread(string scenePath, List<FoundScript> foundScripts,
+            ImportMainThread(string rootPath, string scenePath, List<FoundScript> foundScripts,
                 string[] lastSceneExport) //todo : terrible name, rename! - 10-10-2019 - Wouter
         {
             ImportWindow.foundScripts = foundScripts;
@@ -199,12 +197,12 @@ namespace importerexporter.windows
 
                 mergingWizard.onComplete += (sender, list) =>
                 {
-                    MergingWizardCompleted(list, scenePath, lastSceneExport);
+                    MergingWizardCompleted(list, rootPath, scenePath, lastSceneExport);
                 };
             }
             else
             {
-                SaveFile(scenePath, lastSceneExport);
+                SaveFile(rootPath + Path.GetFileName(scenePath), lastSceneExport);
             }
         }
 
@@ -228,7 +226,7 @@ namespace importerexporter.windows
         /// <param name="mergeNodes"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string scenePath,
+        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string rootPath, string scenePath,
             string[] linesToChange)
         {
             string[] newSceneExport =
@@ -236,7 +234,7 @@ namespace importerexporter.windows
 
             Debug.Log(string.Join("\n", newSceneExport));
 
-            SaveFile(scenePath, linesToChange);
+            SaveFile(rootPath + Path.GetFileName(scenePath), linesToChange);
         }
 
         public static string OpenOptionsWindow(string label, string original, string[] options)
@@ -264,10 +262,12 @@ namespace importerexporter.windows
             Debug.Log("OptionsWindow result : " + result);
             return result;
         }
+
         public static void DisplayDialog(string title, string info)
         {
             Instance().Enqueue(() => { EditorUtility.DisplayDialog(title, info, "Ok"); });
         }
+
         public static void DisplayProgressBar(string title, string info, float progress)
         {
             Instance().Enqueue(() => { EditorUtility.DisplayProgressBar(title, info, progress); });

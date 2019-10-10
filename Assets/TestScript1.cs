@@ -30,12 +30,16 @@ public class TestScript1 : MonoBehaviour
         public string publicTest;
 
     }
-}
-public class testingSubClass2
-{
-    [SerializeField]
-    private string test;
+    [Serializable]
+    public class TestScriptSubClass
+    {
+        [SerializeField] private string privateString;
+        public string publicString;
 
-    public string publicTest;
-
+        public TestScriptSubClass(string privateString, string publicString)
+        {
+            this.privateString = privateString;
+            this.publicString = publicString;
+        }
+    }
 }

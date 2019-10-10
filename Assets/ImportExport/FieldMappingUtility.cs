@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using importerexporter.models;
 using importerexporter.utility;
 using importerexporter.windows;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -177,10 +179,11 @@ namespace importerexporter
                         ClassData oldFieldType = oldDocumentClassData.Fields
                             .First(data => data.Name == field.Key.ToString()).Type;
 
-                        ClassData newFieldType = allNewTypes.First(data => data.Name == oldFieldType.Name);
+//                        ClassData newFieldType = allNewTypes.First(data => data.Name == oldFieldType.Name);
+                        ClassData newFieldType = FindClassOrSubClass(allNewTypes, oldFieldType.Name);
 
                         loopThroughYamlKeysForTypes(field.Value, ref foundTypes, oldFieldType, newFieldType,
-                            allNewTypes);
+                            allNewTypes);   
                     }
                     catch (Exception e)
                     {
@@ -191,6 +194,53 @@ namespace importerexporter
             }
 
             foundTypes.Add(type);
+        }
+
+
+        private ClassData FindClassOrSubClass(List<ClassData> allNewTypes, string nameToLookFor)
+        {
+            ClassData result = null;
+            foreach (ClassData classData in allNewTypes)
+            {
+                result = FindClassOrSubClassRecursively(classData, nameToLookFor);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            throw new NotImplementedException(
+                "Could not find foundScript type in the FindClassOrSubClass, this shouldn't fail but it probably will");
+        }
+
+        private ClassData FindClassOrSubClassRecursively(ClassData current, string nameToLookFor)
+        {
+            if (current == null)
+            {
+                return null;
+            }
+
+            if (current.Name == nameToLookFor)
+            {
+                return current;
+            }
+
+            if (current.Fields == null)
+            {
+                return null;
+            }
+
+            ClassData result = null; 
+            foreach (FieldData field in current.Fields)
+            {
+                result = FindClassOrSubClassRecursively(field.Type, nameToLookFor);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
