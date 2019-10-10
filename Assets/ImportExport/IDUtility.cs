@@ -301,7 +301,12 @@ namespace importerexporter
                     );
                     if (!string.IsNullOrEmpty(result))
                     {
-                        return closest.First(data => data.Name == result);
+                        ClassData found =  closest.First(data => data.Name == result);
+                        
+                        
+//                        oldData.IndexOf(found) // todo save the new chosen value in the list, and hope that works :o
+                        
+                        return found;
                     }
 
                     Debug.LogError("[Data loss] Could not find class for : " + oldClassData.Name +

@@ -28,7 +28,6 @@ namespace importerexporter.windows
         GUIStyle richtextStyle;
 
 
-        [MenuItem("WizardTest/Wizard")]
         public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
             MergingWizard wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");

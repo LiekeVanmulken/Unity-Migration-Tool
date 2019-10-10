@@ -113,7 +113,7 @@ namespace importerexporter
                         scriptNotPorted);
                 }
 
-                ClassData oldClassData = oldIDs.First(data => data.Name == newClassData.Name);
+                ClassData oldClassData = oldIDs.First(data => data.Name == newClassData.Name); // todo : this will crash when there is a mapping
 
 
                 FoundScript found = new FoundScript(newIDs, oldClassData, newClassData, scriptYaml);
@@ -179,11 +179,15 @@ namespace importerexporter
                         ClassData oldFieldType = oldDocumentClassData.Fields
                             .First(data => data.Name == field.Key.ToString()).Type;
 
-//                        ClassData newFieldType = allNewTypes.First(data => data.Name == oldFieldType.Name);
-                        ClassData newFieldType = FindClassOrSubClass(allNewTypes, oldFieldType.Name);
+                        ClassData newFieldType = allNewTypes.FirstOrDefault(data => data.Name == oldFieldType.Name);
+                        if (newFieldType == null)
+                        {
+                            // Search through the classes as it's a subclass
+                            newFieldType = FindClassOrSubClass(allNewTypes, oldFieldType.Name);
+                        }
 
                         loopThroughYamlKeysForTypes(field.Value, ref foundTypes, oldFieldType, newFieldType,
-                            allNewTypes);   
+                            allNewTypes);
                     }
                     catch (Exception e)
                     {
@@ -230,7 +234,7 @@ namespace importerexporter
                 return null;
             }
 
-            ClassData result = null; 
+            ClassData result = null;
             foreach (FieldData field in current.Fields)
             {
                 result = FindClassOrSubClassRecursively(field.Type, nameToLookFor);

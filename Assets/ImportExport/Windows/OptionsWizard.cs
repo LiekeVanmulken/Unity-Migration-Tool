@@ -1,5 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿
 
+using System.Linq;
+#if UNITY_EDITOR
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -24,7 +26,7 @@ namespace importerexporter.windows
         public event Action onIgnore;
 
 
-        [MenuItem("WizardTest/Wizard")]
+        [MenuItem("Window/Test OptionsWindow")]
         public static OptionsWizard CreateWizard()
         {
             return CreateWizard("testlabel", "u040.OriginalClass",
@@ -38,15 +40,29 @@ namespace importerexporter.windows
             wizard.label = label;
             wizard.comparison = comparison;
             wizard.options = options;
+            wizard.filteredOptions = options;
             wizard.onComplete = onComplete;
             wizard.onIgnore = onIgnore;
             return wizard;
         }
 
+        private string[] filteredOptions;
+        private string filter = "";
+        private string newFilter = "";
         protected override bool DrawWizardGUI()
         {
             GUILayout.Label(label);
             GUILayout.Space(10);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Filter Options");
+            newFilter = GUILayout.TextField(filter);
+            if (!filter.Equals(newFilter))
+            {
+                RefreshFilter(newFilter);
+            }
+            filter = newFilter;
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
 
@@ -58,7 +74,7 @@ namespace importerexporter.windows
             GUILayout.BeginVertical();
             GUILayout.Space(10);
             GUILayout.Label("Options");
-            index = EditorGUILayout.Popup(index, options);
+            index = EditorGUILayout.Popup(index, filteredOptions);
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
@@ -67,11 +83,21 @@ namespace importerexporter.windows
             return base.DrawWizardGUI();
         }
 
+        private void RefreshFilter(string changedFilter)
+        {
+            changedFilter = changedFilter.ToLower();
+            filteredOptions = options.Where(s => s.ToLower().Contains(changedFilter)).ToArray();
+            if (filteredOptions.Length == 0)
+            {
+                filteredOptions = new string[]{options[0]};
+            }
+        }
+
 
         void OnWizardCreate()
         {
             completed = true;
-            onComplete( options[index]);
+            onComplete( filteredOptions[index]);
         }
 
         private void OnWizardOtherButton()

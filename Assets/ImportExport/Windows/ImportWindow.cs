@@ -202,7 +202,7 @@ namespace importerexporter.windows
             }
             else
             {
-                SaveFile(rootPath + Path.GetFileName(scenePath), lastSceneExport);
+                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
             }
         }
 
@@ -218,12 +218,14 @@ namespace importerexporter.windows
                                   now.Second + ".unity";
             File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
             EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+            GUIUtility.systemCopyBuffer = newScenePath;
         }
 
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
         /// <param name="mergeNodes"></param>
+        /// <param name="rootPath"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
         private void MergingWizardCompleted(List<FoundScript> mergeNodes, string rootPath, string scenePath,
@@ -234,7 +236,7 @@ namespace importerexporter.windows
 
             Debug.Log(string.Join("\n", newSceneExport));
 
-            SaveFile(rootPath + Path.GetFileName(scenePath), linesToChange);
+            SaveFile(rootPath + "/"+ Path.GetFileName(scenePath), linesToChange);
         }
 
         public static string OpenOptionsWindow(string label, string original, string[] options)
