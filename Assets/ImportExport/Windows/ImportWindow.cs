@@ -3,9 +3,9 @@ using importerexporter.models;
 using importerexporter.utility;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using System.Threading;
@@ -36,14 +36,8 @@ namespace importerexporter.windows
         private GUIStyle wordWrapStyle;
 
         private static MergingWizard mergingWizard;
-//        private string jsonField;
 
         private Thread calculationThread;
-
-        private List<KeyValuePair<string, bool>> dllFiles;
-
-        private string progressBarMessage;
-//        private Vector2 dllFilesScroll = Vector2.zero;
 
 
         [MenuItem("Window/Scene import window")]
@@ -55,12 +49,6 @@ namespace importerexporter.windows
         protected void OnEnable()
         {
             wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
-//            dllFiles = new List<KeyValuePair<string, bool>>();     
-//            var dllFilePaths = Directory.GetFiles(Application.dataPath, "*" +".dll", SearchOption.AllDirectories);
-//            foreach (string dllFilePath in dllFilePaths)
-//            {
-//                dllFiles.Add(new KeyValuePair<string, bool>(dllFilePath, true));
-//            }
         }
 
         void OnGUI()
@@ -72,27 +60,31 @@ namespace importerexporter.windows
                 ).Start(); // todo : put this somewhere else
             }
 
+
             if (GUILayout.Button("Import Class Data and scene"))
             {
                 ImportClassDataAndScene();
             }
 
-//            EditorGUILayout.LabelField("Dll to map classes from");
-//            EditorGUILayout.BeginScrollView(dllFilesScroll);
-//            for (var i = 0; i < dllFiles.Count; i++)
-//            {
-//                KeyValuePair<string, bool> pair = dllFiles[i];
-//
-//
-//                EditorGUILayout.BeginHorizontal();
-//
-//                dllFiles[i] = new KeyValuePair<string, bool>(pair.Key, EditorGUILayout.Toggle(pair.Value));
-//                EditorGUILayout.LabelField(pair.Key.Replace(Application.dataPath, ""), wordWrapStyle);
-//
-//                EditorGUILayout.EndHorizontal();
-//            }
-//
-//            EditorGUILayout.EndScrollView();
+            if (GUILayout.Button("test generate mapping"))
+            {
+                string IDPath = EditorUtility.OpenFilePanel(
+                    "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
+                    "json"); //todo : check if this is in the current project
+                if (IDPath.Length != 0)
+                {
+                    List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(File.ReadAllText(IDPath));
+                    List<ClassData> currentIDs = cachedLocalIds == null || cachedLocalIds.Count == 0
+                        ? idUtility.ExportClassData(Application.dataPath)
+                        : cachedLocalIds;
+
+                    new Thread(() => {
+                        List<FoundScript> foundScripts = new List<FoundScript>();
+                        FoundScriptMappingGenerator.Instance.GenerateMapping(oldIDs, currentIDs, ref foundScripts);    
+                    }).Start();
+                    
+                }
+            }
         }
 
         private void ExportCurrentClassData(string rootPath)
@@ -118,25 +110,25 @@ namespace importerexporter.windows
             if (calculationThread != null)
             {
                 EditorUtility.DisplayDialog("Already running import",
-                    "Can't Start new import while import is running", "Ok");
+                    "Can't Start new import while import is running", "Resume");
                 return;
             }
 
             string IDPath = EditorUtility.OpenFilePanel(
                 "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
-                "*"); //todo : check if this is in the current project
+                "json"); //todo : check if this is in the current project
             if (IDPath.Length != 0)
             {
-                List<ClassData> oldIDs = ClassData.Parse(File.ReadAllText(IDPath));
+                List<ClassData> oldIDs =
+                    JsonConvert.DeserializeObject<List<ClassData>>(File.ReadAllText(IDPath));
 
                 string scenePath =
-                    EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
-                        "*"); //todo : check if this is in the current project
+                    EditorUtility.OpenFilePanel("Scene to import", IDPath + "/../../",
+                        "unity"); //todo : check if this is in the current project
                 if (scenePath.Length != 0)
                 {
                     string rootPath = Application.dataPath;
-                    calculationThread = new Thread(() => this.Import(rootPath, oldIDs, scenePath,
-                        (message) => progressBarMessage = message));
+                    calculationThread = new Thread(() => this.Import(rootPath, oldIDs, scenePath));
                     calculationThread.Start();
                 }
                 else
@@ -150,22 +142,36 @@ namespace importerexporter.windows
             }
         }
 
+        private List<ClassData> cachedLocalIds;
+
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void Import(string rootPath, List<ClassData> oldIDs, string scenePath, Action<string> setProgressBar)
+        private void Import(string rootPath, List<ClassData> oldIDs, string scenePath)
         {
             try
             {
-//            List<ClassData> oldIDs = idUtility.ExportClassData(oldProjectPath);
+                if (constants.DEBUG)
+                {
+                    Debug.LogWarning("[DEBUG ACTIVE] Using old ids for the import");
+                }
+
                 List<ClassData> currentIDs =
-                    constants.DEBUG ? oldIDs : idUtility.ExportClassData(rootPath);
+                    cachedLocalIds == null || cachedLocalIds.Count == 0
+                        ? idUtility.ExportClassData(rootPath)
+                        : cachedLocalIds;
+                cachedLocalIds = currentIDs;
 
-                var lastSceneExport =
-                    idUtility.ImportClassDataAndTransformIDs(rootPath, scenePath, oldIDs, currentIDs);
+                List<FoundScript> foundScripts =
+                    new List<FoundScript>();
 
-                var foundScripts = fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs);
+                string[] lastSceneExport =
+                    idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
+                        ref foundScripts); //todo : don't use a ref for this because that's like super nasty
+
+                
+//                fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs, ref foundScripts); // todo this might be able to be removed
 
                 Instance().Enqueue(() => { ImportMainThread(rootPath, scenePath, foundScripts, lastSceneExport); });
             }
@@ -177,16 +183,30 @@ namespace importerexporter.windows
         }
 
         private void
-            ImportMainThread(string rootPath, string scenePath, List<FoundScript> foundScripts,
+            ImportMainThread(string rootPath, string scenePath,
+                List<FoundScript> foundScripts,
                 string[] lastSceneExport) //todo : terrible name, rename! - 10-10-2019 - Wouter
         {
             ImportWindow.foundScripts = foundScripts;
             ImportWindow.lastSceneExport = lastSceneExport;
 
-            if (foundScripts.Count > 0)
+            foreach (FoundScript script in foundScripts)
             {
+                if (script.HasBeenMapped == FoundScript.MappedState.NotChecked)
+                {
+                    throw new NotImplementedException("Script has not been checked for mapping");
+                }
+            }
+
+
+            FoundScript[] unmappedScripts = foundScripts
+                .Where(field => field.HasBeenMapped == FoundScript.MappedState.NotMapped).ToArray();
+            if (unmappedScripts.Length > 0)
+            {
+                // Remove duplicate scripts
                 List<FoundScript> scripts =
-                    foundScripts.Where(field => !field.HasBeenMapped).GroupBy(field => field.ClassData.Name)
+                    unmappedScripts
+                        .GroupBy(field => field.NewClassData.Name)
                         .Select(group => group.First()).ToList();
 
                 EditorUtility.DisplayDialog("Merging fields necessary",
@@ -195,7 +215,7 @@ namespace importerexporter.windows
 
                 mergingWizard = MergingWizard.CreateWizard(scripts);
 
-                mergingWizard.onComplete += (sender, list) =>
+                mergingWizard.onComplete = (list) =>
                 {
                     MergingWizardCompleted(list, rootPath, scenePath, lastSceneExport);
                 };
@@ -203,6 +223,7 @@ namespace importerexporter.windows
             else
             {
                 SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
+                calculationThread = null;
             }
         }
 
@@ -228,7 +249,8 @@ namespace importerexporter.windows
         /// <param name="rootPath"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string rootPath, string scenePath,
+        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string rootPath,
+            string scenePath,
             string[] linesToChange)
         {
             string[] newSceneExport =
@@ -236,8 +258,10 @@ namespace importerexporter.windows
 
             Debug.Log(string.Join("\n", newSceneExport));
 
-            SaveFile(rootPath + "/"+ Path.GetFileName(scenePath), linesToChange);
+            SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
         }
+
+        #region ThreadedUI
 
         public static string OpenOptionsWindow(string label, string original, string[] options)
         {
@@ -265,6 +289,7 @@ namespace importerexporter.windows
             return result;
         }
 
+
         public static void DisplayDialog(string title, string info)
         {
             Instance().Enqueue(() => { EditorUtility.DisplayDialog(title, info, "Ok"); });
@@ -279,6 +304,8 @@ namespace importerexporter.windows
         {
             Instance().Enqueue(EditorUtility.ClearProgressBar);
         }
+
+        #endregion
     }
 }
 #endif

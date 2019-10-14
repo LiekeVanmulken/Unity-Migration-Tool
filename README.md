@@ -17,10 +17,10 @@ The most helpful information about this issue can be found on the unity forum [h
 
 ### Usage
 
-1. In the old project go to `Window/Scene import window` on the menubar and open the window.
-2. Click the `Export IDs` button and the project will start to export the IDs (these will be saved to `<project_path>/Assets/ImportExport/Export/Export.json`).
-3. When the IDs have been exported in the old project, open up the new project and open the `Window/Scene import window` window.
-4. Click `Import IDs` the tool will open a window to select which export to use, go to your old project and select the `<project_path>/Assets/ImportExport/Export/Export.json` file.
+1. In the old project open `Window/Scene import window` on the menubar and open the window.
+2. Click the `Export IDs` button and the project will start to export the IDs (these will be saved to `<project_path>/ImportExport/Export/Export.json`).
+3. When the IDs have been exported in the old project, go to the new project and open the `Window/Scene import window` window.
+4. Click the `Import IDs` button, the tool will then open a window. This window selects which  export to use. Go to your old project and select the `<project_path>/ImportExport/Export/Export.json` file.
 5. The tool will then open a window to select which scene to use.
 6. Select the scenefile you wish to update.
 

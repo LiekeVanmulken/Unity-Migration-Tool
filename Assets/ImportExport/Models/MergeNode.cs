@@ -8,7 +8,7 @@ namespace importerexporter.models
     [Serializable]
     public class MergeNode
     {
-        [SerializeField] public string YamlKey;
+        [SerializeField] public string OriginalValue;
         [SerializeField] public string NameToExportTo;
         [SerializeField] public string SampleValue;
         [SerializeField] public string Type;
@@ -21,10 +21,10 @@ namespace importerexporter.models
         {
         }
 
-        public MergeNode(string yamlKey, string nameToExportTo)
+        public MergeNode(string originalValue, string nameToExportTo)
         {
             MergeNodes = new List<MergeNode>();
-            YamlKey = yamlKey;
+            OriginalValue = originalValue;
             NameToExportTo = nameToExportTo;
         }
     }

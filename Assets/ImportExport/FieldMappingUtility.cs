@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using importerexporter.models;
 using importerexporter.utility;
 using importerexporter.windows;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -58,14 +56,14 @@ namespace importerexporter
         /// <param name="oldIDs"></param>
         /// <param name="currentIDs"></param>
         /// <returns></returns>
-        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> oldIDs,
-            List<ClassData> currentIDs)
+        public void FindFieldsToMigrate(string[] linesToChange, List<ClassData> oldIDs,
+            List<ClassData> currentIDs, ref List<FoundScript> foundScripts)
         {
             ImportWindow.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
-            List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, oldIDs, currentIDs);
+            GenerateFieldMapping(linesToChange, ref foundScripts, currentIDs);
             ImportWindow.ClearProgressBar();
 
-            return generateFieldMapping;
+            
         }
 
         /// <summary>
@@ -76,15 +74,16 @@ namespace importerexporter
         /// <param name="oldClassData"></param>
         /// <param name="newIDs"></param>
         /// <returns></returns>
-        private List<FoundScript> GenerateFieldMapping(string[] linesToSearch, List<ClassData> oldIDs,
-            List<ClassData> newIDs)
+//        private void GenerateFieldMapping(string[] linesToSearch, List<ClassData> oldIDs,
+//            List<ClassData> newIDs, ref List<FoundScript> foundScripts)
+        private void GenerateFieldMapping(string[] linesToSearch, ref List<FoundScript> foundScripts, List<ClassData> newIDs)
         {
+            // todo : don't do this for just the scene but for all id's 
+            
             string content = string.Join("\n", linesToSearch);
-
+ 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(content));
-
-            List<FoundScript> foundScripts = new List<FoundScript>();
 
             for (var i = 0; i < yamlStream.Documents.Count; i++)
             {
@@ -102,36 +101,36 @@ namespace importerexporter
                 string fileID = (string) scriptYaml["m_Script"]["fileID"];
                 string guid = (string) scriptYaml["m_Script"]["guid"];
 
-                ClassData newClassData =
-                    newIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
-                if (newClassData == null)
+                FoundScript mapping = foundScripts.First(script => script.NewClassData.Guid == guid && script.NewClassData.FileID == fileID);
+                
+//                ClassData newClassData =
+//                    newIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
+//                if (newClassData == null)
+//                {
+//                    ClassData scriptNotPorted =
+//                        oldIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
+//                    throw new NotImplementedException(
+//                        "Could not find the IDs of the class. The class names might not match between projects. Old script : " +
+//                        scriptNotPorted);
+//                }
+
+//                ClassData oldClassData = oldIDs.First(data => data.Name == newClassData.Name);
+//                FoundScript found = new FoundScript( oldClassData, newClassData, scriptYaml);
+
+                if (mapping.HasBeenMapped == FoundScript.MappedState.NotMapped)
                 {
-                    ClassData scriptNotPorted =
-                        oldIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
-                    throw new NotImplementedException(
-                        "Could not find the IDs of the class. The class names might not match between projects. Old script : " +
-                        scriptNotPorted);
-                }
-
-                ClassData oldClassData = oldIDs.First(data => data.Name == newClassData.Name); // todo : this will crash when there is a mapping
-
-
-                FoundScript found = new FoundScript(newIDs, oldClassData, newClassData, scriptYaml);
-                if (!found.HasBeenMapped)
-                {
-                    loopThroughYamlKeysForTypes(scriptYaml, ref foundScripts, oldClassData, newClassData, newIDs);
+                    loopThroughYamlKeysForTypes(scriptYaml, ref foundScripts, mapping.OldClassData, mapping.NewClassData, newIDs);
                 }
             }
 
-            return foundScripts;
         }
 
-        private void loopThroughYamlKeysForTypes(YamlNode yamlNode, ref List<FoundScript> foundTypes,
+        private void loopThroughYamlKeysForTypes(YamlNode yamlNode, ref List<FoundScript> foundScripts,
             ClassData oldDocumentClassData, ClassData newDocumentClassData, List<ClassData> allNewTypes)
         {
-            FoundScript type = new FoundScript();
-            type.OldClassData = oldDocumentClassData;
-            type.ClassData = newDocumentClassData;
+//            FoundScript type = new FoundScript();
+//            type.OldClassData = oldDocumentClassData;
+//            type.NewClassData = newDocumentClassData;
 
             IDictionary<YamlNode, YamlNode> fields = yamlNode.GetChildren();
             foreach (KeyValuePair<YamlNode, YamlNode> field in fields)
@@ -142,19 +141,26 @@ namespace importerexporter
                     continue;
                 }
 
-                //The type is already mapped
-                if (foundTypes.FirstOrDefault(script => script.OldClassData.Name == oldDocumentClassData.Name) != null)
+                
+                FoundScript current =
+                    foundScripts.FirstOrDefault(script => script.OldClassData.Name == oldDocumentClassData.Name);
+                if (current == null)
                 {
-                    continue;
+//                    current = foundScripts.FirstOrDefault(script => script.OldClassData.Guid == oldDocumentClassData.Guid && 
+//                                                                                script.OldClassData.FileID == oldDocumentClassData.FileID);
+//                    if (current == null)
+//                    {
+                        current = new FoundScript(oldDocumentClassData,newDocumentClassData,yamlNode);
+//                    }
                 }
 
                 MergeNode mergeNode = new MergeNode();
                 mergeNode.MergeNodes = new List<MergeNode>();
-                mergeNode.YamlKey = field.Key.ToString();
+                mergeNode.OriginalValue = field.Key.ToString();
                 mergeNode.SampleValue = field.Value.ToString();
 
                 FieldData mergeNodeType = oldDocumentClassData.Fields
-                    .First(data => data.Name == mergeNode.YamlKey);
+                    .First(data => data.Name == mergeNode.OriginalValue);
 
                 mergeNode.Type = mergeNodeType?.Type?.Name;
 
@@ -171,7 +177,7 @@ namespace importerexporter
                     .First()
                     .Name;
 
-                type.MergeNodes.Add(mergeNode);
+                current.MergeNodes.Add(mergeNode);
                 if (field.Value is YamlMappingNode)
                 {
                     try
@@ -186,7 +192,7 @@ namespace importerexporter
                             newFieldType = FindClassOrSubClass(allNewTypes, oldFieldType.Name);
                         }
 
-                        loopThroughYamlKeysForTypes(field.Value, ref foundTypes, oldFieldType, newFieldType,
+                        loopThroughYamlKeysForTypes(field.Value, ref foundScripts, oldFieldType, newFieldType,
                             allNewTypes);
                     }
                     catch (Exception e)
@@ -197,11 +203,11 @@ namespace importerexporter
                 }
             }
 
-            foundTypes.Add(type);
+//            foundTypes.Add(type);
         }
 
 
-        private ClassData FindClassOrSubClass(List<ClassData> allNewTypes, string nameToLookFor)
+        private ClassData FindClassOrSubClass(List<ClassData> allNewTypes, string nameToLookFor) 
         {
             ClassData result = null;
             foreach (ClassData classData in allNewTypes)
@@ -271,7 +277,7 @@ namespace importerexporter
 
                 FoundScript scriptType =
                     foundScripts.FirstOrDefault(node =>
-                        node.ClassData.Guid == guid && node.ClassData.FileID == fileID);
+                        node.NewClassData.Guid == guid && node.NewClassData.FileID == fileID);
                 if (scriptType != null)
                 {
                     scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
@@ -310,19 +316,19 @@ namespace importerexporter
                     }
                     //todo : the parent of a children doesn't get changed
 
-                    var type = currentMergeNodes.First(node => node.YamlKey == yamlNodeKey).Type;
-                    List<MergeNode> typeNodes = foundScripts.First(script => script.ClassData.Name == type).MergeNodes;
+                    var type = currentMergeNodes.First(node => node.OriginalValue == yamlNodeKey).Type;
+                    List<MergeNode> typeNodes = foundScripts.First(script => script.NewClassData.Name == type).MergeNodes;
                     scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
                 }
 
 //                else
 //                {
-                var currentMergeNode = currentMergeNodes.First(node => node.YamlKey == yamlNodeKey);
+                var currentMergeNode = currentMergeNodes.First(node => node.OriginalValue == yamlNodeKey);
 
                 if (!string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
                 {
                     scene[line] = scene[line]
-                        .ReplaceFirst(currentMergeNode.YamlKey, currentMergeNode.NameToExportTo);
+                        .ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
                 }
 
 //                }

@@ -96,6 +96,7 @@ namespace importerexporter.windows
 
         void OnWizardCreate()
         {
+            
             completed = true;
             onComplete( filteredOptions[index]);
         }

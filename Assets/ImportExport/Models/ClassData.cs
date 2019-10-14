@@ -231,8 +231,7 @@ namespace importerexporter.models
         {
             iteration++;
             List<FieldData> values = new List<FieldData>();
-
-
+            
             FieldInfo[] publicFields =
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static |
                                BindingFlags.FlattenHierarchy);

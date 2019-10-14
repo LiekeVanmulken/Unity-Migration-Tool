@@ -22,8 +22,7 @@ namespace importerexporter.windows
         private List<FoundScript> foundScripts;
         private string cachedFoundScripts;
 
-//        private List<MergeNode> mergeNodes;
-        public event EventHandler<List<FoundScript>> onComplete;
+        public Action<List<FoundScript>> onComplete;
 
         GUIStyle richtextStyle;
 
@@ -94,7 +93,7 @@ namespace importerexporter.windows
                 FoundScript script = foundScripts[i];
                 List<MergeNode> mergeNodes = script.MergeNodes;
 
-                GUILayout.Label("Class : " + script.ClassData.Name);
+                GUILayout.Label("Class : " + script.NewClassData.Name);
 
                 GUILayout.Space(10);
 
@@ -113,11 +112,11 @@ namespace importerexporter.windows
 
         private void recursiveOnGUI(MergeNode mergeNode)
         {
-            if (!string.IsNullOrEmpty(mergeNode.YamlKey))
+            if (!string.IsNullOrEmpty(mergeNode.OriginalValue))
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(mergeNode.YamlKey);
-                if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
+                GUILayout.Label(mergeNode.OriginalValue);
+                if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.OriginalValue))
                 {
                     GUILayout.Label(mergeNode.NameToExportTo);
                 }
@@ -145,7 +144,7 @@ namespace importerexporter.windows
         {
             string export = removeSyntax(cachedFoundScripts);
             foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(export);
-            onComplete(this, foundScripts);
+            onComplete( foundScripts);
             Debug.Log("Create button clicked");
         }
     }

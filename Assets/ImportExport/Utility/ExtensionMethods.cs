@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using YamlDotNet.RepresentationModel;
@@ -23,6 +24,10 @@ namespace importerexporter.utility
                 return text;
             }
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+        }
+        public static bool IsNullOrEmpty(this Array array)
+        {
+            return (array == null || array.Length == 0);
         }
     }
 }

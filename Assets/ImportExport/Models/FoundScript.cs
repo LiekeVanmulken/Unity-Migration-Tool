@@ -19,36 +19,100 @@ namespace importerexporter.models
     [Serializable]
     public class FoundScript
     {
-        Constants constants = Constants.Instance;
-
-        public ClassData ClassData;
+        public ClassData NewClassData;
         public ClassData OldClassData;
-        
+
         [JsonIgnore] public YamlNode YamlOptions;
-        [JsonIgnore] public bool HasBeenMapped;
+//        [JsonIgnore] public bool HasBeenMapped;   
 
         [JsonProperty("FieldsToMerge")] [SerializeField]
         public List<MergeNode> MergeNodes = new List<MergeNode>();
 
+        public MappedState HasBeenMapped = MappedState.NotChecked;
+
+        public enum MappedState
+        {
+            NotChecked = 0,
+            NotMapped,
+            Mapped
+        }
 
         public FoundScript()
         {
         }
 
-        public FoundScript(List<ClassData> newIDs, ClassData oldClassData, ClassData newClassData, YamlNode yamlOptions)
+        public FoundScript(ClassData oldClassData, ClassData newNewClassData, YamlNode yamlOptions)
         {
-            this.ClassData = newClassData;
-            this.OldClassData = oldClassData; 
+            this.NewClassData = newNewClassData;
+            this.OldClassData = oldClassData;
             this.YamlOptions = yamlOptions;
-            this.HasBeenMapped = checkHasBeenMapped(newClassData.Fields, yamlOptions);
+            this.HasBeenMapped = CheckHasBeenMapped(oldClassData, newNewClassData);
+        }
 
-            if (!this.HasBeenMapped)
+        public MappedState CheckHasBeenMapped()
+        {
+            if (OldClassData == null || NewClassData == null)
             {
-//                List<MergeNode> mergeNodes = new List<MergeNode>();
-//                generateFlattenedMergeNodes(newIDs, ref mergeNodes, oldClassData, newClassData, this.YamlOptions);
-//                this.MergeNodes = mergeNodes;
-                //todo : does this need to be done????????
+                throw new NotImplementedException(
+                    "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
+
+            return CheckHasBeenMapped(OldClassData, NewClassData);
+        }
+
+        public void GenerateMappingNode()
+        {
+            if (OldClassData == null || NewClassData == null)
+            {
+                throw new NotImplementedException(
+                    "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
+            }
+
+            foreach (FieldData field in OldClassData.Fields)
+            {
+                MergeNode mergeNode = new MergeNode();
+                mergeNode.MergeNodes = new List<MergeNode>();
+                mergeNode.OriginalValue = field.Name;
+//            mergeNode.SampleValue = field.Value.ToString();
+
+                FieldData mergeNodeType = OldClassData.Fields
+                    .First(data => data.Name == mergeNode.OriginalValue);
+
+                mergeNode.Type = mergeNodeType?.Type?.Name;
+
+                mergeNode.Options = OldClassData.Fields?
+                    .Where(data => data.Type.Name == mergeNode.Type)
+                    .Select(data => data.Name).ToArray();
+
+                mergeNode.NameToExportTo = OldClassData.Fields?
+                    .Where(data => data.Type.Name == mergeNode.Type)
+                    .OrderByDescending(newField =>
+                        Levenshtein.Compute(
+                            field.Name,
+                            newField.Name))
+                    .First()
+                    .Name;
+
+                MergeNodes.Add(mergeNode);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the field has a exact match between the yaml and the classField
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public MappedState CheckHasBeenMapped(ClassData oldClassData,
+            ClassData newClassData)
+        {
+            if (HasBeenMapped == MappedState.NotChecked)
+            {
+                bool result = checkHasBeenMappedRecursive(oldClassData, newClassData);
+                HasBeenMapped = result ? MappedState.Mapped : MappedState.NotMapped;
+            }
+
+            return HasBeenMapped;
         }
 
         /// <summary>
@@ -57,21 +121,28 @@ namespace importerexporter.models
         /// <param name="datas"></param>
         /// <param name="node"></param>
         /// <returns></returns>
-        private bool checkHasBeenMapped(FieldData[] datas, YamlNode node)
+        private bool checkHasBeenMappedRecursive(ClassData oldClassData, ClassData newClassData)
         {
-            IDictionary<YamlNode, YamlNode> possibilities = node.GetChildren();
-            foreach (FieldData fieldData in datas)
+            if (oldClassData.Fields.IsNullOrEmpty() != newClassData.Fields.IsNullOrEmpty())
             {
-                KeyValuePair<YamlNode, YamlNode> found =
-                    possibilities.FirstOrDefault(pos =>
-                        (string) pos.Key == fieldData.Name);
-                if (found.Key == null)
+                return false;
+            }
+
+            if (oldClassData.Fields.IsNullOrEmpty() && newClassData.Fields.IsNullOrEmpty())
+            {
+                return true;
+            }
+
+
+            foreach (FieldData oldFieldData in oldClassData.Fields)
+            {
+                FieldData found = newClassData.Fields.FirstOrDefault(data => data.Name == oldFieldData.Name);
+                if (found == null)
                 {
                     return false;
                 }
 
-                if (fieldData.Type != null && fieldData.Type.Fields != null &&
-                    !checkHasBeenMapped(fieldData.Type.Fields, node[found.Key]))
+                if (found.Type?.Fields != null && !checkHasBeenMappedRecursive(oldFieldData.Type, found.Type))
                 {
                     return false;
                 }
@@ -79,82 +150,5 @@ namespace importerexporter.models
 
             return true;
         }
-
-
-//
-//        private List<MergeNode> GenerateMergeNodesRecursively(FieldData[] oldFieldDatas, FieldData[] newFieldDatas,
-//            YamlNode yamlNode)
-//        {
-//            List<MergeNode> mergeNodes = new List<MergeNode>();
-//
-//            IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
-//            foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
-//            {
-//                MergeNode mergeNode = new MergeNode();
-//                mergeNode.MergeNodes = new List<MergeNode>();
-//                mergeNode.YamlKey = pair.Key.ToString();
-//                mergeNode.SampleValue = pair.Value.ToString();
-//
-//                FieldData[] closestFieldDatas = newFieldDatas
-//                    .OrderBy(field => Levenshtein.Compute(pair.Key.ToString(), field.Name)).ToArray();
-//
-//                string closest = closestFieldDatas.First().Name;
-//
-//                mergeNode.Type = oldFieldDatas.First(data => data.Name == mergeNode.YamlKey).ToString();
-//                mergeNode.Options = newFieldDatas.Where(data => data.Type == mergeNode.Type).Select(data => data.Name)
-//                    .ToArray();
-//
-//
-//                //check if it's one of the default fields that don't really change
-//                if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.YamlKey))
-//                {
-//                    closest = "";
-//                }
-//
-//                //Set the value that the fields needs to be changed to, to the closest
-//                mergeNode.NameToExportTo = closest;
-//
-//                //Do the same for all the child fields of this node
-//                if (pair.Value is YamlMappingNode && //Check that it has potentially children 
-//                    pair.Value.GetChildren().Count > 0 &&
-//                    !string.IsNullOrEmpty(mergeNode.NameToExportTo)) //check that it isn't one of the defaults
-//                {
-//                    // Get the children of the current field
-//                    FieldData[] newChildren = newFieldDatas.First(data => data.Name == closest).Children;
-//                    FieldData[] oldChildren = oldFieldDatas.First(data => data.Name == closest).Children;
-//                    if (newChildren != null)
-//                    {
-//                        mergeNode.MergeNodes.AddRange(GenerateMergeNodesRecursively(oldChildren, newChildren,
-//                            pair.Value));
-//                    }
-//                } //todo : look for all classes and make mappings fot them
-//
-//                mergeNodes.Add(mergeNode);
-//            }
-//
-//            return mergeNodes;
-//        }
-
-//        private ClassData[] findClosestMatching(YamlNode yamlNode, List<ClassData> classDatas)
-//        {
-//            IDictionary<YamlNode, YamlNode> AllYamlFields = yamlNode.GetChildren();
-//            KeyValuePair<YamlNode, YamlNode>[] yamlFieldsArray = AllYamlFields.ToArray();
-//
-//            foreach (ClassData classData in classDatas)
-//            {
-//                classData.FieldDatas[0]
-//
-//                foreach (KeyValuePair<YamlNode, YamlNode> pair in AllYamlFields)
-//                {
-//                    string Key = pair.Key.ToString();
-//                    YamlNode value = pair.Value;
-//
-//                    foreach (ClassData classData in classDatas)
-//                    {
-//                        classData
-//                    }
-//                }
-//            }
-//        }
     }
 }
