@@ -1,5 +1,4 @@
-﻿
-using static importerexporter.models.FoundScript;
+﻿using static importerexporter.models.FoundScript;
 #if UNITY_EDITOR
 using YamlDotNet.RepresentationModel;
 using importerexporter.models;
@@ -56,7 +55,7 @@ namespace importerexporter
         private Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         private readonly Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
-        private readonly Regex regexFileID = new Regex(@"(?<=fileID: )\-?[A-z0-9]*");
+//        private readonly Regex regexFileID = new Regex(@"(?<=fileID: )\-?[A-z0-9]*");
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
@@ -69,11 +68,9 @@ namespace importerexporter
             float progress = 0;
 
             //Get all meta files
-            string[] classMetaFiles = Directory.GetFiles(path, "*" +
-                                                               ".cs.meta", SearchOption.AllDirectories);
+            string[] classMetaFiles = Directory.GetFiles(path, "*.cs.meta", SearchOption.AllDirectories);
             //Get all dlls
-            string[] dllMetaFiles = Directory.GetFiles(path, "*" +
-                                                             ".dll.meta", SearchOption.AllDirectories);
+            string[] dllMetaFiles = Directory.GetFiles(path, "*.dll.meta", SearchOption.AllDirectories);
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
 
@@ -138,6 +135,7 @@ namespace importerexporter
             ImportWindow.ClearProgressBar();
             return data;
         }
+
         /// <summary>
         /// Replaces all old GUIDs and old fileIDs with the new GUID and fileID and returns a the new scenefile.
         /// This can be saved as an .unity file and then be opened in the editor.
@@ -192,43 +190,64 @@ namespace importerexporter
                 string oldFileId = oldFileIdNode.ToString();
                 string oldGuid = oldGuidNode.ToString();
 
-                FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
-                    script.OldClassData.Guid == oldGuid && script.OldClassData.FileID == oldFileId);
-
-                ClassData replacementClassData =
-                    existingFoundScript?.NewClassData ?? findNewID(oldIDs, newIDs, oldFileId, oldGuid);
-
-                if (existingFoundScript == null)
-                {
-                    existingFoundScript = new FoundScript
-                    {
-                        OldClassData =
-                            oldIDs.First(data =>
-                                data.Guid == oldGuid &&
-                                data.FileID ==
-                                oldFileId), 
-                        NewClassData = replacementClassData
-                    };
-                    MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-                    if (hasBeenMapped == MappedState.NotMapped)
-                    {
-                        existingFoundScript.GenerateMappingNode();
-                    }
-                    foundScripts.Add(existingFoundScript);
-                }
+                ClassData oldClassData = oldIDs.First(data => data.Guid == oldGuid && data.FileID == oldFileId);
+                FoundScript mapping = RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts,oldClassData);
 
                 int line = oldFileIdNode.Start.Line - 1;
 
                 // Replace the Guid
-                linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, replacementClassData.Guid);
+                linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.NewClassData.Guid);
 
                 if (String.IsNullOrEmpty(oldFileId)) continue;
 
                 //Replace the fileID
-                linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, replacementClassData.FileID);
+                linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.NewClassData.FileID);
             }
 
             return linesToChange;
+        }
+
+        private FoundScript RecursiveFoundScriptTest(List<ClassData> oldIDs, List<ClassData> newIDs,
+            ref List<FoundScript> foundScripts, ClassData oldClassData)
+        {
+            if (oldClassData == null)
+            {
+                throw new NotImplementedException("No old classdata found");
+            }
+
+            FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
+                script.OldClassData.Name == oldClassData.Name);                // todo : this won't work for subclasses as they don't have a fileid or guid
+
+            ClassData replacementClassData =
+                existingFoundScript?.NewClassData ?? findNewID(oldIDs, newIDs, oldClassData.FileID, oldClassData.Guid); // todo : this won't work for subclasses as they don't have a fileid or guid
+
+            if (existingFoundScript == null)
+            {
+                existingFoundScript = new FoundScript
+                {
+                    OldClassData =oldClassData,
+                    NewClassData = replacementClassData
+                };
+                MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+                if (hasBeenMapped == MappedState.NotMapped)
+                {
+                    existingFoundScript.GenerateMappingNode();
+                }
+                if (oldClassData.Fields?.Length != 0)
+                {
+                    foreach (FieldData field in oldClassData.Fields)
+                    {
+                        if (field.Type == null)
+                        {
+                            throw new NotImplementedException("type of field is null for some reason");
+                        }                                                                                                //todo : check if already exists 
+
+                        RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts,field.Type);
+                    }
+                }
+                foundScripts.Add(existingFoundScript);
+            }
+            return existingFoundScript;
         }
 
 

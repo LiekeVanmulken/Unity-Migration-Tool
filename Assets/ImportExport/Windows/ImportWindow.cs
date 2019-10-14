@@ -56,8 +56,13 @@ namespace importerexporter.windows
             if (GUILayout.Button("Export Class Data of the current project"))
             {
                 string rootPath = Application.dataPath;
-                new Thread(() => { ExportCurrentClassData(rootPath); }
-                ).Start(); // todo : put this somewhere else
+                
+                new Thread(
+                    () =>
+                    {
+                        ExportCurrentClassData(rootPath);
+                    }
+                ).Start();
             }
 
 
@@ -66,25 +71,25 @@ namespace importerexporter.windows
                 ImportClassDataAndScene();
             }
 
-            if (GUILayout.Button("test generate mapping"))
-            {
-                string IDPath = EditorUtility.OpenFilePanel(
-                    "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
-                    "json"); //todo : check if this is in the current project
-                if (IDPath.Length != 0)
-                {
-                    List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(File.ReadAllText(IDPath));
-                    List<ClassData> currentIDs = cachedLocalIds == null || cachedLocalIds.Count == 0
-                        ? idUtility.ExportClassData(Application.dataPath)
-                        : cachedLocalIds;
-
-                    new Thread(() => {
-                        List<FoundScript> foundScripts = new List<FoundScript>();
-                        FoundScriptMappingGenerator.Instance.GenerateMapping(oldIDs, currentIDs, ref foundScripts);    
-                    }).Start();
-                    
-                }
-            }
+//            if (GUILayout.Button("test generate mapping"))
+//            {
+//                string IDPath = EditorUtility.OpenFilePanel(
+//                    "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
+//                    "json"); //todo : check if this is in the current project
+//                if (IDPath.Length != 0)
+//                {
+//                    List<ClassData> oldIDs = JsonConvert.DeserializeObject<List<ClassData>>(File.ReadAllText(IDPath));
+//                    List<ClassData> currentIDs = cachedLocalIds == null || cachedLocalIds.Count == 0
+//                        ? idUtility.ExportClassData(Application.dataPath)
+//                        : cachedLocalIds;
+//
+//                    new Thread(() =>
+//                    {
+//                        List<FoundScript> foundScripts = new List<FoundScript>();
+//                        FoundScriptMappingGenerator.Instance.GenerateMapping(oldIDs, currentIDs, ref foundScripts);
+//                    }).Start();
+//                }
+//            }
         }
 
         private void ExportCurrentClassData(string rootPath)
@@ -97,7 +102,7 @@ namespace importerexporter.windows
                 Formatting = Formatting.Indented
             };
 
-            var jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+            string jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
             string filePath = rootPath + "/ImportExport/Exports/Export.json";
             File.WriteAllText(filePath, jsonField);
 
@@ -109,8 +114,13 @@ namespace importerexporter.windows
         {
             if (calculationThread != null)
             {
-                EditorUtility.DisplayDialog("Already running import",
-                    "Can't Start new import while import is running", "Resume");
+                if (!EditorUtility.DisplayDialog("Already running import",
+                    "Can't Start new import while import is running", "Resume", "Stop"))
+                {
+                    calculationThread.Abort();
+                    calculationThread = null;
+                }
+
                 return;
             }
 
@@ -170,7 +180,7 @@ namespace importerexporter.windows
                     idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts); //todo : don't use a ref for this because that's like super nasty
 
-                
+
 //                fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs, ref foundScripts); // todo this might be able to be removed
 
                 Instance().Enqueue(() => { ImportMainThread(rootPath, scenePath, foundScripts, lastSceneExport); });
