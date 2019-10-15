@@ -13,17 +13,13 @@ namespace importerexporter.models
         [SerializeField] public string SampleValue;
         [SerializeField] public string Type;
         [SerializeField] public string[] Options;
-
-        [JsonProperty("FieldsToMerge")]
-        [SerializeField] public List<MergeNode> MergeNodes;
-
+        
         public MergeNode()
         {
         }
 
         public MergeNode(string originalValue, string nameToExportTo)
         {
-            MergeNodes = new List<MergeNode>();
             OriginalValue = originalValue;
             NameToExportTo = nameToExportTo;
         }

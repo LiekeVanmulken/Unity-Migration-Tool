@@ -78,34 +78,6 @@ namespace importerexporter.windows
 
 
             return base.DrawWizardGUI();
-
-
-            if (foundScripts == null || foundScripts.Count == 0)
-            {
-                Debug.LogError("Init is not working properly");
-                return base.DrawWizardGUI();
-            }
-
-            EditorGUILayout.HelpBox("Fields will be changed to the new value in the textbox.", MessageType.Warning);
-            EditorGUILayout.HelpBox("Leaving the field empty will completely ignore the field.", MessageType.Warning);
-            for (var i = 0; i < foundScripts.Count; i++)
-            {
-                FoundScript script = foundScripts[i];
-                List<MergeNode> mergeNodes = script.MergeNodes;
-
-                GUILayout.Label("Class : " + script.NewClassData.Name);
-
-                GUILayout.Space(10);
-
-                foreach (MergeNode mergeNode in mergeNodes)
-                {
-                    recursiveOnGUI(mergeNode);
-                }
-
-                GUILayout.Space(20);
-            }
-
-            return base.DrawWizardGUI();
         }
 
         private const int indent = 20;
@@ -126,17 +98,6 @@ namespace importerexporter.windows
                 }
 
                 GUILayout.EndHorizontal();
-            }
-
-            if (mergeNode.MergeNodes != null && mergeNode.MergeNodes.Count > 0)
-            {
-                EditorGUI.indentLevel += indent;
-                foreach (MergeNode child in mergeNode.MergeNodes)
-                {
-                    recursiveOnGUI(child);
-                }
-
-                EditorGUI.indentLevel -= indent;
             }
         }
 

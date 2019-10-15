@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
+using YamlDotNet.Serialization;
 
 namespace importerexporter.models
 {
@@ -25,7 +26,6 @@ namespace importerexporter.models
         public ClassData OldClassData;
 
         [JsonIgnore] public YamlNode YamlOptions;
-//        [JsonIgnore] public bool HasBeenMapped;   
 
         [JsonProperty("FieldsToMerge")] [SerializeField]
         public List<MergeNode> MergeNodes = new List<MergeNode>();
@@ -63,7 +63,7 @@ namespace importerexporter.models
             return CheckHasBeenMapped(OldClassData, NewClassData);
         }
 
-        public void GenerateMappingNode()
+        public void GenerateMappingNode(List<FoundScript> existingFoundScripts)
         {
             if (OldClassData == null || NewClassData == null)
             {
@@ -71,11 +71,18 @@ namespace importerexporter.models
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
 
+            if (OldClassData.Name == "TestScript1")
+            {
+                Debug.Log("test");
+            }
+
             foreach (FieldData field in OldClassData.Fields)
             {
+
+
                 MergeNode mergeNode = new MergeNode();
-                mergeNode.MergeNodes = new List<MergeNode>();
-                mergeNode.OriginalValue = field.Name;              
+//                mergeNode.MergeNodes = new List<MergeNode>();
+                mergeNode.OriginalValue = field.Name;
 //            mergeNode.SampleValue = field.Value.ToString();
 
                 FieldData mergeNodeType = OldClassData.Fields
@@ -83,23 +90,28 @@ namespace importerexporter.models
 
                 mergeNode.Type = mergeNodeType?.Type?.Name;
 
+                FoundScript mapping =
+                    existingFoundScripts.FirstOrDefault(script => script.OldClassData.Name == mergeNode.Type);
+
+                Func<FieldData, bool> typeCheckPredicate;
+                if (mapping == null)
+                {
+                    typeCheckPredicate = data => data.Type.Name == mergeNode.Type;
+                }
+                else
+                {
+                    typeCheckPredicate = data => data.Type.Name == mapping.NewClassData.Name;
+                }
+
                 mergeNode.Options = NewClassData.Fields?
-                    .Where(data => data.Type.Name == mergeNode.Type)
+                    .Where(typeCheckPredicate) // todo this doesn't work anymore because it needs the foundScript for this
                     .OrderBy(newField =>
                         Levenshtein.Compute(
                             field.Name,
                             newField.Name))
                     .Select(data => data.Name).ToArray();
 
-//                mergeNode.NameToExportTo = OldClassData.Fields?
-//                    .Where(data => data.Type.Name == mergeNode.Type)
-//                    .OrderBy(newField =>
-//                        Levenshtein.Compute(
-//                            field.Name,
-//                            newField.Name))
-//                    .First()
-//                    .Name;
-                mergeNode.NameToExportTo = mergeNode.Options?.Length > 0 ? mergeNode.Options[0]: "";
+                mergeNode.NameToExportTo = mergeNode.Options?.Length > 0 ? mergeNode.Options[0] : "";
 
                 MergeNodes.Add(mergeNode);
             }

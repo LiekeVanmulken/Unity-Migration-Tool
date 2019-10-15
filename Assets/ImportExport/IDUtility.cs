@@ -191,7 +191,7 @@ namespace importerexporter
                 string oldGuid = oldGuidNode.ToString();
 
                 ClassData oldClassData = oldIDs.First(data => data.Guid == oldGuid && data.FileID == oldFileId);
-                FoundScript mapping = RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts, oldClassData);
+                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassData);
                 if (mapping == null)
                 {
                     throw new NotImplementedException("Mapping is null");
@@ -211,12 +211,12 @@ namespace importerexporter
             return linesToChange;
         }
 
-        private FoundScript RecursiveFoundScriptTest(List<ClassData> oldIDs, List<ClassData> newIDs,
+        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs,
             ref List<FoundScript> foundScripts, ClassData oldClassData)
         {
             if (oldClassData == null)
             {
-                throw new NotImplementedException("No old classdata found");
+                throw new NotImplementedException("No old classData found");
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
@@ -224,7 +224,7 @@ namespace importerexporter
 
             ClassData replacementClassData =
                 existingFoundScript
-                    ?.NewClassData; // todo : this won't work for subclasses as they don't have a fileid or guid
+                    ?.NewClassData;
             if (replacementClassData == null && oldClassData.Fields != null && oldClassData.Fields?.Length != 0)
             {
                 replacementClassData = findNewID(newIDs, oldClassData);
@@ -240,17 +240,6 @@ namespace importerexporter
 
             if (existingFoundScript == null)
             {
-                existingFoundScript = new FoundScript
-                {
-                    OldClassData = oldClassData,
-                    NewClassData = replacementClassData
-                };
-                MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-                if (hasBeenMapped == MappedState.NotMapped)
-                {
-                    existingFoundScript.GenerateMappingNode();
-                }
-
                 if (oldClassData.Fields != null && oldClassData.Fields.Length != 0)
                 {
                     foreach (FieldData field in oldClassData.Fields)
@@ -260,9 +249,22 @@ namespace importerexporter
                             throw new NotImplementedException("type of field is null for some reason");
                         } //todo : check if already exists 
 
-                        RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts, field.Type);
+                        RecursiveFoundScriptTest(newIDs, ref foundScripts, field.Type);
                     }
                 }
+                
+                existingFoundScript = new FoundScript
+                {
+                    OldClassData = oldClassData,
+                    NewClassData = replacementClassData
+                };
+                MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+                if (hasBeenMapped == MappedState.NotMapped)
+                {
+                    existingFoundScript.GenerateMappingNode(foundScripts);
+                }
+
+               
 
                 foundScripts.Add(existingFoundScript);
             }
