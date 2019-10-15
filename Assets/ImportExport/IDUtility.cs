@@ -191,7 +191,11 @@ namespace importerexporter
                 string oldGuid = oldGuidNode.ToString();
 
                 ClassData oldClassData = oldIDs.First(data => data.Guid == oldGuid && data.FileID == oldFileId);
-                FoundScript mapping = RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts,oldClassData);
+                FoundScript mapping = RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts, oldClassData);
+                if (mapping == null)
+                {
+                    throw new NotImplementedException("Mapping is null");
+                }
 
                 int line = oldFileIdNode.Start.Line - 1;
 
@@ -216,16 +220,29 @@ namespace importerexporter
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
-                script.OldClassData.Name == oldClassData.Name);                // todo : this won't work for subclasses as they don't have a fileid or guid
+                script.OldClassData.Name == oldClassData.Name);
 
             ClassData replacementClassData =
-                existingFoundScript?.NewClassData ?? findNewID(oldIDs, newIDs, oldClassData.FileID, oldClassData.Guid); // todo : this won't work for subclasses as they don't have a fileid or guid
+                existingFoundScript
+                    ?.NewClassData; // todo : this won't work for subclasses as they don't have a fileid or guid
+            if (replacementClassData == null && oldClassData.Fields != null && oldClassData.Fields?.Length != 0)
+            {
+                replacementClassData = findNewID(newIDs, oldClassData);
+            }
+            else if(replacementClassData !=null)
+            {
+                return existingFoundScript;
+            }
+            else
+            {
+                return null;
+            }
 
             if (existingFoundScript == null)
             {
                 existingFoundScript = new FoundScript
                 {
-                    OldClassData =oldClassData,
+                    OldClassData = oldClassData,
                     NewClassData = replacementClassData
                 };
                 MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
@@ -233,20 +250,23 @@ namespace importerexporter
                 {
                     existingFoundScript.GenerateMappingNode();
                 }
-                if (oldClassData.Fields?.Length != 0)
+
+                if (oldClassData.Fields != null && oldClassData.Fields.Length != 0)
                 {
                     foreach (FieldData field in oldClassData.Fields)
                     {
                         if (field.Type == null)
                         {
                             throw new NotImplementedException("type of field is null for some reason");
-                        }                                                                                                //todo : check if already exists 
+                        } //todo : check if already exists 
 
-                        RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts,field.Type);
+                        RecursiveFoundScriptTest(oldIDs, newIDs, ref foundScripts, field.Type);
                     }
                 }
+
                 foundScripts.Add(existingFoundScript);
             }
+
             return existingFoundScript;
         }
 
@@ -309,54 +329,79 @@ namespace importerexporter
         /// <summary>
         /// Finds the new GUID and fileID from the old IDs and the new IDs by checking for the classname in both
         /// </summary>
-        /// <param name="oldIDs"></param>
         /// <param name="newIDs"></param>
-        /// <param name="oldFileID"></param>
-        /// <param name="oldGuid"></param>
+        /// <param name="old"></param>
         /// <returns></returns>
-        public ClassData findNewID(List<ClassData> oldIDs, List<ClassData> newIDs, string oldFileID,
-            string oldGuid)
+        public ClassData findNewID(List<ClassData> newIDs, ClassData old)
         {
-            ClassData oldClassData = oldIDs.FirstOrDefault(
-                currentOldFileData => currentOldFileData.Guid.Equals(oldGuid) &&
-                                      oldFileID.Equals("11500000")
-                                      ||
-                                      currentOldFileData.Guid.Equals(oldGuid) &&
-                                      currentOldFileData.FileID.Equals(oldFileID)
-            );
-            if (oldClassData != null)
+            if (old == null)
             {
-                ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(oldClassData.Name));
-                if (newFileData != null) return newFileData;
+                throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
+            }
 
-                ClassData[] closest = newIDs
-                    .OrderByDescending(data => Levenshtein.Compute(data.Name, oldClassData.Name))
-                    .ToArray();
 
-                string result = ImportWindow.OpenOptionsWindow(
-                    "Could not find class, please select which class to use",
-                    oldClassData.Name,
-                    closest.Select(data => data.Name).ToArray()
-                );
-                if (!string.IsNullOrEmpty(result))
-                {
-                    ClassData found = closest.First(data => data.Name == result);
+            ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(old.Name));
+            if (newFileData != null) return newFileData;
+
+
+            Dictionary<string,ClassData> allClassData = generateOptions(newIDs);
+            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
+
+//            ClassData[] ordered = newIDs
+//                .OrderByDescending(data => Levenshtein.Compute(data.Name, old.Name))
+//                .ToArray();
+
+            string result = ImportWindow.OpenOptionsWindow(
+                "Could not find class, please select which class to use",
+                old.Name,
+                options
+            );
+
+            if (string.IsNullOrEmpty(result))
+            {
+                Debug.LogError("[Data loss] Could not find class for : " + old.Name +
+                               " and no new class was chosen. This script will not be migrated!");
+
+                return newFileData; // todo : why is this always null
+            }
+
+//            ClassData found = ordered.First(data => data.Name == result);
+            ClassData found = allClassData[result];
 
 
 //                        oldData.IndexOf(found) // todo save the new chosen value in the list, and hope that works :o
 
-                    return found;
-                }
+            return found;
+        }
 
-                Debug.LogError("[Data loss] Could not find class for : " + oldClassData.Name +
-                               " and no new class was chosen. This script will not be migrated!");
-
-                return newFileData;
+        private Dictionary<string, ClassData> generateOptions(List<ClassData> allIDs)
+        {
+            Dictionary<string, ClassData> dictionary = new Dictionary<string, ClassData>();
+            foreach (ClassData id in allIDs)
+            {
+                generateOptionsRecursive(id, ref dictionary);
             }
 
-            Debug.Log("Could not find old guid that matches the class with guid: " + oldGuid + " fileID : " +
-                      oldFileID);
-            return null;
+            return dictionary;
+        }
+
+        private void generateOptionsRecursive(ClassData id, ref Dictionary<string, ClassData> dictionary)
+        {
+            dictionary[id.Name] = id;
+            if (id.Fields == null || id.Fields.Length == 0)
+            {
+                return;
+            }
+
+            foreach (FieldData field in id.Fields)
+            {
+                if (field.Type == null)
+                {
+                    continue;
+                }
+
+                generateOptionsRecursive(field.Type, ref dictionary);
+            }
         }
     }
 }

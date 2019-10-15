@@ -155,7 +155,7 @@ namespace importerexporter.models
                 return ClassData.Parse(classData);
             }
 
-            throw new NotImplementedException("Not an ClassData object");
+            throw new NotImplementedException("Not a ClassData object");
         }
 
         public override bool CanConvert(Type objectType)

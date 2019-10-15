@@ -317,7 +317,7 @@ namespace importerexporter
                     //todo : the parent of a children doesn't get changed
 
                     var type = currentMergeNodes.First(node => node.OriginalValue == yamlNodeKey).Type;
-                    List<MergeNode> typeNodes = foundScripts.First(script => script.NewClassData.Name == type).MergeNodes;
+                    List<MergeNode> typeNodes = foundScripts.First(script => script.OldClassData.Name == type).MergeNodes;
                     scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
                 }
 

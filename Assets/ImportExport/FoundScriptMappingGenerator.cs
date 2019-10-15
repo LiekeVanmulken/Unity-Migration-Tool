@@ -64,8 +64,19 @@ public class FoundScriptMappingGenerator
             throw new NotImplementedException("Double the id in the mapping");
             return;
         }
-
-        ClassData newClassData = idUtility.findNewID(oldIDs, newIDs, oldID.FileID, oldID.Guid);
+        
+        string oldGuid = oldID.Guid;
+        string oldFileID = oldID.FileID;
+            
+        ClassData oldClassData = oldIDs.FirstOrDefault(                            //todo : check if this works here                
+            currentOldFileData => currentOldFileData.Guid.Equals(oldGuid) &&
+                                  currentOldFileData.FileID.Equals("11500000")
+                                  ||
+                                  currentOldFileData.Guid.Equals(oldGuid) &&
+                                  currentOldFileData.FileID.Equals(oldFileID)
+        );
+        
+        ClassData newClassData = idUtility.findNewID(newIDs, oldClassData);
         if (newClassData == null)
         {
             Debug.LogError("Could not make mapping for class : " + oldID.Name);

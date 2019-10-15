@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using importerexporter.utility;
+using importerexporter.windows;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -28,6 +30,7 @@ namespace importerexporter.models
         [JsonProperty("FieldsToMerge")] [SerializeField]
         public List<MergeNode> MergeNodes = new List<MergeNode>();
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public MappedState HasBeenMapped = MappedState.NotChecked;
 
         public enum MappedState
@@ -72,7 +75,7 @@ namespace importerexporter.models
             {
                 MergeNode mergeNode = new MergeNode();
                 mergeNode.MergeNodes = new List<MergeNode>();
-                mergeNode.OriginalValue = field.Name;
+                mergeNode.OriginalValue = field.Name;              
 //            mergeNode.SampleValue = field.Value.ToString();
 
                 FieldData mergeNodeType = OldClassData.Fields
@@ -80,18 +83,23 @@ namespace importerexporter.models
 
                 mergeNode.Type = mergeNodeType?.Type?.Name;
 
-                mergeNode.Options = OldClassData.Fields?
+                mergeNode.Options = NewClassData.Fields?
                     .Where(data => data.Type.Name == mergeNode.Type)
-                    .Select(data => data.Name).ToArray();
-
-                mergeNode.NameToExportTo = OldClassData.Fields?
-                    .Where(data => data.Type.Name == mergeNode.Type)
-                    .OrderByDescending(newField =>
+                    .OrderBy(newField =>
                         Levenshtein.Compute(
                             field.Name,
                             newField.Name))
-                    .First()
-                    .Name;
+                    .Select(data => data.Name).ToArray();
+
+//                mergeNode.NameToExportTo = OldClassData.Fields?
+//                    .Where(data => data.Type.Name == mergeNode.Type)
+//                    .OrderBy(newField =>
+//                        Levenshtein.Compute(
+//                            field.Name,
+//                            newField.Name))
+//                    .First()
+//                    .Name;
+                mergeNode.NameToExportTo = mergeNode.Options?.Length > 0 ? mergeNode.Options[0]: "";
 
                 MergeNodes.Add(mergeNode);
             }
