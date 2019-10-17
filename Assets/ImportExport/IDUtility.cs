@@ -120,6 +120,11 @@ namespace importerexporter
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
+                            if (!type.FullName.StartsWith("u040"))
+                            {
+                                continue;
+                            }
+
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
                             data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
@@ -190,11 +195,18 @@ namespace importerexporter
                 string oldFileId = oldFileIdNode.ToString();
                 string oldGuid = oldGuidNode.ToString();
 
-                ClassData oldClassData = oldIDs.First(data => data.Guid == oldGuid && data.FileID == oldFileId);
+                ClassData oldClassData = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
+                if (oldClassData == null)
+                {
+                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid + " oldFileID : " + oldFileId); // todo : this gets shown alot
+                    continue;
+                } 
                 FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassData);
                 if (mapping == null)
                 {
-                    throw new NotImplementedException("Mapping is null");
+                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId); // todo : this gets called often as well
+                    continue;
+//                    throw new NotImplementedException("Mapping is null");
                 }
 
                 int line = oldFileIdNode.Start.Line - 1;
@@ -215,7 +227,7 @@ namespace importerexporter
             ref List<FoundScript> foundScripts, ClassData oldClassData)
         {
             if (oldClassData == null)
-            {
+            { 
                 throw new NotImplementedException("No old classData found");
             }
 
@@ -235,7 +247,7 @@ namespace importerexporter
             }
             else
             {
-                return null;
+                 return null;
             }
 
             if (existingFoundScript == null)
@@ -341,6 +353,10 @@ namespace importerexporter
                 throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
             }
 
+            if (old.Name == "u040.prespective.prelogic.electronics.sensors.IRBeamReceiver")
+            {
+                Debug.Log("test");
+            }
 
             ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(old.Name));
             if (newFileData != null) return newFileData;

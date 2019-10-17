@@ -70,12 +70,7 @@ namespace importerexporter.models
                 throw new NotImplementedException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
-
-            if (OldClassData.Name == "TestScript1")
-            {
-                Debug.Log("test");
-            }
-
+            
             foreach (FieldData field in OldClassData.Fields)
             {
 

@@ -120,20 +120,23 @@ namespace importerexporter.models
 
             writer.WritePropertyName("Fields");
             writer.WriteStartArray();
-            foreach (FieldData fieldData in classData.Fields)
+            if (classData.Fields != null && classData.Fields.Length!=0)
             {
-                writer.WriteStartObject();
-                WriteKeyValue(writer, "Name", fieldData.Name);
-                if (fieldData.Type != null)
+                foreach (FieldData fieldData in classData.Fields)
                 {
-                    WriteKeyValue(writer, "Type", fieldData.Type.Name);
-                    if (fieldData.Type.Fields != null)
+                    writer.WriteStartObject();
+                    WriteKeyValue(writer, "Name", fieldData.Name);
+                    if (fieldData.Type != null)
                     {
-                        WriteJsonRecursively(writer, fieldData.Type, serializer, depth + 1);
+                        WriteKeyValue(writer, "Type", fieldData.Type.Name);
+                        if (fieldData.Type.Fields != null)
+                        {
+                            WriteJsonRecursively(writer, fieldData.Type, serializer, depth + 1);
+                        }
                     }
-                }
 
-                writer.WriteEndObject();
+                    writer.WriteEndObject();
+                }
             }
 
             writer.WriteEndArray();
