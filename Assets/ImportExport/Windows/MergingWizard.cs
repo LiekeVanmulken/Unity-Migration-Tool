@@ -25,48 +25,36 @@ namespace importerexporter.windows
         public Action<List<FoundScript>> onComplete;
 
         GUIStyle richtextStyle;
+        GUIStyle paddingStyle;
 
+        [MenuItem("WizardTest/Wizard")]
+        public static MergingWizard CreateWizard()
+        {
+            return CreateWizard(null);
+        }
 
         public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
             MergingWizard wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
             wizard.foundScripts = scriptsToMerge;
-
-            JsonSerializerSettings settings = new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects
-            };
-            wizard.cachedFoundScripts = JsonConvert.SerializeObject(wizard.foundScripts, Formatting.Indented, settings);
-            wizard.cachedFoundScripts = wizard.syntax(wizard.cachedFoundScripts);
-
             return wizard;
         }
 
         private void OnEnable()
         {
-            richtextStyle = new GUIStyle() {richText = true, wordWrap = true,padding = new RectOffset(10,10,10,10)};
+            richtextStyle = new GUIStyle() {richText = true, wordWrap = true, padding = new RectOffset(0, 5, 0, 5)};
+            paddingStyle = new GUIStyle() {padding = new RectOffset(10, 10, 10, 10) };
         }
 
-        private string syntax(string scripts)
+        private GUILayoutOption GetColumnWidth(int _width)
         {
-            string keyPattern = "\".*?\"(?=.*:)";
-            scripts = Regex.Replace(scripts, keyPattern, "<color=darkblue>$0</color>");
-            
-            string valuePattern = "(?<=:.*)\".*?\"";
-            return Regex.Replace(scripts, valuePattern, "<color=green>$0</color>");
-        }
-        private string removeSyntax(string scripts)
-        {
-            string beginPattern = "<color=[A-z0-9#]*>";
-            string endPattern = "</color>";
-            string beginRemoved = Regex.Replace(scripts, beginPattern, "");
-            string endRemoved = Regex.Replace(beginRemoved, endPattern, "");
-            return endRemoved;
+            float singleColumn = Screen.width / 12;
+            return GUILayout.Width(singleColumn * _width);
         }
 
         protected override bool DrawWizardGUI()
         {
+            /*
             EditorGUILayout.LabelField("Set the <color=green>\"ValueToExportTo\"</color> field in any MergeNode to change the name of the field to the new name.",richtextStyle);
             EditorGUILayout.LabelField("THE <color=green>\"ValueToExportTo\"</color> MIGHT NOT BE CORRECT. Make sure that these are correct to change the field to the new value.",richtextStyle);
             EditorGUILayout.LabelField("To completely ignore the field set the <color=green>\"ValueToExportTo\"</color> to an empty string (\"\").",richtextStyle);
@@ -75,36 +63,59 @@ namespace importerexporter.windows
             EditorGUILayout.Separator();
             
             cachedFoundScripts = GUILayout.TextArea(cachedFoundScripts,richtextStyle);
+            */
 
+            EditorGUILayout.BeginVertical(paddingStyle);
+
+            EditorGUILayout.LabelField("The following class fields differ between the original and current project. Proposals for substitute fields are shown. Please select the correct field manually.", richtextStyle);
+
+            foreach (FoundScript foundScript in foundScripts)
+            {
+                EditorGUILayout.Space();
+
+                ClassData classData = foundScript.NewClassData;
+                List<MergeNode> fieldsToMerge = foundScript.MergeNodes;
+
+                EditorGUILayout.LabelField("Class name: <b>" + classData.Name + "</b>", richtextStyle);
+
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Original field:", GetColumnWidth(4) );
+                EditorGUILayout.LabelField("Value:", GetColumnWidth(3) );
+                EditorGUILayout.LabelField("Substitute field with:", GetColumnWidth(3) );
+                EditorGUILayout.LabelField("Ignore:", GetColumnWidth(2));
+                GUILayout.EndHorizontal();
+
+                for(int i = 0; i < fieldsToMerge.Count; i++)
+                {
+                    MergeNode fieldToMerge = fieldsToMerge[i];
+                    string originalName = fieldToMerge.OriginalValue;
+                    string originalValue = fieldToMerge.SampleValue;
+                    bool ignoreField = fieldToMerge.NameToExportTo != "";
+
+                    GUILayout.BeginHorizontal();
+
+                    EditorGUILayout.LabelField("<b>" + originalName + "</b> (" + fieldToMerge.Type + ")", richtextStyle, GetColumnWidth(4) );
+                    EditorGUILayout.LabelField(originalValue, GetColumnWidth(3) );
+
+                    GUI.enabled = !ignoreField;
+                    int optionID = EditorGUILayout.Popup(0, fieldToMerge.Options, GetColumnWidth(3) );
+                    GUI.enabled = true;
+
+                    ignoreField = EditorGUILayout.Toggle(ignoreField, GetColumnWidth(2));
+
+                    fieldToMerge.NameToExportTo = ignoreField ? "" : fieldToMerge.Options[optionID];
+
+                    GUILayout.EndHorizontal();
+                    fieldsToMerge[i] = fieldToMerge;
+                }
+            }
+
+            GUILayout.EndVertical();
 
             return base.DrawWizardGUI();
         }
-
-        private const int indent = 20;
-
-        private void recursiveOnGUI(MergeNode mergeNode)
-        {
-            if (!string.IsNullOrEmpty(mergeNode.OriginalValue))
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(mergeNode.OriginalValue);
-                if (constants.MonoBehaviourFieldExclusionList.Contains(mergeNode.OriginalValue))
-                {
-                    GUILayout.Label(mergeNode.NameToExportTo);
-                }
-                else
-                {
-                    mergeNode.NameToExportTo = GUILayout.TextField(mergeNode.NameToExportTo);
-                }
-
-                GUILayout.EndHorizontal();
-            }
-        }
-
         void OnWizardCreate()
         {
-            string export = removeSyntax(cachedFoundScripts);
-            foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(export);
             onComplete( foundScripts);
             Debug.Log("Create button clicked");
         }
