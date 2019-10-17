@@ -198,7 +198,7 @@ namespace importerexporter.models
 
         private bool isStandardClass(string toCheck)
         {
-            return standardRegex.Match(toCheck).Length == toCheck.Length;
+            return toCheck == null || standardRegex.Match(toCheck).Success;
         }
     }
 

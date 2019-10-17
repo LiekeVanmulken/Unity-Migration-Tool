@@ -101,10 +101,13 @@ namespace importerexporter
             // Loop through dlls  
             if (!constants.DEBUG)
             {
-                foreach (string metaFile in dllMetaFiles)
+                int dllMetaFilesLength = dllMetaFiles.Length;
+                for (var i = 0; i < dllMetaFilesLength; i++)
                 {
+                    string metaFile = dllMetaFiles[i];
                     progress++;
-                    ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+                    ImportWindow.DisplayProgressBar("Exporting IDs",
+                        "Exporting IDs (DLL " + (i + 1) + "/" + dllMetaFiles + ") " + Path.GetFileName(metaFile),
                         progress / totalFiles);
                     string text = File.ReadAllText(metaFile);
                     Match match = regexGuid.Match(text);
@@ -195,16 +198,21 @@ namespace importerexporter
                 string oldFileId = oldFileIdNode.ToString();
                 string oldGuid = oldGuidNode.ToString();
 
-                ClassData oldClassData = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
+                ClassData oldClassData =
+                    oldIDs.FirstOrDefault(data =>
+                        data.Guid == oldGuid && data.FileID == oldFileId); // todo : this breaks
                 if (oldClassData == null)
                 {
-                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid + " oldFileID : " + oldFileId); // todo : this gets shown alot
+                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid +
+                                   " oldFileID : " + oldFileId); // todo : this gets shown alot
                     continue;
-                } 
-                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassData);
+                }
+
+                FoundScript mapping = RecursiveFoundScriptTest(newIDs, ref foundScripts, oldClassData);
                 if (mapping == null)
                 {
-                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId); // todo : this gets called often as well
+                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " +
+                                   oldFileId); // todo : this gets called often as well
                     continue;
 //                    throw new NotImplementedException("Mapping is null");
                 }
@@ -223,11 +231,12 @@ namespace importerexporter
             return linesToChange;
         }
 
-        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs,
+        private FoundScript RecursiveFoundScriptTest(
+            List<ClassData> newIDs, //todo this will sometimes get one without a guid
             ref List<FoundScript> foundScripts, ClassData oldClassData)
         {
             if (oldClassData == null)
-            { 
+            {
                 throw new NotImplementedException("No old classData found");
             }
 
@@ -241,13 +250,13 @@ namespace importerexporter
             {
                 replacementClassData = findNewID(newIDs, oldClassData);
             }
-            else if(replacementClassData !=null)
+            else if (replacementClassData != null)
             {
                 return existingFoundScript;
             }
             else
             {
-                 return null;
+                return null;
             }
 
             if (existingFoundScript == null)
@@ -264,7 +273,7 @@ namespace importerexporter
                         RecursiveFoundScriptTest(newIDs, ref foundScripts, field.Type);
                     }
                 }
-                
+
                 existingFoundScript = new FoundScript
                 {
                     OldClassData = oldClassData,
@@ -276,7 +285,6 @@ namespace importerexporter
                     existingFoundScript.GenerateMappingNode(foundScripts);
                 }
 
-               
 
                 foundScripts.Add(existingFoundScript);
             }
@@ -362,8 +370,9 @@ namespace importerexporter
             if (newFileData != null) return newFileData;
 
 
-            Dictionary<string,ClassData> allClassData = generateOptions(newIDs);
-            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
+            Dictionary<string, ClassData> allClassData = generateOptions(newIDs);
+            string[] options = allClassData.Select(pair => pair.Key)
+                .OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
 
 //            ClassData[] ordered = newIDs
 //                .OrderByDescending(data => Levenshtein.Compute(data.Name, old.Name))
