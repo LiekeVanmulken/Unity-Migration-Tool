@@ -1,5 +1,5 @@
-﻿using static importerexporter.models.FoundScript;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using static importerexporter.models.FoundScript;
 using YamlDotNet.RepresentationModel;
 using importerexporter.models;
 using importerexporter.utility;
@@ -101,13 +101,10 @@ namespace importerexporter
             // Loop through dlls  
             if (!constants.DEBUG)
             {
-                int dllMetaFilesLength = dllMetaFiles.Length;
-                for (var i = 0; i < dllMetaFilesLength; i++)
+                foreach (string metaFile in dllMetaFiles)
                 {
-                    string metaFile = dllMetaFiles[i];
                     progress++;
-                    ImportWindow.DisplayProgressBar("Exporting IDs",
-                        "Exporting IDs (DLL " + (i + 1) + "/" + dllMetaFiles + ") " + Path.GetFileName(metaFile),
+                    ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
                         progress / totalFiles);
                     string text = File.ReadAllText(metaFile);
                     Match match = regexGuid.Match(text);
@@ -117,20 +114,20 @@ namespace importerexporter
                                        metaFile);
                     }
 
+                    string dllGuid = match.Value;
                     string file = metaFile.Replace(".meta", "");
                     try
                     {
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
-                            if (!type.FullName.StartsWith("u040"))
-                            {
-                                continue;
-                            }
-
+//                            if (!type.FullName.StartsWith("u040"))
+//                            {
+//                                continue;
+//                            }
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
-                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+                            data.Add(new ClassData(type.FullName, dllGuid, FileIDUtil.Compute(type).ToString()));
                         }
                     }
                     catch (Exception e)
@@ -182,7 +179,7 @@ namespace importerexporter
         private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassData> oldIDs, List<ClassData> newIDs,
             ref List<FoundScript> foundScripts)
         {
-            string sceneContent = string.Join("\n", linesToChange);
+            string sceneContent = string.Join("\r\n", linesToChange);
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
@@ -204,40 +201,64 @@ namespace importerexporter
                 if (oldClassData == null)
                 {
                     Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid +
-                                   " oldFileID : " + oldFileId); // todo : this gets shown alot
+                                   " oldFileID : " + oldFileId);
                     continue;
                 }
 
-                FoundScript mapping = RecursiveFoundScriptTest(newIDs, ref foundScripts, oldClassData);
+                if (oldClassData.Name == "u040.prespective.prepair.physics.kinetics.BeltSystem")
+                {
+                    Debug.Log("test");
+                }
+
+                FoundScript
+                    mapping = RecursiveFoundScriptTest(newIDs, ref foundScripts,
+                        oldClassData);
                 if (mapping == null)
                 {
-                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " +
-                                   oldFileId); // todo : this gets called often as well
+                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId);
                     continue;
 //                    throw new NotImplementedException("Mapping is null");
                 }
 
                 int line = oldFileIdNode.Start.Line - 1;
 
-                // Replace the Guid
-                linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.NewClassData.Guid);
+                if (!string.IsNullOrEmpty(mapping.NewClassData.Guid))
+                {
+                    // Replace the Guid
+                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.NewClassData.Guid);
+                }
+                else
+                {
+                    Debug.Log("Found empty guid");
+                    continue;
+                    //todo : this should throw an error
+                    //todo : this is when a non script is being used or the guid is not available. This should probably be a popup with a warning
+                }
 
-                if (String.IsNullOrEmpty(oldFileId)) continue;
+
+                if (!String.IsNullOrEmpty(oldFileId))
+                {
+                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.NewClassData.FileID);
+                }
+
 
                 //Replace the fileID
-                linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.NewClassData.FileID);
             }
 
             return linesToChange;
         }
 
-        private FoundScript RecursiveFoundScriptTest(
-            List<ClassData> newIDs, //todo this will sometimes get one without a guid
+        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs, // todo
             ref List<FoundScript> foundScripts, ClassData oldClassData)
         {
             if (oldClassData == null)
             {
                 throw new NotImplementedException("No old classData found");
+            }
+
+            if (oldClassData.Name == "u040.prespective.prepair.physics.kinetics.BeltSystem")
+            {
+                Debug.Log("test beltSystem");
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
@@ -354,16 +375,13 @@ namespace importerexporter
         /// <param name="newIDs"></param>
         /// <param name="old"></param>
         /// <returns></returns>
-        public ClassData findNewID(List<ClassData> newIDs, ClassData old)
+        public ClassData
+            findNewID(List<ClassData> newIDs,
+                ClassData old) // todo : check if the classname is the same but not the namespace
         {
             if (old == null)
             {
                 throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
-            }
-
-            if (old.Name == "u040.prespective.prelogic.electronics.sensors.IRBeamReceiver")
-            {
-                Debug.Log("test");
             }
 
             ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(old.Name));
@@ -392,13 +410,16 @@ namespace importerexporter
                 return newFileData; // todo : why is this always null
             }
 
-//            ClassData found = ordered.First(data => data.Name == result);
-            ClassData found = allClassData[result];
-
-
-//                        oldData.IndexOf(found) // todo save the new chosen value in the list, and hope that works :o
-
-            return found;
+            var foundClassData = allClassData.Where(pair => pair.Key == result).ToArray();
+            switch (foundClassData.Length)
+            {
+                case 0:
+                    throw new NullReferenceException("Cannot find selected class");
+                case 1:
+                    return foundClassData[0].Value;
+                default:
+                    return foundClassData.First(pair => !string.IsNullOrEmpty(pair.Value.Guid)).Value;
+            }
         }
 
         private Dictionary<string, ClassData> generateOptions(List<ClassData> allIDs)
@@ -414,7 +435,17 @@ namespace importerexporter
 
         private void generateOptionsRecursive(ClassData id, ref Dictionary<string, ClassData> dictionary)
         {
-            dictionary[id.Name] = id;
+            if (string.IsNullOrEmpty(id.Name))
+            {
+                Debug.LogError("id.name is null in the generateOptionsRecursive");
+                return;
+            }
+
+            if (!dictionary.ContainsKey(id.Name) || string.IsNullOrEmpty(dictionary[id.Name].Guid))
+            {
+                dictionary[id.Name] = id;
+            }
+
             if (id.Fields == null || id.Fields.Length == 0)
             {
                 return;
