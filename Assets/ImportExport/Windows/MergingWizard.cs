@@ -1,7 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-#if UNITY_EDITOR
-using importerexporter.utility;
+﻿#if UNITY_EDITOR
 using importerexporter.models;
 using System;
 using System.Collections.Generic;
@@ -12,15 +9,13 @@ namespace importerexporter.windows
 {
     public class MergingWizard : ScriptableWizard
     {
-        private Constants constants = Constants.Instance;
-
-        private List<FoundScript> foundScripts;
-        private string cachedFoundScripts;
-
         public Action<List<FoundScript>> onComplete;
+        
+        
+        private List<FoundScript> foundScripts;
+
         private FoundScriptWrapper[] foundScriptWrappers;
-
-
+        
         GUIStyle richtextStyle;
         GUIStyle classNameStyle;
         GUIStyle paddingStyle;
@@ -39,17 +34,10 @@ namespace importerexporter.windows
             {
                 wizard.foundScriptWrappers[i] = new FoundScriptWrapper(scriptsToMerge[i]);
             }
-
-            var settings = new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects
-            };
-            wizard.cachedFoundScripts = JsonConvert.SerializeObject(wizard.foundScripts, Formatting.Indented, settings);
-            wizard.cachedFoundScripts = wizard.syntax(wizard.cachedFoundScripts);
-
+            
             return wizard;
         }
+        
 
         private void OnEnable()
         {
@@ -61,28 +49,11 @@ namespace importerexporter.windows
             verticalMarginStyle = new GUIStyle() {margin = new RectOffset(0, 0, 0, 6)};
         }
 
-        private string syntax(string scripts)
-        {
-            string keyPattern = "\".*?\"(?=.*:)";
-            scripts = Regex.Replace(scripts, keyPattern, "<color=darkblue>$0</color>");
-
-            string valuePattern = "(?<=:.*)\".*?\"";
-            return Regex.Replace(scripts, valuePattern, "<color=green>$0</color>");
-        }
-
-        private string removeSyntax(string scripts)
-        {
-            string beginPattern = "<color=[A-z0-9#]*>";
-            string endPattern = "</color>";
-            string beginRemoved = Regex.Replace(scripts, beginPattern, "");
-            string endRemoved = Regex.Replace(beginRemoved, endPattern, "");
-            return endRemoved;
-        }
-
-        public class FoundScriptWrapper
+        private class FoundScriptWrapper
         {
             public FoundScript FoundScript;
             public bool[] FieldSelectionStates;
+            public int[] OptionSelections;
 
             public FoundScriptWrapper(FoundScript _foundScript)
             {
@@ -91,6 +62,11 @@ namespace importerexporter.windows
                 for (int i = 0; i < FieldSelectionStates.Length; i++)
                 {
                     FieldSelectionStates[i] = true;
+                }
+                OptionSelections = new int[_foundScript.MergeNodes.Count];
+                for (int i = 0; i < OptionSelections.Length; i++)
+                {
+                    OptionSelections[i] = 0;
                 }
             }
         }
@@ -134,12 +110,12 @@ namespace importerexporter.windows
                 for (int j = 0; j < fieldsToMerge.Count; j++)
                 {
                     MergeNode fieldToMerge = fieldsToMerge[j];
+
                     string originalName = fieldToMerge.OriginalValue;
 
                     GUILayout.BeginHorizontal();
 
-                    wrapper.FieldSelectionStates[j] =
-                        EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
+                    wrapper.FieldSelectionStates[j] = EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
                     GUI.enabled = wrapper.FieldSelectionStates[j];
                     EditorGUILayout.LabelField(originalName, richtextStyle, GetColumnWidth(5));
                     EditorGUILayout.LabelField(fieldToMerge.Type, richtextStyle, GetColumnWidth(6));
@@ -152,14 +128,9 @@ namespace importerexporter.windows
 
                     EditorGUILayout.BeginVertical();
 
-                    GUI.SetNextControlName("substitute-input");
-                    fieldToMerge.NameToExportTo =
-                        EditorGUILayout.TextField(fieldToMerge.NameToExportTo, GetColumnWidth(5));
+                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j], fieldToMerge.Options, GetColumnWidth(5));
 
-                    if (GUI.GetNameOfFocusedControl() == "substitute-input")
-                    {
-                        EditorGUILayout.LabelField("<b>Type</b>", richtextStyle, GetColumnWidth(6));
-                    }
+                    fieldToMerge.NameToExportTo = fieldToMerge.Options[wrapper.OptionSelections[j]];
 
                     EditorGUILayout.EndVertical();
 
