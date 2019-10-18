@@ -1,5 +1,5 @@
-﻿using static importerexporter.models.FoundScript;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using static importerexporter.models.FoundScript;
 using YamlDotNet.RepresentationModel;
 using importerexporter.models;
 using importerexporter.utility;
@@ -17,19 +17,19 @@ namespace importerexporter
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public class IDUtility
+    public class IDController
     {
         #region Singleton
 
-        private static IDUtility instance = null;
+        private static IDController instance = null;
 
         private static readonly object padlock = new object();
 
-        IDUtility()
+        IDController()
         {
         }
 
-        public static IDUtility Instance
+        public static IDController Instance
         {
             get
             {
@@ -37,7 +37,7 @@ namespace importerexporter
                 {
                     if (instance == null)
                     {
-                        instance = new IDUtility();
+                        instance = new IDController();
                     }
 
                     return instance;
@@ -55,7 +55,6 @@ namespace importerexporter
         private Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         private readonly Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
-//        private readonly Regex regexFileID = new Regex(@"(?<=fileID: )\-?[A-z0-9]*");
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
@@ -63,7 +62,7 @@ namespace importerexporter
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public List<ClassData> ExportClassData(string path)
+        public List<ClassModel> ExportClassData(string path)
         {
             float progress = 0;
 
@@ -74,7 +73,7 @@ namespace importerexporter
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
 
-            List<ClassData> data = new List<ClassData>();
+            List<ClassModel> data = new List<ClassModel>();
             foreach (string file in classMetaFiles)
             {
                 progress++;
@@ -93,7 +92,7 @@ namespace importerexporter
                         continue;
                     }
 
-                    data.Add(new ClassData(className, match.Value));
+                    data.Add(new ClassModel(className, match.Value));
                 }
             }
 
@@ -120,9 +119,14 @@ namespace importerexporter
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
+//                            if (!type.FullName.StartsWith("u040"))
+//                            {
+//                                continue;
+//                            }
+
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
-                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+                            data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
                         }
                     }
                     catch (Exception e)
@@ -144,8 +148,8 @@ namespace importerexporter
         /// <param name="oldIDs"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassData> oldIDs,
-            List<ClassData> newIDs, ref List<FoundScript> foundScripts)
+        public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassModel> oldIDs,
+            List<ClassModel> newIDs, ref List<FoundScript> foundScripts)
         {
             ImportWindow.DisplayProgressBar("Migration started",
                 "Start importing current project classData and migrating scene.", 0.5f);
@@ -171,7 +175,7 @@ namespace importerexporter
         /// <param name="newIDs">List of GUIDs and FileID for all currently in the project classes.</param>
         /// <param name="foundScripts"></param>
         /// <returns></returns>
-        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassData> oldIDs, List<ClassData> newIDs,
+        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassModel> oldIDs, List<ClassModel> newIDs,
             ref List<FoundScript> foundScripts)
         {
             string sceneContent = string.Join("\r\n", linesToChange);
@@ -195,26 +199,25 @@ namespace importerexporter
                 string oldFileId = oldFileIdNode.ToString();
                 string oldGuid = oldGuidNode.ToString();
 
-                ClassData oldClassData = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
-                if (oldClassData == null)
+                ClassModel oldClassModel = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
+                if (oldClassModel == null)
                 {
                     Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid + " oldFileID : " + oldFileId);
                     continue;
                 } 
-                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassData); //todo : u040.prespective.prepair.physics.optics.IRBeamReflector is not found and never made?????
+                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassModel); //todo : u040.prespective.prepair.physics.optics.IRBeamReflector is not found and never made?????
                 if (mapping == null)
                 {
-                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId);
+                    Debug.LogError("mapping is null for " + oldClassModel.FullName);
                     continue;
-//                    throw new NotImplementedException("Mapping is null");
                 }
 
                 int line = oldFileIdNode.Start.Line - 1;
 
-                if (!string.IsNullOrEmpty(mapping.NewClassData.Guid))
+                if (!string.IsNullOrEmpty(mapping.newClassModel.Guid))
                 {
                     // Replace the Guid
-                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.NewClassData.Guid);
+                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.newClassModel.Guid);
                 }
                 else
                 {
@@ -227,7 +230,7 @@ namespace importerexporter
 
                 if (!String.IsNullOrEmpty(oldFileId))
                 {
-                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.NewClassData.FileID);
+                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.newClassModel.FileID);
                 }
 
 
@@ -237,25 +240,29 @@ namespace importerexporter
             return linesToChange;
         }
 
-        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs,
-            ref List<FoundScript> foundScripts, ClassData oldClassData)
+        private FoundScript RecursiveFoundScriptTest(List<ClassModel> newIDs,
+            ref List<FoundScript> foundScripts, ClassModel oldClassModel)
         {
-            if (oldClassData == null)
+            if (oldClassModel == null)
             { 
                 throw new NotImplementedException("No old classData found");
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
-                script.OldClassData.Name == oldClassData.Name);
+                script.oldClassModel.FullName == oldClassModel.FullName);
 
-            ClassData replacementClassData =
+            ClassModel replacementClassModel =
                 existingFoundScript
-                    ?.NewClassData;
-            if (replacementClassData == null && oldClassData.Fields != null)
+                    ?.newClassModel;
+            if (replacementClassModel == null && oldClassModel.Fields != null)
             {
-                replacementClassData = findNewID(newIDs, oldClassData);
+                replacementClassModel = findNewID(newIDs, oldClassModel);
+                if (replacementClassModel == null)
+                {
+                    return null;
+                }
             }
-            else if(replacementClassData !=null)
+            else if(replacementClassModel !=null)
             {
                 return existingFoundScript;
             }
@@ -266,9 +273,9 @@ namespace importerexporter
 
             if (existingFoundScript == null)
             {
-                if (oldClassData.Fields != null && oldClassData.Fields.Length != 0)
+                if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
                 {
-                    foreach (FieldData field in oldClassData.Fields)
+                    foreach (FieldModel field in oldClassModel.Fields)
                     {
                         if (field.Type == null)
                         {
@@ -281,8 +288,8 @@ namespace importerexporter
                 
                 existingFoundScript = new FoundScript
                 {
-                    OldClassData = oldClassData,
-                    NewClassData = replacementClassData
+                    oldClassModel = oldClassModel,
+                    newClassModel = replacementClassModel
                 };
                 MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
                 if (hasBeenMapped == MappedState.NotMapped)
@@ -360,51 +367,51 @@ namespace importerexporter
         /// <param name="newIDs"></param>
         /// <param name="old"></param>
         /// <returns></returns>
-        public ClassData findNewID(List<ClassData> newIDs, ClassData old) // todo : check if the classname is the same but not the namespace
+        public ClassModel findNewID(List<ClassModel> newIDs, ClassModel old) // todo : check if the classname is the same but not the namespace
         {
             if (old == null)
             {
                 throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
             }
 
-            ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(old.Name));
-            if (newFileData != null) return newFileData;
+            ClassModel newFileModel = newIDs.FirstOrDefault(data => data.FullName.Equals(old.FullName));
+            if (newFileModel != null) return newFileModel;
 
+            Dictionary<string,ClassModel> allClassData = generateOptions(newIDs);
+            if (allClassData.ContainsKey(old.Name))
+            {
+                return allClassData[old.Name];
+            }
 
-            Dictionary<string,ClassData> allClassData = generateOptions(newIDs);
-            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
+            ClassModel[] classModels = allClassData.Select(pair => pair.Value).Where(model => model.NameLower == old.NameLower).ToArray();
+            if (classModels.Length == 1)
+            {
+                return classModels[0];
+            }
 
-//            ClassData[] ordered = newIDs
-//                .OrderByDescending(data => Levenshtein.Compute(data.Name, old.Name))
-//                .ToArray();
-
+            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
+            
             string result = ImportWindow.OpenOptionsWindow(
                 "Could not find class, please select which class to use",
-                old.Name,
+                old.FullName,
                 options
             );
 
             if (string.IsNullOrEmpty(result))
             {
-                Debug.LogError("[Data loss] Could not find class for : " + old.Name +
+                Debug.LogError("[Data loss] Could not find class for : " + old.FullName +
                                " and no new class was chosen. This script will not be migrated!");
 
-                return newFileData; // todo : why is this always null
+                return null; // todo : why is this always null
             }
-
-//            ClassData found = ordered.First(data => data.Name == result);
-            ClassData found = allClassData[result];
-
-
-//                        oldData.IndexOf(found) // todo save the new chosen value in the list, and hope that works :o
-
-            return found;
+            
+            return allClassData[result];
         }
 
-        private Dictionary<string, ClassData> generateOptions(List<ClassData> allIDs)
+        private Dictionary<string, ClassModel> generateOptions(List<ClassModel> allIDs)
         {
-            Dictionary<string, ClassData> dictionary = new Dictionary<string, ClassData>();
-            foreach (ClassData id in allIDs)
+            Dictionary<string, ClassModel> dictionary = new Dictionary<string, ClassModel>();
+            foreach (ClassModel id in allIDs)
             {
                 generateOptionsRecursive(id, ref dictionary);
             }
@@ -412,15 +419,24 @@ namespace importerexporter
             return dictionary;
         }
 
-        private void generateOptionsRecursive(ClassData id, ref Dictionary<string, ClassData> dictionary)
+        private void generateOptionsRecursive(ClassModel id, ref Dictionary<string, ClassModel> dictionary)
         {
-            dictionary[id.Name] = id;
+            if (string.IsNullOrEmpty(id.FullName))
+            {
+                return;
+            }
+
+            if (!dictionary.ContainsKey(id.FullName) || string.IsNullOrEmpty(dictionary[id.FullName].Guid))
+            {
+                dictionary[id.FullName] = id;
+            }
+
             if (id.Fields == null || id.Fields.Length == 0)
             {
                 return;
             }
 
-            foreach (FieldData field in id.Fields)
+            foreach (FieldModel field in id.Fields)
             {
                 if (field.Type == null)
                 {

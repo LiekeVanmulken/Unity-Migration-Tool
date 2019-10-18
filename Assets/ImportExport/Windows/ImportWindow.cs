@@ -25,20 +25,21 @@ namespace importerexporter.windows
     public class ImportWindow : MainThreadDispatcherEditorWindow
     {
         private readonly Constants constants = Constants.Instance;
-        private readonly IDUtility idUtility = IDUtility.Instance;
-        private readonly FieldMappingUtility fieldMappingUtility = FieldMappingUtility.Instance;
+        private readonly IDController idController = IDController.Instance;
+        private readonly FieldMappingController fieldMappingController = FieldMappingController.Instance;
 
-        private static List<ClassData> oldFileDatas;
 
+        private static List<ClassModel> oldFileDatas;
         private static string[] lastSceneExport;
         private static List<FoundScript> foundScripts;
 
         private GUIStyle wordWrapStyle;
 
-        private static MergingWizard mergingWizard;
 
+        private static MergingWizard mergingWizard;
         private Thread calculationThread;
 
+        private string idExportPath; 
 
         [MenuItem("Window/Scene import window")]
         public static void ShowWindow()
@@ -49,11 +50,13 @@ namespace importerexporter.windows
         protected void OnEnable()
         {
             wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
+            idExportPath = Application.dataPath + "/ImportExport/Exports/Export.json";
         }
 
         void OnGUI()
         {
-            if (GUILayout.Button("Export Class Data of the current project"))
+        
+            if (GUILayout.Button("Export Classes of the current project"))
             {
                 string rootPath = Application.dataPath;
 
@@ -63,10 +66,12 @@ namespace importerexporter.windows
             }
 
 
-            if (GUILayout.Button("Import Class Data and scene"))
+            if (GUILayout.Button("Migrate scene"))
             {
                 ImportClassDataAndScene();
             }
+
+            GUILayout.Label(File.Exists(idExportPath) ? "IDs found" : "No IDs found, won't be able to export.");
 
 //            if (GUILayout.Button("test generate mapping"))
 //            {
@@ -91,7 +96,7 @@ namespace importerexporter.windows
 
         private void ExportCurrentClassData(string rootPath)
         {
-            List<ClassData> oldIDs = idUtility.ExportClassData(rootPath);
+            List<ClassModel> oldIDs = idController.ExportClassData(rootPath);
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -100,11 +105,11 @@ namespace importerexporter.windows
             };
 
             string jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-            string filePath = rootPath + "/ImportExport/Exports/Export.json";
-            File.WriteAllText(filePath, jsonField);
+            
+            File.WriteAllText(idExportPath, jsonField);
 
             DisplayDialog("Export complete",
-                "All classes were exported to " + filePath + " . Open up the new project and import the scene.");
+                "All classes were exported to " + idExportPath + " . Open up the new project and import the scene.");
         }
 
         private void ImportClassDataAndScene()
@@ -124,52 +129,51 @@ namespace importerexporter.windows
             string IDPath = EditorUtility.OpenFilePanel(
                 "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
                 "json"); //todo : check if this is in the current project
-            if (IDPath.Length != 0)
-            {
-                List<ClassData> oldIDs =
-                    JsonConvert.DeserializeObject<List<ClassData>>(File.ReadAllText(IDPath));
-
-                string scenePath =
-                    EditorUtility.OpenFilePanel("Scene to import", IDPath + "/../../",
-                        "unity"); //todo : check if this is in the current project
-                if (scenePath.Length != 0)
-                {
-                    string rootPath = Application.dataPath;
-                    List<ClassData> newIDs =
-                        JsonConvert.DeserializeObject<List<ClassData>>(
-                            File.ReadAllText(
-                                rootPath + "/ImportExport/Exports/Export.json")); // todo : make this more user friendly
-
-                    List<FoundScript> foundScripts = new List<FoundScript>();
-                    string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
-                    if (File.Exists(foundScriptsPath))
-                    {
-                        foundScripts =
-                            JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
-                    }
-
-                    calculationThread =
-                        new Thread(() => this.Import(rootPath, oldIDs, newIDs, scenePath, foundScripts));
-                    calculationThread.Start();
-                }
-                else
-                {
-                    Debug.LogWarning("No path was selected");
-                }
-            }
-            else
+            if (IDPath.Length == 0)
             {
                 Debug.LogWarning("No path was selected");
+                return;
             }
+
+            List<ClassModel> oldIDs =
+                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
+
+            string scenePath =
+                EditorUtility.OpenFilePanel("Scene to import", IDPath + "/../../",
+                    "unity"); //todo : check if this is in the current project
+            if (scenePath.Length == 0)
+            {
+                Debug.LogWarning("No path was selected");
+                return;
+            }
+
+            string rootPath = Application.dataPath;
+            string newIDsPath = rootPath + "/ImportExport/Exports/Export.json";
+            
+            List<ClassModel> newIDs = File.Exists(newIDsPath)
+                ? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(newIDsPath))
+                : idController.ExportClassData(rootPath);
+
+            List<FoundScript> foundScripts = new List<FoundScript>();
+            string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
+            if (File.Exists(foundScriptsPath))
+            {
+                foundScripts =
+                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
+            }
+
+            calculationThread =
+                new Thread(() => this.Import(rootPath, oldIDs, newIDs, scenePath, foundScripts));
+            calculationThread.Start();
         }
 
-        private List<ClassData> cachedLocalIds;
+        private List<ClassModel> cachedLocalIds;
 
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void Import(string rootPath, List<ClassData> oldIDs, List<ClassData> currentIDs, string scenePath,
+        private void Import(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs, string scenePath,
             List<FoundScript> foundScripts)
         {
             try
@@ -185,7 +189,7 @@ namespace importerexporter.windows
                 }
 
                 string[] lastSceneExport =
-                    idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
+                    idController.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts); //todo : don't use a ref for this because that's like super nasty
 
 
@@ -207,7 +211,7 @@ namespace importerexporter.windows
         {
         
             string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
-            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts));
+            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts,Formatting.Indented));
         
             ImportWindow.foundScripts = foundScripts;
             ImportWindow.lastSceneExport = lastSceneExport;
@@ -228,7 +232,7 @@ namespace importerexporter.windows
                 // Remove duplicate scripts
                 List<FoundScript> scripts =
                     unmappedScripts
-                        .GroupBy(field => field.NewClassData.Name)
+                        .GroupBy(field => field.newClassModel.FullName)
                         .Select(group => group.First()).ToList();
 
                 EditorUtility.DisplayDialog("Merging fields necessary",
@@ -276,7 +280,7 @@ namespace importerexporter.windows
             string[] linesToChange)
         {
             string[] newSceneExport =
-                fieldMappingUtility.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
+                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
 
             Debug.Log(string.Join("\n", newSceneExport));
 

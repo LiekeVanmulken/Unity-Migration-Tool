@@ -14,19 +14,19 @@ namespace importerexporter
     /// Maps fields to move values.
     /// This should always be run after the transform as it assumes that the IDs have been set to the current IDs!!!
     /// </summary>
-    public class FieldMappingUtility
+    public class FieldMappingController
     {
         #region Singleton
 
-        private static FieldMappingUtility instance = null;
+        private static FieldMappingController instance = null;
 
         private static readonly object padlock = new object();
 
-        FieldMappingUtility()
+        FieldMappingController()
         {
         }
 
-        public static FieldMappingUtility Instance
+        public static FieldMappingController Instance
         {
             get
             {
@@ -34,7 +34,7 @@ namespace importerexporter
                 {
                     if (instance == null)
                     {
-                        instance = new FieldMappingUtility();
+                        instance = new FieldMappingController();
                     }
 
                     return instance;
@@ -70,7 +70,7 @@ namespace importerexporter
 
                 FoundScript scriptType =
                     foundScripts.FirstOrDefault(node =>
-                        node.NewClassData.Guid == guid && node.NewClassData.FileID == fileID);
+                        node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
                 if (scriptType != null)
                 {
                     scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
@@ -116,7 +116,7 @@ namespace importerexporter
                         continue;
                     }
                     List<MergeNode> typeNodes =
-                        foundScripts.FirstOrDefault(script => script.OldClassData.Name == type)?.MergeNodes;
+                        foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
                     if (typeNodes != null)
                     {
                         scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);

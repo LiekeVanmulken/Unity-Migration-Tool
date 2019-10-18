@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
-using YamlDotNet.Serialization;
 
 namespace importerexporter.models
 {
@@ -22,8 +21,8 @@ namespace importerexporter.models
     [Serializable]
     public class FoundScript
     {
-        public ClassData NewClassData;
-        public ClassData OldClassData;
+        public ClassModel newClassModel;
+        public ClassModel oldClassModel;
 
         [JsonIgnore] public YamlNode YamlOptions;
 
@@ -44,61 +43,59 @@ namespace importerexporter.models
         {
         }
 
-        public FoundScript(ClassData oldClassData, ClassData newNewClassData, YamlNode yamlOptions)
+        public FoundScript(ClassModel oldClassModel, ClassModel newNewClassModel, YamlNode yamlOptions)
         {
-            this.NewClassData = newNewClassData;
-            this.OldClassData = oldClassData;
+            this.newClassModel = newNewClassModel;
+            this.oldClassModel = oldClassModel;
             this.YamlOptions = yamlOptions;
-            this.HasBeenMapped = CheckHasBeenMapped(oldClassData, newNewClassData);
+            this.HasBeenMapped = CheckHasBeenMapped(oldClassModel, newNewClassModel);
         }
 
         public MappedState CheckHasBeenMapped()
         {
-            if (OldClassData == null || NewClassData == null)
+            if (oldClassModel == null || newClassModel == null)
             {
                 throw new NotImplementedException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
 
-            return CheckHasBeenMapped(OldClassData, NewClassData);
+            return CheckHasBeenMapped(oldClassModel, newClassModel);
         }
 
         public void GenerateMappingNode(List<FoundScript> existingFoundScripts)
         {
-            if (OldClassData == null || NewClassData == null)
+            if (oldClassModel == null || newClassModel == null)
             {
                 throw new NotImplementedException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
             
-            foreach (FieldData field in OldClassData.Fields)
+            foreach (FieldModel field in oldClassModel.Fields)
             {
 
 
                 MergeNode mergeNode = new MergeNode();
-//                mergeNode.MergeNodes = new List<MergeNode>();
                 mergeNode.OriginalValue = field.Name;
-//            mergeNode.SampleValue = field.Value.ToString();
 
-                FieldData mergeNodeType = OldClassData.Fields
+                FieldModel mergeNodeType = oldClassModel.Fields
                     .First(data => data.Name == mergeNode.OriginalValue);
 
-                mergeNode.Type = mergeNodeType?.Type?.Name;
+                mergeNode.Type = mergeNodeType?.Type?.FullName;
 
                 FoundScript mapping =
-                    existingFoundScripts.FirstOrDefault(script => script.OldClassData.Name == mergeNode.Type);
+                    existingFoundScripts.FirstOrDefault(script => script.oldClassModel.FullName == mergeNode.Type);
 
-                Func<FieldData, bool> typeCheckPredicate;
+                Func<FieldModel, bool> typeCheckPredicate;
                 if (mapping == null)
                 {
-                    typeCheckPredicate = data => data.Type.Name == mergeNode.Type;
+                    typeCheckPredicate = data => data.Type.FullName == mergeNode.Type;
                 }
                 else
                 {
-                    typeCheckPredicate = data => data.Type.Name == mapping.NewClassData.Name;
+                    typeCheckPredicate = data => data.Type.FullName == mapping.newClassModel.FullName;
                 }
 
-                mergeNode.Options = NewClassData.Fields?
+                mergeNode.Options = newClassModel.Fields?
                     .Where(typeCheckPredicate) // todo this doesn't work anymore because it needs the foundScript for this
                     .OrderBy(newField =>
                         Levenshtein.Compute(
@@ -118,12 +115,12 @@ namespace importerexporter.models
         /// <param name="data"></param>
         /// <param name="node"></param>
         /// <returns></returns>
-        public MappedState CheckHasBeenMapped(ClassData oldClassData,
-            ClassData newClassData)
+        public MappedState CheckHasBeenMapped(ClassModel oldClassModel,
+            ClassModel newClassModel)
         {
             if (HasBeenMapped == MappedState.NotChecked)
             {
-                bool result = checkHasBeenMappedRecursive(oldClassData, newClassData);
+                bool result = checkHasBeenMappedRecursive(oldClassModel, newClassModel);
                 HasBeenMapped = result ? MappedState.Mapped : MappedState.NotMapped;
             }
 
@@ -136,22 +133,22 @@ namespace importerexporter.models
         /// <param name="datas"></param>
         /// <param name="node"></param>
         /// <returns></returns>
-        private bool checkHasBeenMappedRecursive(ClassData oldClassData, ClassData newClassData)
+        private bool checkHasBeenMappedRecursive(ClassModel oldClassModel, ClassModel newClassModel)
         {
-            if (oldClassData.Fields.IsNullOrEmpty() != newClassData.Fields.IsNullOrEmpty())
+            if (oldClassModel.Fields.IsNullOrEmpty() != newClassModel.Fields.IsNullOrEmpty())
             {
                 return false;
             }
 
-            if (oldClassData.Fields.IsNullOrEmpty() && newClassData.Fields.IsNullOrEmpty())
+            if (oldClassModel.Fields.IsNullOrEmpty() && newClassModel.Fields.IsNullOrEmpty())
             {
                 return true;
             }
 
 
-            foreach (FieldData oldFieldData in oldClassData.Fields)
+            foreach (FieldModel oldFieldData in oldClassModel.Fields)
             {
-                FieldData found = newClassData.Fields.FirstOrDefault(data => data.Name == oldFieldData.Name);
+                FieldModel found = newClassModel.Fields.FirstOrDefault(data => data.Name == oldFieldData.Name);
                 if (found == null)
                 {
                     return false;

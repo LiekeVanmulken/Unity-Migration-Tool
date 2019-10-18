@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace importerexporter.utility
 {
@@ -36,6 +37,8 @@ namespace importerexporter.utility
         public readonly bool DEBUG = false;
 
         public readonly int RECURSION_DEPTH = 3;
+        
+        public readonly Regex StandardclassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
 
         /// <summary>
         /// Fields to exclude in the field mapping of the MonoBehaviour Yaml

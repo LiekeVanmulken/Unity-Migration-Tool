@@ -40,7 +40,9 @@ namespace importerexporter.windows
         public static OptionsWizard CreateWizard(string label, string comparison, string[] options, Action<string> onComplete, Action onIgnore)
         {
 
-            var wizard = DisplayWizard<OptionsWizard>("Choose", "Choose", "Ignore");
+            var wizard = DisplayWizard<OptionsWizard>("Choose", "Choose"
+//                ,"Ignore"   // todo : needs to be implemented in the foundscript so it doesn't keep making popups
+                );
             wizard.label = label;
             wizard.comparison = comparison;
             wizard.options = options;
@@ -138,6 +140,7 @@ namespace importerexporter.windows
         {
             completed = true;
             onIgnore();
+            Close();
         }
     }
 }
