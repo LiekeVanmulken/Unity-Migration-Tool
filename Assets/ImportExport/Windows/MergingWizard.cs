@@ -24,7 +24,6 @@ namespace importerexporter.windows
 
         private FoundScriptWrapper[] foundScriptWrappers;
 
-        //        private List<MergeNode> mergeNodes;
         public event EventHandler<List<FoundScript>> onComplete;
 
         GUIStyle richtextStyle;
@@ -62,8 +61,12 @@ namespace importerexporter.windows
             wizard.cachedFoundScripts = JsonConvert.SerializeObject(wizard.foundScripts, Formatting.Indented, settings);
             wizard.cachedFoundScripts = wizard.syntax(wizard.cachedFoundScripts);
 
+            
+
+
             return wizard;
         }
+        
 
         private void OnEnable()
         {
@@ -97,6 +100,7 @@ namespace importerexporter.windows
         {
             public FoundScript FoundScript;
             public bool[] FieldSelectionStates;
+            public int[] OptionSelections;
 
             public FoundScriptWrapper(FoundScript _foundScript)
             {
@@ -105,6 +109,11 @@ namespace importerexporter.windows
                 for (int i = 0; i < FieldSelectionStates.Length; i ++)
                 {
                     FieldSelectionStates[i] = true;
+                }
+                OptionSelections = new int[_foundScript.MergeNodes.Count];
+                for (int i = 0; i < OptionSelections.Length; i++)
+                {
+                    OptionSelections[i] = 0;
                 }
             }
         }
@@ -143,15 +152,15 @@ namespace importerexporter.windows
                 GUILayout.Box(GUIContent.none, verticalMarginStyle);
 
 
-                for (int ii = 0; ii < fieldsToMerge.Count; ii++)
+                for (int j = 0; j < fieldsToMerge.Count; j++)
                 {
-                    MergeNode fieldToMerge = fieldsToMerge[ii];
+                    MergeNode fieldToMerge = fieldsToMerge[j];
                     string originalName = fieldToMerge.YamlKey;
 
                     GUILayout.BeginHorizontal();
 
-                    wrapper.FieldSelectionStates[ii] = EditorGUILayout.Toggle(wrapper.FieldSelectionStates[ii], GetColumnWidth(1));
-                    GUI.enabled = wrapper.FieldSelectionStates[ii];
+                    wrapper.FieldSelectionStates[j] = EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
+                    GUI.enabled = wrapper.FieldSelectionStates[j];
                     EditorGUILayout.LabelField(originalName, richtextStyle, GetColumnWidth(5));
                     EditorGUILayout.LabelField(fieldToMerge.Type, richtextStyle, GetColumnWidth(6));
 
@@ -163,13 +172,9 @@ namespace importerexporter.windows
 
                     EditorGUILayout.BeginVertical();
 
-                    GUI.SetNextControlName("substitute-input");
-                    fieldToMerge.NameToExportTo = EditorGUILayout.TextField(fieldToMerge.NameToExportTo, GetColumnWidth(5));
-                    
-                    if(GUI.GetNameOfFocusedControl() == "substitute-input")
-                    {
-                        EditorGUILayout.LabelField("<b>Type</b>", richtextStyle, GetColumnWidth(6));
-                    }
+                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j], fieldToMerge.Options, GetColumnWidth(5));
+
+                    fieldToMerge.NameToExportTo = fieldToMerge.Options[wrapper.OptionSelections[j]];
 
                     EditorGUILayout.EndVertical();
 
@@ -179,7 +184,7 @@ namespace importerexporter.windows
 
                     GUILayout.Box(GUIContent.none, verticalMarginStyle);
 
-                    foundScripts[i].MergeNodes[ii] = fieldToMerge;
+                    foundScripts[i].MergeNodes[j] = fieldToMerge;
                 }
 
                 foundScriptWrappers[i] = wrapper;
