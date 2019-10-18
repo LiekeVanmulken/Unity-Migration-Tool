@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace importerexporter.models
@@ -10,7 +8,6 @@ namespace importerexporter.models
     {
         [SerializeField] public string OriginalValue;
         [SerializeField] public string NameToExportTo;
-        [SerializeField] public string SampleValue;
         [SerializeField] public string Type;
         [SerializeField] public string[] Options;
         

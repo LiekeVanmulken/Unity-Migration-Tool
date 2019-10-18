@@ -28,7 +28,7 @@ namespace importerexporter.windows
         private readonly IDController idController = IDController.Instance;
         private readonly FieldMappingController fieldMappingController = FieldMappingController.Instance;
 
-        private static List<ClassData> oldFileDatas;
+        private static List<ClassModel> oldFileDatas;
 
         private static string[] lastSceneExport;
         private static List<FoundScript> foundScripts;
@@ -91,7 +91,7 @@ namespace importerexporter.windows
 
         private void ExportCurrentClassData(string rootPath)
         {
-            List<ClassData> oldIDs = idController.ExportClassData(rootPath);
+            List<ClassModel> oldIDs = idController.ExportClassData(rootPath);
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -126,8 +126,8 @@ namespace importerexporter.windows
                 "json"); //todo : check if this is in the current project
             if (IDPath.Length != 0)
             {
-                List<ClassData> oldIDs =
-                    JsonConvert.DeserializeObject<List<ClassData>>(File.ReadAllText(IDPath));
+                List<ClassModel> oldIDs =
+                    JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
                 string scenePath =
                     EditorUtility.OpenFilePanel("Scene to import", IDPath + "/../../",
@@ -135,8 +135,8 @@ namespace importerexporter.windows
                 if (scenePath.Length != 0)
                 {
                     string rootPath = Application.dataPath;
-                    List<ClassData> newIDs =
-                        JsonConvert.DeserializeObject<List<ClassData>>(
+                    List<ClassModel> newIDs =
+                        JsonConvert.DeserializeObject<List<ClassModel>>(
                             File.ReadAllText(
                                 rootPath + "/ImportExport/Exports/Export.json")); // todo : make this more user friendly
 
@@ -163,13 +163,13 @@ namespace importerexporter.windows
             }
         }
 
-        private List<ClassData> cachedLocalIds;
+        private List<ClassModel> cachedLocalIds;
 
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void Import(string rootPath, List<ClassData> oldIDs, List<ClassData> currentIDs, string scenePath,
+        private void Import(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs, string scenePath,
             List<FoundScript> foundScripts)
         {
             try
@@ -207,7 +207,7 @@ namespace importerexporter.windows
         {
         
             string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
-            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts));
+            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts,Formatting.Indented));
         
             ImportWindow.foundScripts = foundScripts;
             ImportWindow.lastSceneExport = lastSceneExport;
@@ -228,7 +228,7 @@ namespace importerexporter.windows
                 // Remove duplicate scripts
                 List<FoundScript> scripts =
                     unmappedScripts
-                        .GroupBy(field => field.NewClassData.FullName)
+                        .GroupBy(field => field.newClassModel.FullName)
                         .Select(group => group.First()).ToList();
 
                 EditorUtility.DisplayDialog("Merging fields necessary",

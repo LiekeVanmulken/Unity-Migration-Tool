@@ -19,7 +19,7 @@ namespace importerexporter.utility
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static FieldData[] GenerateFieldData(string name)
+        public static FieldModel[] GenerateFieldData(string name)
         {
             Type type = assemblies.SelectMany(x => x.GetTypes())
                 .FirstOrDefault(x => x.FullName == name);
@@ -38,10 +38,10 @@ namespace importerexporter.utility
         /// <param name="type"></param>
         /// <param name="iteration">Times it has ran, used to recursively get the children</param>
         /// <returns></returns>
-        public static FieldData[] GenerateFieldData(Type type, int iteration)
+        public static FieldModel[] GenerateFieldData(Type type, int iteration)
         {
             iteration++;
-            List<FieldData> values = new List<FieldData>();
+            List<FieldModel> values = new List<FieldModel>();
 
             FieldInfo[] publicFields =
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static |
@@ -58,7 +58,7 @@ namespace importerexporter.utility
             for (var i = 0; i < members.Count; i++)
             {
                 FieldInfo member = members[i];
-                values.Add(new FieldData(member.Name, member.FieldType, iteration));
+                values.Add(new FieldModel(member.Name, member.FieldType, iteration));
             }
 
             return values.ToArray();

@@ -8,7 +8,7 @@ namespace importerexporter.models
     /// Data model for a field on a class
     /// </summary>
     [Serializable]
-    public class FieldData
+    public class FieldModel
     {
         private readonly Constants constants = Constants.Instance;
 
@@ -20,30 +20,30 @@ namespace importerexporter.models
         /// <summary>
         /// Type of the field on the class
         /// </summary>
-        [SerializeField] public ClassData Type;
+        [SerializeField] public ClassModel Type;
 
-        public FieldData()
+        public FieldModel()
         {
         }
 
-        public FieldData(string name, Type type, int iteration)
+        public FieldModel(string name, Type type, int iteration)
         {
             this.Name = name;
             if (iteration > constants.RECURSION_DEPTH
                 || isStandardClass(type.FullName) || type.IsEnum)
             {
-                this.Type = new ClassData();
+                this.Type = new ClassModel();
                 this.Type.FullName = type.FullName;
                 return;
             }
 
-            this.Type = new ClassData(type, iteration);
+            this.Type = new ClassModel(type, iteration);
         }
 
 
         private bool isStandardClass(string toCheck)
         {
-            return toCheck == null || constants.standardRegex.Match(toCheck).Success;
+            return toCheck == null || constants.StandardclassesRegex.Match(toCheck).Success;
         }
     }
 }

@@ -10,10 +10,10 @@ namespace importerexporter.utility
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            WriteJsonRecursively(writer, (ClassData) value, serializer, 0, true);
+            WriteJsonRecursively(writer, (ClassModel) value, serializer, 0, true);
         }
 
-        private void WriteJsonRecursively(JsonWriter writer, ClassData classData, JsonSerializer serializer,
+        private void WriteJsonRecursively(JsonWriter writer, ClassModel classModel, JsonSerializer serializer,
             int depth = 0,
             bool root = false)
         {
@@ -29,15 +29,16 @@ namespace importerexporter.utility
 
             writer.WriteStartObject();
 
-            WriteKeyValue(writer, "Name", classData.FullName);
-            WriteKeyValue(writer, "Guid", classData.Guid);
-            WriteKeyValue(writer, "FileID", classData.FileID);
+            WriteKeyValue(writer, "FullName", classModel.FullName);
+            WriteKeyValue(writer, "Name", classModel.Name);
+            WriteKeyValue(writer, "Guid", classModel.Guid);
+            WriteKeyValue(writer, "FileID", classModel.FileID);
 
             writer.WritePropertyName("Fields");
             writer.WriteStartArray();
-            if (classData.Fields != null && classData.Fields.Length != 0)
+            if (classModel.Fields != null && classModel.Fields.Length != 0)
             {
-                foreach (FieldData fieldData in classData.Fields)
+                foreach (FieldModel fieldData in classModel.Fields)
                 {
                     writer.WriteStartObject();
                     WriteKeyValue(writer, "Name", fieldData.Name);
@@ -67,7 +68,7 @@ namespace importerexporter.utility
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
-            if (objectType == typeof(ClassData))
+            if (objectType == typeof(ClassModel))
             {
                 JObject classData = JObject.Load(reader);
                 return Parse(classData);
@@ -75,19 +76,21 @@ namespace importerexporter.utility
 
             throw new NotImplementedException("Not a ClassData object");
         }
-        public static ClassData Parse(JObject classData)
+        public static ClassModel Parse(JObject classData)
         {
-            ClassData current = new ClassData();
-            current.FullName = (string) classData["Name"];
+            ClassModel current = new ClassModel();
+            current.FullName = (string) classData["FullName"];
+            current.Name = (string) classData["Name"];
+            current.NameLower = current.Name.ToLower();
             current.Guid = (string) classData["Guid"];
             current.FileID = (string) classData["FileID"];
 
-            List<FieldData> currentFields = new List<FieldData>();
+            List<FieldModel> currentFields = new List<FieldModel>();
             foreach (JObject field in classData["Fields"])
             {
-                FieldData currentField = new FieldData();
+                FieldModel currentField = new FieldModel();
                 currentField.Name = (string) field["Name"];
-                currentField.Type = new ClassData();
+                currentField.Type = new ClassModel();
                 currentField.Type.FullName = (string) field["Type"];
 
                 JToken classDataChild;
@@ -106,7 +109,7 @@ namespace importerexporter.utility
         }
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(ClassData);
+            return objectType == typeof(ClassModel);
         }
     }
 }

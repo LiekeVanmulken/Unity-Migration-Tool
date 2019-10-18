@@ -29,12 +29,6 @@ namespace importerexporter.windows
 
         Vector2 scrollPosition = Vector2.zero;
 
-        [MenuItem("WizardTest/Wizard")]
-        public static MergingWizard CreateWizard()
-        {
-            return CreateWizard(null);
-        }
-
         public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
             var wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
@@ -119,11 +113,11 @@ namespace importerexporter.windows
 
             for (int i = 0; i < foundScripts.Count; i++)
             {
-                ClassData classData = foundScripts[i].NewClassData;
+                ClassModel classModel = foundScripts[i].newClassModel;
                 FoundScriptWrapper wrapper = foundScriptWrappers[i];
                 List<MergeNode> fieldsToMerge = foundScripts[i].MergeNodes;
 
-                EditorGUILayout.LabelField(classData.FullName, classNameStyle);
+                EditorGUILayout.LabelField(classModel.FullName, classNameStyle);
                 GUILayout.Box(GUIContent.none, verticalMarginStyle);
 
                 GUILayout.BeginHorizontal();

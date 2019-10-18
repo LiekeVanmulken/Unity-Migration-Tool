@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using importerexporter.utility;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -11,7 +10,7 @@ namespace importerexporter.models
     /// </summary>
     [Serializable]
     [JsonConverter(typeof(ClassDataConverter))]
-    public class ClassData
+    public class ClassModel
     {
         /// <summary>
         /// Class namespace and name
@@ -43,13 +42,13 @@ namespace importerexporter.models
         /// <summary>
         /// All fields on the class
         /// </summary>
-        [SerializeField] public FieldData[] Fields;
+        [SerializeField] public FieldModel[] Fields;
 
-        public ClassData()
+        public ClassModel()
         {
         }
 
-        public ClassData(string fullName, string guid, string fileID = "11500000")
+        public ClassModel(string fullName, string guid, string fileID = "11500000")
         {
             this.FullName = fullName;
             if (!string.IsNullOrEmpty(fullName))
@@ -64,7 +63,7 @@ namespace importerexporter.models
             this.Fields = FieldDataGenerationUtility.GenerateFieldData(fullName);
         }
 
-        public ClassData(Type type, int iteration = 0)
+        public ClassModel(Type type, int iteration = 0)
         {
             this.FullName = type.FullName;
             this.Name = type.Name;

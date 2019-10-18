@@ -70,7 +70,7 @@ namespace importerexporter
 
                 FoundScript scriptType =
                     foundScripts.FirstOrDefault(node =>
-                        node.NewClassData.Guid == guid && node.NewClassData.FileID == fileID);
+                        node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
                 if (scriptType != null)
                 {
                     scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
@@ -116,7 +116,7 @@ namespace importerexporter
                         continue;
                     }
                     List<MergeNode> typeNodes =
-                        foundScripts.FirstOrDefault(script => script.OldClassData.FullName == type)?.MergeNodes;
+                        foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
                     if (typeNodes != null)
                     {
                         scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
