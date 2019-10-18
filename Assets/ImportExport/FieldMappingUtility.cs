@@ -1,10 +1,10 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using importerexporter.models;
 using importerexporter.utility;
-using UnityEditor;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -47,151 +47,6 @@ namespace importerexporter
         private Constants constants = Constants.Instance;
 
         /// <summary>
-        /// Finds all fields that need to be migrated from the yaml
-        /// </summary>
-        /// <param name="linesToChange"></param>
-        /// <param name="oldIDs"></param>
-        /// <param name="oldIDs"></param>
-        /// <param name="currentIDs"></param>
-        /// <returns></returns>
-        public List<FoundScript> FindFieldsToMigrate(string[] linesToChange, List<ClassData> oldIDs,
-            List<ClassData> currentIDs)
-        {
-            EditorUtility.DisplayProgressBar("Field Migration", "Finding fields to migrate.", 0.5f);
-            List<FoundScript> generateFieldMapping = GenerateFieldMapping(linesToChange, oldIDs, currentIDs);
-            EditorUtility.ClearProgressBar();
-
-            return generateFieldMapping;
-        }
-
-        /// <summary>
-        /// Helper method to change the fields in the yaml to the corresponding new name
-        /// </summary>
-        /// <param name="linesToSearch"></param>
-        /// <param name="oldIDs"></param>
-        /// <param name="oldClassData"></param>
-        /// <param name="newIDs"></param>
-        /// <returns></returns>
-        private List<FoundScript> GenerateFieldMapping(string[] linesToSearch, List<ClassData> oldIDs,
-            List<ClassData> newIDs)
-        {
-            string content = string.Join("\n", linesToSearch);
-
-            YamlStream yamlStream = new YamlStream();
-            yamlStream.Load(new StringReader(content));
-
-            List<FoundScript> foundScripts = new List<FoundScript>();
-
-            for (var i = 0; i < yamlStream.Documents.Count; i++)
-            {
-                YamlDocument document = yamlStream.Documents[i];
-
-                //Only change it if it's a MonoBehaviour as unity script won't be as easily broken
-                string type = document.GetName();
-                if (type != "MonoBehaviour")
-                {
-                    continue;
-                }
-
-                YamlNode scriptYaml = document.RootNode.GetChildren()["MonoBehaviour"];
-
-                string fileID = (string) scriptYaml["m_Script"]["fileID"];
-                string guid = (string) scriptYaml["m_Script"]["guid"];
-
-                ClassData newClassData =
-                    newIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
-                if (newClassData == null)
-                {
-                    ClassData scriptNotPorted =
-                        oldIDs.FirstOrDefault(data => data.Guid == guid && data.FileID == fileID);
-                    throw new NotImplementedException(
-                        "Could not find the IDs of the class. The class names might not match between projects. Old script : " +
-                        scriptNotPorted);
-                }
-
-                ClassData oldClassData = oldIDs.First(data => data.Name == newClassData.Name);
-
-
-                FoundScript found = new FoundScript(newIDs, oldClassData, newClassData, scriptYaml);
-                if (!found.HasBeenMapped)
-                {
-                    loopThroughYamlKeysForTypes(scriptYaml, ref foundScripts, oldClassData, newClassData, newIDs);
-                }
-            }
-
-            return foundScripts;
-        }
-
-        private void loopThroughYamlKeysForTypes(YamlNode yamlNode, ref List<FoundScript> foundTypes,
-            ClassData oldDocumentClassData, ClassData newDocumentClassData, List<ClassData> allNewTypes)
-        {
-            FoundScript type = new FoundScript();
-            type.OldClassData = oldDocumentClassData;
-            type.ClassData = newDocumentClassData;
-
-            IDictionary<YamlNode, YamlNode> fields = yamlNode.GetChildren();
-            foreach (KeyValuePair<YamlNode, YamlNode> field in fields)
-            {
-                //Standard MonoBehaviour field, don't map
-                if (constants.MonoBehaviourFieldExclusionList.Contains(field.Key.ToString()))
-                {
-                    continue;
-                }
-
-                //The type is already mapped
-                if (foundTypes.FirstOrDefault(script => script.OldClassData.Name == oldDocumentClassData.Name) != null)
-                {
-                    continue;
-                }
-
-                MergeNode mergeNode = new MergeNode();
-                mergeNode.MergeNodes = new List<MergeNode>();
-                mergeNode.YamlKey = field.Key.ToString();
-                mergeNode.SampleValue = field.Value.ToString();
-
-                FieldData mergeNodeType = oldDocumentClassData.Fields
-                    .First(data => data.Name == mergeNode.YamlKey);
-
-                mergeNode.Type = mergeNodeType?.Type?.Name;
-
-                mergeNode.Options = newDocumentClassData.Fields?
-                    .Where(data => data.Type.Name == mergeNode.Type)
-                    .Select(data => data.Name).ToArray();
-
-                mergeNode.NameToExportTo = newDocumentClassData.Fields?
-                    .Where(data => data.Type.Name == mergeNode.Type)
-                    .OrderBy(newField =>
-                        Levenshtein.Compute(
-                            field.Key.ToString(),
-                            newField.Name))
-                    .First()
-                    .Name;
-
-                type.MergeNodes.Add(mergeNode);
-                if (field.Value is YamlMappingNode)
-                {
-                    try
-                    {
-                        ClassData oldFieldType = oldDocumentClassData.Fields
-                            .First(data => data.Name == field.Key.ToString()).Type;
-
-                        ClassData newFieldType = allNewTypes.First(data => data.Name == oldFieldType.Name);
-
-                        loopThroughYamlKeysForTypes(field.Value, ref foundTypes, oldFieldType, newFieldType,
-                            allNewTypes);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("Could not find foundScript type, this shouldn't fail but it probably will'");
-                        throw e;
-                    }
-                }
-            }
-
-            foundTypes.Add(type);
-        }
-
-        /// <summary>
         /// Replaces the Fields on the monobehaviours according to the mergeNode data
         /// </summary>
         /// <param name="scene"></param>
@@ -215,7 +70,7 @@ namespace importerexporter
 
                 FoundScript scriptType =
                     foundScripts.FirstOrDefault(node =>
-                        node.ClassData.Guid == guid && node.ClassData.FileID == fileID);
+                        node.NewClassData.Guid == guid && node.NewClassData.FileID == fileID);
                 if (scriptType != null)
                 {
                     scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
@@ -254,25 +109,39 @@ namespace importerexporter
                     }
                     //todo : the parent of a children doesn't get changed
 
-                    var type = currentMergeNodes.First(node => node.YamlKey == yamlNodeKey).Type;
-                    List<MergeNode> typeNodes = foundScripts.First(script => script.ClassData.Name == type).MergeNodes;
-                    scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
+                    string type = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey)?.Type;
+                    if (string.IsNullOrEmpty(type))
+                    {
+                        Debug.LogError("Type was null for yamlKey : " + yamlNodeKey);
+                        continue;
+                    }
+                    List<MergeNode> typeNodes =
+                        foundScripts.FirstOrDefault(script => script.OldClassData.Name == type)?.MergeNodes;
+                    if (typeNodes != null)
+                    {
+                        scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
+                    }
+                    else
+                    {
+                        Debug.Log("Could not find subclasses of class : " + type);
+                    }
                 }
 
-//                else
-//                {
-                var currentMergeNode = currentMergeNodes.First(node => node.YamlKey == yamlNodeKey);
+                MergeNode currentMergeNode = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
 
-                if (!string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
+                if (currentMergeNode!=null && !string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
                 {
                     scene[line] = scene[line]
-                        .ReplaceFirst(currentMergeNode.YamlKey, currentMergeNode.NameToExportTo);
+                        .ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
                 }
-
-//                }
+                else
+                {
+                    Debug.Log("Mapping failed for : " + yamlNodeKey + " node : " + yamlNode.ToString());
+                }
             }
 
             return scene;
         }
     }
 }
+#endif

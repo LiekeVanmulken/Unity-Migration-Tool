@@ -1,8 +1,6 @@
-﻿
-
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
+﻿using static importerexporter.models.FoundScript;
 #if UNITY_EDITOR
+using YamlDotNet.RepresentationModel;
 using importerexporter.models;
 using importerexporter.utility;
 using System;
@@ -12,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using UnityEditor;
+using importerexporter.windows;
 
 namespace importerexporter
 {
@@ -56,6 +54,8 @@ namespace importerexporter
         /// </summary>
         private Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
+        private readonly Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
+//        private readonly Regex regexFileID = new Regex(@"(?<=fileID: )\-?[A-z0-9]*");
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
@@ -68,84 +68,79 @@ namespace importerexporter
             float progress = 0;
 
             //Get all meta files
-            var classMetaFiles = Directory.GetFiles(path, "*" +
-                                                          ".cs.meta", SearchOption.AllDirectories);
+            string[] classMetaFiles = Directory.GetFiles(path, "*.cs.meta", SearchOption.AllDirectories);
             //Get all dlls
-            var dllMetaFiles = Directory.GetFiles(path, "*" +
-                                                        ".dll.meta", SearchOption.AllDirectories);
+            string[] dllMetaFiles = Directory.GetFiles(path, "*.dll.meta", SearchOption.AllDirectories);
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
 
             List<ClassData> data = new List<ClassData>();
             foreach (string file in classMetaFiles)
             {
-                if (file.ToLower().Contains("testscript"))
-                {
-                    Debug.Log(file);
-                }
-
                 progress++;
-                EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
+                ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
                     progress / totalFiles);
-                var lines = File.ReadAllLines(file);
+                string[] lines = File.ReadAllLines(file);
 
                 foreach (string line in lines)
                 {
-                    Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
-                    Match match = regex.Match(line);
-                    if (match.Success)
-                    {
-                        string className = getTypeByMetafileFileName(file);
-                        if (String.IsNullOrEmpty(className))
-                        {
-                            continue;
-                        }
+                    Match match = regexGuid.Match(line);
+                    if (!match.Success) continue;
 
-                        data.Add(new ClassData(className, match.Value));
+                    string className = getTypeByMetafileFileName(file);
+                    if (String.IsNullOrEmpty(className))
+                    {
+                        continue;
+                    }
+
+                    data.Add(new ClassData(className, match.Value));
+                }
+            }
+
+            //todo : uncomment, commented for speed with debugging
+            // Loop through dlls  
+            if (!constants.DEBUG)
+            {
+                foreach (string metaFile in dllMetaFiles)
+                {
+                    progress++;
+                    ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+                        progress / totalFiles);
+                    string text = File.ReadAllText(metaFile);
+                    Match match = regexGuid.Match(text);
+                    if (!match.Success)
+                    {
+                        Debug.LogError("Could not parse the guid from the dll meta file. File : " +
+                                       metaFile);
+                    }
+
+                    string file = metaFile.Replace(".meta", "");
+                    try
+                    {
+                        Assembly assembly = Assembly.LoadFile(file);
+                        foreach (Type type in assembly.GetTypes())
+                        {
+                            if (!type.FullName.StartsWith("u040"))
+                            {
+                                continue;
+                            }
+
+                            ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
+                                progress / totalFiles);
+                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
                     }
                 }
             }
-            //todo : uncomment, commented for speed with debugging
-//            // Loop through dlls  
-//            if (!constants.DEBUG)
-//            {
-//                foreach (string metaFile in dllMetaFiles)
-//                {
-//                    progress++;
-//                    EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
-//                        progress / totalFiles);
-//                    string text = File.ReadAllText(metaFile);
-//                    Regex regex = new Regex(@"(?<=guid: )[A-z0-9]*");
-//                    Match match = regex.Match(text);
-//                    if (!match.Success)
-//                    {
-//                        Debug.LogError("Could not parse the guid from the dll meta file. File : " +
-//                                       metaFile);
-//                    }
-//
-//                    var file = metaFile.Replace(".meta", "");
-//                    try
-//                    {
-//                        Assembly assembly = Assembly.LoadFile(file);
-//                        foreach (Type type in assembly.GetTypes())
-//                        {
-//                            EditorUtility.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
-//                                progress / totalFiles);
-//                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
-//                        }
-//                    }
-//                    catch (Exception e)
-//                    {
-//                        Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
-//                    }
-//                }
-//            }
 
-            EditorUtility.ClearProgressBar();
+            ImportWindow.ClearProgressBar();
             return data;
         }
 
-       
         /// <summary>
         /// Replaces all old GUIDs and old fileIDs with the new GUID and fileID and returns a the new scenefile.
         /// This can be saved as an .unity file and then be opened in the editor.
@@ -155,19 +150,19 @@ namespace importerexporter
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassData> oldIDs,
-            List<ClassData> newIDs = null)
+            List<ClassData> newIDs, ref List<FoundScript> foundScripts)
         {
-            EditorUtility.DisplayProgressBar("Import progress bar", "Importing progress bar.", 0.5f);
-            if (oldIDs == null)
+            ImportWindow.DisplayProgressBar("Migration started",
+                "Start importing current project classData and migrating scene.", 0.5f);
+            if (oldIDs == null || newIDs == null || foundScripts == null)
             {
-                throw new NotImplementedException("ExistingData is null");
+                throw new NotImplementedException("Some of the data with which to export is null.");
             }
 
-            var currentIDs = newIDs ?? ExportClassData(Application.dataPath);
-            var linesToChange = File.ReadAllLines(fileToChange);
+            string[] linesToChange = File.ReadAllLines(fileToChange);
 
-            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, currentIDs, oldIDs);
-            EditorUtility.ClearProgressBar();
+            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref foundScripts);
+            ImportWindow.ClearProgressBar();
 
             return linesToChange;
         }
@@ -177,42 +172,135 @@ namespace importerexporter
         /// Replaces the GUID and fileID, matching the oldIDs with the currentIDs
         /// </summary>
         /// <param name="linesToChange"></param>
-        /// <param name="currentIDs">List of GUIDs and FileID for all currently in the project classes.</param>
         /// <param name="oldIDs">List of GUIDs and FileID for all classes in the previous project.</param>
+        /// <param name="newIDs">List of GUIDs and FileID for all currently in the project classes.</param>
+        /// <param name="foundScripts"></param>
         /// <returns></returns>
-        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassData> currentIDs,
-            List<ClassData> oldIDs)
+        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassData> oldIDs, List<ClassData> newIDs,
+            ref List<FoundScript> foundScripts)
         {
-            for (var i = 0; i < linesToChange.Length; i++)
+            string sceneContent = string.Join("\r\n", linesToChange);
+
+            YamlStream yamlStream = new YamlStream();
+            yamlStream.Load(new StringReader(sceneContent));
+            List<YamlDocument> yamlDocuments =
+                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
+            foreach (YamlDocument document in yamlDocuments)
             {
-                string line = linesToChange[i];
-                Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
-                Match matchGuid = regexGuid.Match(line);
-                if (!matchGuid.Success) continue;
+//                if (document.RootNode.Start.Line > 12100) //todo : tussen 12000 en 13000 gaat iets fout 
+//                {
+//                    return linesToChange;
+//                }
 
-                Regex fileIDRegex = new Regex(@"(?<=fileID: )\-?[A-z0-9]*");
+                YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
 
-                var fileIDMatch = fileIDRegex.Match(line);
-                string fileID = fileIDMatch.Success ? fileIDMatch.Value : "";
+                YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
+                YamlNode oldGuidNode = monoBehaviour["m_Script"]["guid"];
 
+                string oldFileId = oldFileIdNode.ToString();
+                string oldGuid = oldGuidNode.ToString();
 
-                // Get the new value with by matching the old id with the one in the file and finding the matching class in the new IDs
-                ClassData replacementClassData = findNewID(oldIDs, currentIDs, fileID, matchGuid.Value);
-                if (replacementClassData == null)
+                ClassData oldClassData = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
+                if (oldClassData == null)
                 {
-                    continue; // TODO : this should crash when a monobehaviour cannot be replaced!!!!!!!!
+                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid + " oldFileID : " + oldFileId);
+                    continue;
+                } 
+                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassData); //todo : u040.prespective.prepair.physics.optics.IRBeamReflector is not found and never made?????
+                if (mapping == null)
+                {
+                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId);
+                    continue;
+//                    throw new NotImplementedException("Mapping is null");
                 }
 
-                // Replace the Guid
-                linesToChange[i] = linesToChange[i].Replace(matchGuid.Value, replacementClassData.Guid);
+                int line = oldFileIdNode.Start.Line - 1;
 
-                if (String.IsNullOrEmpty(fileID)) continue;
+                if (!string.IsNullOrEmpty(mapping.NewClassData.Guid))
+                {
+                    // Replace the Guid
+                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.NewClassData.Guid);
+                }
+                else
+                {
+                    Debug.Log("Found empty guid");
+                    continue; 
+                    //todo : this should throw an error
+                    //todo : this is when a non script is being used or the guid is not available. This should probably be a popup with a warning
+                }
+
+
+                if (!String.IsNullOrEmpty(oldFileId))
+                {
+                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.NewClassData.FileID);
+                }
+
 
                 //Replace the fileID
-                linesToChange[i] = linesToChange[i].Replace(fileID, replacementClassData.FileID);
             }
 
             return linesToChange;
+        }
+
+        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs,
+            ref List<FoundScript> foundScripts, ClassData oldClassData)
+        {
+            if (oldClassData == null)
+            { 
+                throw new NotImplementedException("No old classData found");
+            }
+
+            FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
+                script.OldClassData.Name == oldClassData.Name);
+
+            ClassData replacementClassData =
+                existingFoundScript
+                    ?.NewClassData;
+            if (replacementClassData == null && oldClassData.Fields != null)
+            {
+                replacementClassData = findNewID(newIDs, oldClassData);
+            }
+            else if(replacementClassData !=null)
+            {
+                return existingFoundScript;
+            }
+            else
+            {
+                 return null;
+            }
+
+            if (existingFoundScript == null)
+            {
+                if (oldClassData.Fields != null && oldClassData.Fields.Length != 0)
+                {
+                    foreach (FieldData field in oldClassData.Fields)
+                    {
+                        if (field.Type == null)
+                        {
+                            throw new NotImplementedException("type of field is null for some reason");
+                        } //todo : check if already exists 
+
+                        RecursiveFoundScriptTest(newIDs, ref foundScripts, field.Type);
+                    }
+                }
+                
+                existingFoundScript = new FoundScript
+                {
+                    OldClassData = oldClassData,
+                    NewClassData = replacementClassData
+                };
+                MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+                if (hasBeenMapped == MappedState.NotMapped)
+                {
+                    existingFoundScript.GenerateMappingNode(foundScripts);
+                }
+
+               
+
+                foundScripts.Add(existingFoundScript);
+            }
+
+            return existingFoundScript;
         }
 
 
@@ -225,89 +313,127 @@ namespace importerexporter
         {
             string fileName = Path.GetFileName(path);
             fileName = fileName.Replace(".cs.meta", "");
-            Type[] types = assemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.Name == fileName).ToArray();
+            string fileNameLower = fileName.ToLower();
 
-            if (types.Length == 0)
+            List<Type> types = assemblies.SelectMany(x => x.GetTypes())
+                .Where(x => x.Name.ToLower() == fileNameLower).ToList();
+            if (types.Count == 0)
             {
-                Debug.Log("Could not find type with name : " + fileName);
+                Debug.Log("Checked for type  \"" + fileName +
+                          "\" no types were found."); //todo : should this also give a popup?
                 return null;
             }
 
-            if (types.Length > 1)
+            if (types.Count == 1)
             {
-                // Check if they're monoBehaviours and if they are return those.
-                List<Type> monoBehaviours = new List<Type>();
-                foreach (Type type in types)
-                {
-                    if (type.IsSubclassOf(typeof(MonoBehaviour)) &&
-                        // Apparently we sometimes use the same dll in the same project causing the same classes(including same namespace), using the same name.
-                        // As this causes the same fileID we just use the first one
-                        monoBehaviours.FirstOrDefault(mono => mono.FullName == type.FullName) == null)
-                    {
-                        monoBehaviours.Add(type);
-                    }
-                }
+                return types[0].FullName;
+            }
 
-                switch (monoBehaviours.Count)
+            // Check if they're monoBehaviours and if they are return those.
+            List<Type> monoBehaviours = new List<Type>();
+            foreach (Type type in types)
+            {
+                if (type.IsSubclassOf(typeof(MonoBehaviour)) &&
+                    // Apparently we sometimes use the same dll in the same project causing the same classes(including same namespace), using the same name.
+                    // As this causes the same fileID we just use the first one
+                    monoBehaviours.FirstOrDefault(mono => mono.Name == type.Name) == null)
                 {
-                    case 0:
-                        Debug.Log("Could not find any scripts of type " + fileName);
-                        return null;
-                    case 1:
-                        return monoBehaviours[0].FullName;
-                    case 2:
-                        return EditorUtility.DisplayDialog("Select", "Choose which class to export",
-                            monoBehaviours[0].FullName, monoBehaviours[1].FullName)
-                            ? monoBehaviours[0].FullName
-                            : monoBehaviours[1].FullName;
-                    case 3:
-                        var complexResult = EditorUtility.DisplayDialogComplex("Select", "Choose which class to export",
-                            monoBehaviours[0].FullName, monoBehaviours[1].FullName, monoBehaviours[2].FullName);
-                        return monoBehaviours[complexResult].FullName;
-                    default:
-                        Debug.LogError("More than 3 MonoBehaviours found for " + fileName +
-                                       " grabbing the last from : " +
-                                       String.Concat(monoBehaviours.Select(type => type.FullName).ToArray()));
-                        return monoBehaviours.Last().FullName;
+                    monoBehaviours.Add(type);
                 }
             }
 
-            Type last = types.Last();
-            return last.FullName;
+            if (monoBehaviours.Count == 0)
+            {
+                Debug.LogWarning("Class : " + fileName +
+                                 " could not be found and is not an MonoBehaviour so will skip");
+                return null;
+            }
+
+            if (monoBehaviours.Count == 1)
+            {
+                return monoBehaviours[0].FullName;
+            }
+
+            string[] options = monoBehaviours.Select(type => type.FullName).ToArray();
+            return ImportWindow.OpenOptionsWindow("Class cannot be found, select which one to choose", fileName,
+                options);
         }
 
         /// <summary>
         /// Finds the new GUID and fileID from the old IDs and the new IDs by checking for the classname in both
         /// </summary>
-        /// <param name="oldData"></param>
-        /// <param name="newData"></param>
-        /// <param name="oldFileID"></param>
-        /// <param name="oldGuid"></param>
+        /// <param name="newIDs"></param>
+        /// <param name="old"></param>
         /// <returns></returns>
-        private ClassData findNewID(List<ClassData> oldData, List<ClassData> newData, string oldFileID,
-            string oldGuid)
+        public ClassData findNewID(List<ClassData> newIDs, ClassData old) // todo : check if the classname is the same but not the namespace
         {
-            ClassData oldClassData = null;
-            foreach (ClassData currentOldFileData in oldData)
+            if (old == null)
             {
-                if ((currentOldFileData.Guid.Equals(oldGuid) && string.IsNullOrEmpty(oldFileID))
-                    || (currentOldFileData.Guid.Equals(oldGuid) && currentOldFileData.FileID.Equals(oldFileID)))
+                throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
+            }
+
+            ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(old.Name));
+            if (newFileData != null) return newFileData;
+
+
+            Dictionary<string,ClassData> allClassData = generateOptions(newIDs);
+            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
+
+//            ClassData[] ordered = newIDs
+//                .OrderByDescending(data => Levenshtein.Compute(data.Name, old.Name))
+//                .ToArray();
+
+            string result = ImportWindow.OpenOptionsWindow(
+                "Could not find class, please select which class to use",
+                old.Name,
+                options
+            );
+
+            if (string.IsNullOrEmpty(result))
+            {
+                Debug.LogError("[Data loss] Could not find class for : " + old.Name +
+                               " and no new class was chosen. This script will not be migrated!");
+
+                return newFileData; // todo : why is this always null
+            }
+
+//            ClassData found = ordered.First(data => data.Name == result);
+            ClassData found = allClassData[result];
+
+
+//                        oldData.IndexOf(found) // todo save the new chosen value in the list, and hope that works :o
+
+            return found;
+        }
+
+        private Dictionary<string, ClassData> generateOptions(List<ClassData> allIDs)
+        {
+            Dictionary<string, ClassData> dictionary = new Dictionary<string, ClassData>();
+            foreach (ClassData id in allIDs)
+            {
+                generateOptionsRecursive(id, ref dictionary);
+            }
+
+            return dictionary;
+        }
+
+        private void generateOptionsRecursive(ClassData id, ref Dictionary<string, ClassData> dictionary)
+        {
+            dictionary[id.Name] = id;
+            if (id.Fields == null || id.Fields.Length == 0)
+            {
+                return;
+            }
+
+            foreach (FieldData field in id.Fields)
+            {
+                if (field.Type == null)
                 {
-                    oldClassData = currentOldFileData;
-                    break;
+                    continue;
                 }
-            }
 
-            if (oldClassData != null)
-            {
-                var newFileData = newData.First(filedata => filedata.Name.Equals(oldClassData.Name));
-                return newFileData;
+                generateOptionsRecursive(field.Type, ref dictionary);
             }
-
-            Debug.Log("Could not find old guid that matches the class with guid: " + oldGuid + " fileID : " +
-                      oldFileID);
-            return null;
         }
     }
 }

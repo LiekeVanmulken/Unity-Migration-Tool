@@ -33,7 +33,7 @@ namespace importerexporter.utility
 
         #endregion
 
-        public readonly bool DEBUG = false;
+        public readonly bool DEBUG = true;
 
         public readonly int RECURSION_DEPTH = 3;
 

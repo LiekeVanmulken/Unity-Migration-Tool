@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using importerexporter.utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -119,20 +120,23 @@ namespace importerexporter.models
 
             writer.WritePropertyName("Fields");
             writer.WriteStartArray();
-            foreach (FieldData fieldData in classData.Fields)
+            if (classData.Fields != null && classData.Fields.Length!=0)
             {
-                writer.WriteStartObject();
-                WriteKeyValue(writer, "Name", fieldData.Name);
-                if (fieldData.Type != null)
+                foreach (FieldData fieldData in classData.Fields)
                 {
-                    WriteKeyValue(writer, "Type", fieldData.Type.Name);
-                    if (fieldData.Type.Fields != null)
+                    writer.WriteStartObject();
+                    WriteKeyValue(writer, "Name", fieldData.Name);
+                    if (fieldData.Type != null)
                     {
-                        WriteJsonRecursively(writer, fieldData.Type, serializer, depth + 1);
+                        WriteKeyValue(writer, "Type", fieldData.Type.Name);
+                        if (fieldData.Type.Fields != null)
+                        {
+                            WriteJsonRecursively(writer, fieldData.Type, serializer, depth + 1);
+                        }
                     }
-                }
 
-                writer.WriteEndObject();
+                    writer.WriteEndObject();
+                }
             }
 
             writer.WriteEndArray();
@@ -154,7 +158,7 @@ namespace importerexporter.models
                 return ClassData.Parse(classData);
             }
 
-            throw new NotImplementedException("Not an ClassData object");
+            throw new NotImplementedException("Not a ClassData object");
         }
 
         public override bool CanConvert(Type objectType)
@@ -179,19 +183,22 @@ namespace importerexporter.models
         public FieldData(string name, Type type, int iteration)
         {
             this.Name = name;
-            //todo : check if this recursion still works properly!
             if (iteration > constants.RECURSION_DEPTH
-                || type == typeof(string)
-                || type == typeof(int)
-                || type == typeof(float)
-                || type == typeof(bool)
-                || type == typeof(double))
+                || isStandardClass(type.FullName) || type.IsEnum)
             {
                 this.Type = new ClassData();
                 this.Type.Name = type.FullName;
                 return;
             }
+
             this.Type = new ClassData(type, iteration);
+        }
+
+        Regex standardRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
+
+        private bool isStandardClass(string toCheck)
+        {
+            return toCheck == null || standardRegex.Match(toCheck).Success;
         }
     }
 
@@ -227,8 +234,7 @@ namespace importerexporter.models
         {
             iteration++;
             List<FieldData> values = new List<FieldData>();
-
-
+            
             FieldInfo[] publicFields =
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static |
                                BindingFlags.FlattenHierarchy);

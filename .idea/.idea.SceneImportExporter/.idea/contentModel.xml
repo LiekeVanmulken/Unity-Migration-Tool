@@ -11,10 +11,10 @@
         <e p="AssetDatabaseTest" t="Include">
           <e p="AssetDatabaseTestScript.cs" t="Include" />
         </e>
-        <e p="ExtensionMethods.cs" t="Include" />
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="FieldMappingUtility.cs" t="Include" />
+          <e p="FoundScriptMappingGenerator.cs" t="Include" />
           <e p="IDUtility.cs" t="Include" />
           <e p="Models" t="Include">
             <e p="ClassData.cs" t="Include" />
@@ -23,12 +23,15 @@
           </e>
           <e p="Utility" t="Include">
             <e p="Constants.cs" t="Include" />
+            <e p="ExtensionMethods.cs" t="Include" />
             <e p="Levenshtein.cs" t="Include" />
+            <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
             <e p="MD4.cs" t="Include" />
           </e>
           <e p="Windows" t="Include">
             <e p="ImportWindow.cs" t="Include" />
             <e p="MergingWizard.cs" t="Include" />
+            <e p="OptionsWizard.cs" t="Include" />
           </e>
         </e>
         <e p="JsonDotNet" t="Include">
@@ -280,8 +283,9 @@
             <e p="YamlDotNet.license.txt" t="Include" />
           </e>
         </e>
-        <e p="TestScript.cs" t="Include" />
+        <e p="TestScript1.cs" t="Include" />
         <e p="TestScript2.cs" t="Include" />
+        <e p="ThreadTestWindow.cs" t="Include" />
         <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
         <e p="WizardTest" t="Include">
           <e p="MergingWizardEditorWindow.cs" t="Include" />
