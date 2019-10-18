@@ -1,5 +1,5 @@
-﻿#if UNITY_EDITOR
-using static importerexporter.models.FoundScript;
+﻿using static importerexporter.models.FoundScript;
+#if UNITY_EDITOR
 using YamlDotNet.RepresentationModel;
 using importerexporter.models;
 using importerexporter.utility;
@@ -114,20 +114,20 @@ namespace importerexporter
                                        metaFile);
                     }
 
-                    string dllGuid = match.Value;
                     string file = metaFile.Replace(".meta", "");
                     try
                     {
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
-//                            if (!type.FullName.StartsWith("u040"))
-//                            {
-//                                continue;
-//                            }
+                            if (!type.FullName.StartsWith("u040"))
+                            {
+                                continue;
+                            }
+
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
-                            data.Add(new ClassData(type.FullName, dllGuid, FileIDUtil.Compute(type).ToString()));
+                            data.Add(new ClassData(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
                         }
                     }
                     catch (Exception e)
@@ -187,6 +187,11 @@ namespace importerexporter
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
             foreach (YamlDocument document in yamlDocuments)
             {
+//                if (document.RootNode.Start.Line > 12100) //todo : tussen 12000 en 13000 gaat iets fout 
+//                {
+//                    return linesToChange;
+//                }
+
                 YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
 
                 YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
@@ -195,24 +200,13 @@ namespace importerexporter
                 string oldFileId = oldFileIdNode.ToString();
                 string oldGuid = oldGuidNode.ToString();
 
-                ClassData oldClassData =
-                    oldIDs.FirstOrDefault(data =>
-                        data.Guid == oldGuid && data.FileID == oldFileId); // todo : this breaks
+                ClassData oldClassData = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
                 if (oldClassData == null)
                 {
-                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid +
-                                   " oldFileID : " + oldFileId);
+                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid + " oldFileID : " + oldFileId);
                     continue;
-                }
-
-                if (oldClassData.Name == "u040.prespective.prepair.physics.kinetics.BeltSystem")
-                {
-                    Debug.Log("test");
-                }
-
-                FoundScript
-                    mapping = RecursiveFoundScriptTest(newIDs, ref foundScripts,
-                        oldClassData);
+                } 
+                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassData); //todo : u040.prespective.prepair.physics.optics.IRBeamReflector is not found and never made?????
                 if (mapping == null)
                 {
                     Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId);
@@ -230,7 +224,7 @@ namespace importerexporter
                 else
                 {
                     Debug.Log("Found empty guid");
-                    continue;
+                    continue; 
                     //todo : this should throw an error
                     //todo : this is when a non script is being used or the guid is not available. This should probably be a popup with a warning
                 }
@@ -248,17 +242,12 @@ namespace importerexporter
             return linesToChange;
         }
 
-        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs, // todo
+        private FoundScript RecursiveFoundScriptTest(List<ClassData> newIDs,
             ref List<FoundScript> foundScripts, ClassData oldClassData)
         {
             if (oldClassData == null)
-            {
+            { 
                 throw new NotImplementedException("No old classData found");
-            }
-
-            if (oldClassData.Name == "u040.prespective.prepair.physics.kinetics.BeltSystem")
-            {
-                Debug.Log("test beltSystem");
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
@@ -267,17 +256,17 @@ namespace importerexporter
             ClassData replacementClassData =
                 existingFoundScript
                     ?.NewClassData;
-            if (replacementClassData == null && oldClassData.Fields != null && oldClassData.Fields?.Length != 0)
+            if (replacementClassData == null && oldClassData.Fields != null)
             {
                 replacementClassData = findNewID(newIDs, oldClassData);
             }
-            else if (replacementClassData != null)
+            else if(replacementClassData !=null)
             {
                 return existingFoundScript;
             }
             else
             {
-                return null;
+                 return null;
             }
 
             if (existingFoundScript == null)
@@ -294,7 +283,7 @@ namespace importerexporter
                         RecursiveFoundScriptTest(newIDs, ref foundScripts, field.Type);
                     }
                 }
-
+                
                 existingFoundScript = new FoundScript
                 {
                     OldClassData = oldClassData,
@@ -306,6 +295,7 @@ namespace importerexporter
                     existingFoundScript.GenerateMappingNode(foundScripts);
                 }
 
+               
 
                 foundScripts.Add(existingFoundScript);
             }
@@ -375,9 +365,7 @@ namespace importerexporter
         /// <param name="newIDs"></param>
         /// <param name="old"></param>
         /// <returns></returns>
-        public ClassData
-            findNewID(List<ClassData> newIDs,
-                ClassData old) // todo : check if the classname is the same but not the namespace
+        public ClassData findNewID(List<ClassData> newIDs, ClassData old) // todo : check if the classname is the same but not the namespace
         {
             if (old == null)
             {
@@ -388,9 +376,8 @@ namespace importerexporter
             if (newFileData != null) return newFileData;
 
 
-            Dictionary<string, ClassData> allClassData = generateOptions(newIDs);
-            string[] options = allClassData.Select(pair => pair.Key)
-                .OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
+            Dictionary<string,ClassData> allClassData = generateOptions(newIDs);
+            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
 
 //            ClassData[] ordered = newIDs
 //                .OrderByDescending(data => Levenshtein.Compute(data.Name, old.Name))
@@ -410,16 +397,13 @@ namespace importerexporter
                 return newFileData; // todo : why is this always null
             }
 
-            var foundClassData = allClassData.Where(pair => pair.Key == result).ToArray();
-            switch (foundClassData.Length)
-            {
-                case 0:
-                    throw new NullReferenceException("Cannot find selected class");
-                case 1:
-                    return foundClassData[0].Value;
-                default:
-                    return foundClassData.First(pair => !string.IsNullOrEmpty(pair.Value.Guid)).Value;
-            }
+//            ClassData found = ordered.First(data => data.Name == result);
+            ClassData found = allClassData[result];
+
+
+//                        oldData.IndexOf(found) // todo save the new chosen value in the list, and hope that works :o
+
+            return found;
         }
 
         private Dictionary<string, ClassData> generateOptions(List<ClassData> allIDs)
@@ -435,17 +419,7 @@ namespace importerexporter
 
         private void generateOptionsRecursive(ClassData id, ref Dictionary<string, ClassData> dictionary)
         {
-            if (string.IsNullOrEmpty(id.Name))
-            {
-                Debug.LogError("id.name is null in the generateOptionsRecursive");
-                return;
-            }
-
-            if (!dictionary.ContainsKey(id.Name) || string.IsNullOrEmpty(dictionary[id.Name].Guid))
-            {
-                dictionary[id.Name] = id;
-            }
-
+            dictionary[id.Name] = id;
             if (id.Fields == null || id.Fields.Length == 0)
             {
                 return;
