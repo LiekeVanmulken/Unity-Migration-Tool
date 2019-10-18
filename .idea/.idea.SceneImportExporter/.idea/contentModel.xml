@@ -289,6 +289,7 @@
         </e>
         <e p="TestScript1.cs" t="Include" />
         <e p="TestScript2.cs" t="Include" />
+        <e p="TestScript_Arrays.cs" t="Include" />
         <e p="ThreadTestWindow.cs" t="Include" />
         <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
         <e p="WizardTest" t="Include">

@@ -374,13 +374,18 @@ namespace importerexporter
             ClassModel newFileModel = newIDs.FirstOrDefault(data => data.FullName.Equals(old.FullName));
             if (newFileModel != null) return newFileModel;
 
-            ClassModel[] sameNames = newIDs.Where(data => data.Name == old.Name).ToArray();
-            if (sameNames.Length == 1)
-            {
-                return sameNames[0];
-            }
-            
             Dictionary<string,ClassModel> allClassData = generateOptions(newIDs);
+            if (allClassData.ContainsKey(old.Name))
+            {
+                return allClassData[old.Name];
+            }
+
+            ClassModel[] classModels = allClassData.Select(pair => pair.Value).Where(model => model.NameLower == old.NameLower).ToArray();
+            if (classModels.Length == 1)
+            {
+                return classModels[0];
+            }
+
             string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
             
             string result = ImportWindow.OpenOptionsWindow(
