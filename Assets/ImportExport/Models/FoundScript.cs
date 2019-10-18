@@ -83,19 +83,19 @@ namespace importerexporter.models
                 FieldData mergeNodeType = OldClassData.Fields
                     .First(data => data.Name == mergeNode.OriginalValue);
 
-                mergeNode.Type = mergeNodeType?.Type?.Name;
+                mergeNode.Type = mergeNodeType?.Type?.FullName;
 
                 FoundScript mapping =
-                    existingFoundScripts.FirstOrDefault(script => script.OldClassData.Name == mergeNode.Type);
+                    existingFoundScripts.FirstOrDefault(script => script.OldClassData.FullName == mergeNode.Type);
 
                 Func<FieldData, bool> typeCheckPredicate;
                 if (mapping == null)
                 {
-                    typeCheckPredicate = data => data.Type.Name == mergeNode.Type;
+                    typeCheckPredicate = data => data.Type.FullName == mergeNode.Type;
                 }
                 else
                 {
-                    typeCheckPredicate = data => data.Type.Name == mapping.NewClassData.Name;
+                    typeCheckPredicate = data => data.Type.FullName == mapping.NewClassData.FullName;
                 }
 
                 mergeNode.Options = NewClassData.Fields?

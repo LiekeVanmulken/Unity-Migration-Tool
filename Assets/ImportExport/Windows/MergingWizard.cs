@@ -123,7 +123,7 @@ namespace importerexporter.windows
                 FoundScriptWrapper wrapper = foundScriptWrappers[i];
                 List<MergeNode> fieldsToMerge = foundScripts[i].MergeNodes;
 
-                EditorGUILayout.LabelField(classData.Name, classNameStyle);
+                EditorGUILayout.LabelField(classData.FullName, classNameStyle);
                 GUILayout.Box(GUIContent.none, verticalMarginStyle);
 
                 GUILayout.BeginHorizontal();

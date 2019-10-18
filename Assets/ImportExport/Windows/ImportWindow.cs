@@ -25,8 +25,8 @@ namespace importerexporter.windows
     public class ImportWindow : MainThreadDispatcherEditorWindow
     {
         private readonly Constants constants = Constants.Instance;
-        private readonly IDUtility idUtility = IDUtility.Instance;
-        private readonly FieldMappingUtility fieldMappingUtility = FieldMappingUtility.Instance;
+        private readonly IDController idController = IDController.Instance;
+        private readonly FieldMappingController fieldMappingController = FieldMappingController.Instance;
 
         private static List<ClassData> oldFileDatas;
 
@@ -91,7 +91,7 @@ namespace importerexporter.windows
 
         private void ExportCurrentClassData(string rootPath)
         {
-            List<ClassData> oldIDs = idUtility.ExportClassData(rootPath);
+            List<ClassData> oldIDs = idController.ExportClassData(rootPath);
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -185,7 +185,7 @@ namespace importerexporter.windows
                 }
 
                 string[] lastSceneExport =
-                    idUtility.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
+                    idController.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts); //todo : don't use a ref for this because that's like super nasty
 
 
@@ -228,7 +228,7 @@ namespace importerexporter.windows
                 // Remove duplicate scripts
                 List<FoundScript> scripts =
                     unmappedScripts
-                        .GroupBy(field => field.NewClassData.Name)
+                        .GroupBy(field => field.NewClassData.FullName)
                         .Select(group => group.First()).ToList();
 
                 EditorUtility.DisplayDialog("Merging fields necessary",
@@ -276,7 +276,7 @@ namespace importerexporter.windows
             string[] linesToChange)
         {
             string[] newSceneExport =
-                fieldMappingUtility.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
+                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
 
             Debug.Log(string.Join("\n", newSceneExport));
 

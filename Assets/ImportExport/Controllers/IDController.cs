@@ -17,19 +17,19 @@ namespace importerexporter
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public class IDUtility
+    public class IDController
     {
         #region Singleton
 
-        private static IDUtility instance = null;
+        private static IDController instance = null;
 
         private static readonly object padlock = new object();
 
-        IDUtility()
+        IDController()
         {
         }
 
-        public static IDUtility Instance
+        public static IDController Instance
         {
             get
             {
@@ -37,7 +37,7 @@ namespace importerexporter
                 {
                     if (instance == null)
                     {
-                        instance = new IDUtility();
+                        instance = new IDController();
                     }
 
                     return instance;
@@ -251,7 +251,7 @@ namespace importerexporter
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
-                script.OldClassData.Name == oldClassData.Name);
+                script.OldClassData.FullName == oldClassData.FullName);
 
             ClassData replacementClassData =
                 existingFoundScript
@@ -372,12 +372,18 @@ namespace importerexporter
                 throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
             }
 
-            ClassData newFileData = newIDs.FirstOrDefault(filedata => filedata.Name.Equals(old.Name));
+            ClassData newFileData = newIDs.FirstOrDefault(data => data.FullName.Equals(old.FullName));
             if (newFileData != null) return newFileData;
+
+            ClassData[] sameNames = newIDs.Where(data => data.Name == old.Name).ToArray();
+            if (sameNames.Length == 1)
+            {
+                return sameNames[0];
+            }
 
 
             Dictionary<string,ClassData> allClassData = generateOptions(newIDs);
-            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.Name)).ToArray();
+            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
 
 //            ClassData[] ordered = newIDs
 //                .OrderByDescending(data => Levenshtein.Compute(data.Name, old.Name))
@@ -385,13 +391,13 @@ namespace importerexporter
 
             string result = ImportWindow.OpenOptionsWindow(
                 "Could not find class, please select which class to use",
-                old.Name,
+                old.FullName,
                 options
             );
 
             if (string.IsNullOrEmpty(result))
             {
-                Debug.LogError("[Data loss] Could not find class for : " + old.Name +
+                Debug.LogError("[Data loss] Could not find class for : " + old.FullName +
                                " and no new class was chosen. This script will not be migrated!");
 
                 return newFileData; // todo : why is this always null
@@ -419,7 +425,7 @@ namespace importerexporter
 
         private void generateOptionsRecursive(ClassData id, ref Dictionary<string, ClassData> dictionary)
         {
-            dictionary[id.Name] = id;
+            dictionary[id.FullName] = id;
             if (id.Fields == null || id.Fields.Length == 0)
             {
                 return;

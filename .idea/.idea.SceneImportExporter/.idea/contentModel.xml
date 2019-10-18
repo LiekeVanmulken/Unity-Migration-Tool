@@ -13,15 +13,20 @@
         </e>
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
-          <e p="FieldMappingUtility.cs" t="Include" />
+          <e p="Controllers" t="Include">
+            <e p="FieldMappingController.cs" t="Include" />
+            <e p="IDController.cs" t="Include" />
+          </e>
           <e p="FoundScriptMappingGenerator.cs" t="Include" />
-          <e p="IDUtility.cs" t="Include" />
           <e p="Models" t="Include">
             <e p="ClassData.cs" t="Include" />
+            <e p="FieldData.cs" t="Include" />
+            <e p="FieldDataGenerationUtility.cs" t="Include" />
             <e p="FoundScript.cs" t="Include" />
             <e p="MergeNode.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
+            <e p="ClassDataConverter.cs" t="Include" />
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
             <e p="Levenshtein.cs" t="Include" />
