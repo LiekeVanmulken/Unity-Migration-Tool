@@ -208,9 +208,8 @@ namespace importerexporter
                 FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassModel); //todo : u040.prespective.prepair.physics.optics.IRBeamReflector is not found and never made?????
                 if (mapping == null)
                 {
-                    Debug.LogError("mapping is null, really check!!!!" + oldGuid + " - " + oldFileId);
+                    Debug.LogError("mapping is null for " + oldClassModel.FullName);
                     continue;
-//                    throw new NotImplementedException("Mapping is null");
                 }
 
                 int line = oldFileIdNode.Start.Line - 1;
@@ -258,6 +257,10 @@ namespace importerexporter
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
                 replacementClassModel = findNewID(newIDs, oldClassModel);
+                if (replacementClassModel == null)
+                {
+                    return null;
+                }
             }
             else if(replacementClassModel !=null)
             {
@@ -399,7 +402,7 @@ namespace importerexporter
                 Debug.LogError("[Data loss] Could not find class for : " + old.FullName +
                                " and no new class was chosen. This script will not be migrated!");
 
-                return newFileModel; // todo : why is this always null
+                return null; // todo : why is this always null
             }
             
             return allClassData[result];

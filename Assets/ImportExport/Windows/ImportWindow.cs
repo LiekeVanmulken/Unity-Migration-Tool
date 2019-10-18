@@ -28,17 +28,18 @@ namespace importerexporter.windows
         private readonly IDController idController = IDController.Instance;
         private readonly FieldMappingController fieldMappingController = FieldMappingController.Instance;
 
-        private static List<ClassModel> oldFileDatas;
 
+        private static List<ClassModel> oldFileDatas;
         private static string[] lastSceneExport;
         private static List<FoundScript> foundScripts;
 
         private GUIStyle wordWrapStyle;
 
-        private static MergingWizard mergingWizard;
 
+        private static MergingWizard mergingWizard;
         private Thread calculationThread;
 
+        private string idExportPath; 
 
         [MenuItem("Window/Scene import window")]
         public static void ShowWindow()
@@ -49,11 +50,13 @@ namespace importerexporter.windows
         protected void OnEnable()
         {
             wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
+            idExportPath = Application.dataPath + "/ImportExport/Exports/Export.json";
         }
 
         void OnGUI()
         {
-            if (GUILayout.Button("Export Class Data of the current project"))
+        
+            if (GUILayout.Button("Export Classes of the current project"))
             {
                 string rootPath = Application.dataPath;
 
@@ -63,10 +66,12 @@ namespace importerexporter.windows
             }
 
 
-            if (GUILayout.Button("Import Class Data and scene"))
+            if (GUILayout.Button("Migrate scene"))
             {
                 ImportClassDataAndScene();
             }
+
+            GUILayout.Label(File.Exists(idExportPath) ? "IDs found" : "No IDs found, won't be able to export.");
 
 //            if (GUILayout.Button("test generate mapping"))
 //            {
@@ -100,11 +105,11 @@ namespace importerexporter.windows
             };
 
             string jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
-            string filePath = rootPath + "/ImportExport/Exports/Export.json";
-            File.WriteAllText(filePath, jsonField);
+            
+            File.WriteAllText(idExportPath, jsonField);
 
             DisplayDialog("Export complete",
-                "All classes were exported to " + filePath + " . Open up the new project and import the scene.");
+                "All classes were exported to " + idExportPath + " . Open up the new project and import the scene.");
         }
 
         private void ImportClassDataAndScene()
@@ -124,43 +129,42 @@ namespace importerexporter.windows
             string IDPath = EditorUtility.OpenFilePanel(
                 "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
                 "json"); //todo : check if this is in the current project
-            if (IDPath.Length != 0)
-            {
-                List<ClassModel> oldIDs =
-                    JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
-
-                string scenePath =
-                    EditorUtility.OpenFilePanel("Scene to import", IDPath + "/../../",
-                        "unity"); //todo : check if this is in the current project
-                if (scenePath.Length != 0)
-                {
-                    string rootPath = Application.dataPath;
-                    List<ClassModel> newIDs =
-                        JsonConvert.DeserializeObject<List<ClassModel>>(
-                            File.ReadAllText(
-                                rootPath + "/ImportExport/Exports/Export.json")); // todo : make this more user friendly
-
-                    List<FoundScript> foundScripts = new List<FoundScript>();
-                    string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
-                    if (File.Exists(foundScriptsPath))
-                    {
-                        foundScripts =
-                            JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
-                    }
-
-                    calculationThread =
-                        new Thread(() => this.Import(rootPath, oldIDs, newIDs, scenePath, foundScripts));
-                    calculationThread.Start();
-                }
-                else
-                {
-                    Debug.LogWarning("No path was selected");
-                }
-            }
-            else
+            if (IDPath.Length == 0)
             {
                 Debug.LogWarning("No path was selected");
+                return;
             }
+
+            List<ClassModel> oldIDs =
+                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
+
+            string scenePath =
+                EditorUtility.OpenFilePanel("Scene to import", IDPath + "/../../",
+                    "unity"); //todo : check if this is in the current project
+            if (scenePath.Length == 0)
+            {
+                Debug.LogWarning("No path was selected");
+                return;
+            }
+
+            string rootPath = Application.dataPath;
+            string newIDsPath = rootPath + "/ImportExport/Exports/Export.json";
+            
+            List<ClassModel> newIDs = File.Exists(newIDsPath)
+                ? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(newIDsPath))
+                : idController.ExportClassData(rootPath);
+
+            List<FoundScript> foundScripts = new List<FoundScript>();
+            string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
+            if (File.Exists(foundScriptsPath))
+            {
+                foundScripts =
+                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
+            }
+
+            calculationThread =
+                new Thread(() => this.Import(rootPath, oldIDs, newIDs, scenePath, foundScripts));
+            calculationThread.Start();
         }
 
         private List<ClassModel> cachedLocalIds;
