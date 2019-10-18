@@ -14,6 +14,7 @@
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="Controllers" t="Include">
+            <e p="CustomLogic.cs" t="Include" />
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />
           </e>

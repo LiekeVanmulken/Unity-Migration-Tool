@@ -127,6 +127,31 @@ namespace importerexporter
                     }
                 }
 
+                if (yamlNode.Value is YamlSequenceNode)
+                {
+                    var items = yamlNode.Value.GetItems();
+                    if (items == null || items.Count == 0)
+                    {
+                        continue;
+                    }
+                    
+                    foreach (YamlNode item in items)
+                    {
+                        List<MergeNode> typeNodes =
+                            foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == yamlNode.)?.MergeNodes;
+                        if (typeNodes != null)
+                        {
+                            scene = recursiveReplaceField(scene, typeNodes, item, foundScripts);
+                        }
+                        else
+                        {
+                            Debug.Log("Could not find subclasses of class : " + type);
+                        }   
+                    }
+                    
+                    
+                }
+
                 MergeNode currentMergeNode = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
 
                 if (currentMergeNode!=null && !string.IsNullOrEmpty(currentMergeNode.NameToExportTo))

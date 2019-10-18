@@ -116,14 +116,14 @@ namespace importerexporter
                     string file = metaFile.Replace(".meta", "");
                     try
                     {
+                        if (Path.GetFileName(file).Contains("Newtonsoft.Json"))
+                        {
+                            continue; 
+                        }
+
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
-//                            if (!type.FullName.StartsWith("u040"))
-//                            {
-//                                continue;
-//                            }
-
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
                             data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));

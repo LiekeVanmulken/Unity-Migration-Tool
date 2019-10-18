@@ -82,21 +82,7 @@ namespace importerexporter.models
 
                 mergeNode.Type = mergeNodeType?.Type?.FullName;
 
-                FoundScript mapping =
-                    existingFoundScripts.FirstOrDefault(script => script.oldClassModel.FullName == mergeNode.Type);
-
-                Func<FieldModel, bool> typeCheckPredicate;
-                if (mapping == null)
-                {
-                    typeCheckPredicate = data => data.Type.FullName == mergeNode.Type;
-                }
-                else
-                {
-                    typeCheckPredicate = data => data.Type.FullName == mapping.newClassModel.FullName;
-                }
-
                 mergeNode.Options = newClassModel.Fields?
-                    .Where(typeCheckPredicate) // todo this doesn't work anymore because it needs the foundScript for this
                     .OrderBy(newField =>
                         Levenshtein.Compute(
                             field.Name,

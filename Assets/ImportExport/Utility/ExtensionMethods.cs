@@ -16,6 +16,10 @@ namespace importerexporter.utility
         {
             return ((YamlMappingNode) node).Children;
         }
+        public static IList<YamlNode> GetItems(this YamlNode node)
+        {
+            return ((YamlSequenceNode) node).Children;
+        }
         public static string ReplaceFirst(this string text, string search, string replace)
         {
             int pos = text.IndexOf(search);

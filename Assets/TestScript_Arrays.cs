@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class test : MonoBehaviour
+public class TestScript_Arrays : MonoBehaviour
 {
 
-    public List<testSubClass> listTest2;
-    public testSubClass[] arrayTest2;
+    public testSubClass2[] arrayTest2;
+    public List<testSubClass2> listTest2;
+    public List<List<testSubClass2>> ListInListTest2;
     
     // Start is called before the first frame update
     void Start()
@@ -21,9 +21,12 @@ public class test : MonoBehaviour
         
     }
     [Serializable]
-    public class testSubClass
+    public class testSubClass2
     {
         
+        public string test;
         public string test2;
+        public testSubClass2[] testList2;
+
     }
 }
