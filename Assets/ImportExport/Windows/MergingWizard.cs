@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿
+using System.Linq;
+#if UNITY_EDITOR
 using importerexporter.models;
 using System;
 using System.Collections.Generic;
@@ -10,12 +12,12 @@ namespace importerexporter.windows
     public class MergingWizard : ScriptableWizard
     {
         public Action<List<FoundScript>> onComplete;
-        
-        
+
+
         private List<FoundScript> foundScripts;
 
         private FoundScriptWrapper[] foundScriptWrappers;
-        
+
         GUIStyle richtextStyle;
         GUIStyle classNameStyle;
         GUIStyle paddingStyle;
@@ -34,10 +36,10 @@ namespace importerexporter.windows
             {
                 wizard.foundScriptWrappers[i] = new FoundScriptWrapper(scriptsToMerge[i]);
             }
-            
+
             return wizard;
         }
-        
+
 
         private void OnEnable()
         {
@@ -63,6 +65,7 @@ namespace importerexporter.windows
                 {
                     FieldSelectionStates[i] = true;
                 }
+
                 OptionSelections = new int[_foundScript.MergeNodes.Count];
                 for (int i = 0; i < OptionSelections.Length; i++)
                 {
@@ -115,7 +118,8 @@ namespace importerexporter.windows
 
                     GUILayout.BeginHorizontal();
 
-                    wrapper.FieldSelectionStates[j] = EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
+                    wrapper.FieldSelectionStates[j] =
+                        EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
                     GUI.enabled = wrapper.FieldSelectionStates[j];
                     EditorGUILayout.LabelField(originalName, richtextStyle, GetColumnWidth(5));
                     EditorGUILayout.LabelField(fieldToMerge.Type, richtextStyle, GetColumnWidth(6));
@@ -128,9 +132,18 @@ namespace importerexporter.windows
 
                     EditorGUILayout.BeginVertical();
 
-                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j], fieldToMerge.Options, GetColumnWidth(5));
+                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
+                        fieldToMerge.Options, GetColumnWidth(5));
 
-                    fieldToMerge.NameToExportTo = fieldToMerge.Options[wrapper.OptionSelections[j]];
+                    int optionsIndex = wrapper.OptionSelections[j];
+                    if (fieldToMerge.Options != null && optionsIndex < fieldToMerge.Options.Length)
+                    {
+                        fieldToMerge.NameToExportTo = fieldToMerge.Options[optionsIndex];
+                    }
+                    else
+                    {
+                        wrapper.FieldSelectionStates[j] = false;
+                    }
 
                     EditorGUILayout.EndVertical();
 
