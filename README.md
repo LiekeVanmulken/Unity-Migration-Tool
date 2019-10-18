@@ -25,7 +25,8 @@ Note
 
 ### Usage
 
-| WARNING: ALWAYS BACK UP YOUR PROJECT, Although this tool is non-destructive we're working with the source files of the project so make sure you ALWAYS have a backup. || --- |
+| WARNING: ALWAYS BACK UP YOUR PROJECT. Although this tool is non-destructive, we're working with the source files of the project so make sure you ALWAYS have a backup. |
+| --- |
 
 1. In the old project open `Window/Scene import window` on the menubar and open the window.
 2. Click the `Export Class Data of the current project` button and the project will start to export the IDs (these will be saved to `<project_path>/ImportExport/Export/Export.json`).
