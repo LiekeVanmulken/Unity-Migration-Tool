@@ -131,9 +131,20 @@ namespace importerexporter.windows
                     EditorGUILayout.LabelField("", GetColumnWidth(1));
 
                     EditorGUILayout.BeginVertical();
+                    try
+                    {
+                        if (fieldToMerge.Options == null)
+                        {
+                            fieldToMerge.Options = new String[0];
+                        }
 
-                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
-                        fieldToMerge.Options, GetColumnWidth(5));
+                        wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
+                            fieldToMerge.Options, GetColumnWidth(5));
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError("options test");
+                    }
 
                     int optionsIndex = wrapper.OptionSelections[j];
                     if (fieldToMerge.Options != null && optionsIndex < fieldToMerge.Options.Length)

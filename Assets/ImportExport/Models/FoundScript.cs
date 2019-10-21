@@ -55,7 +55,7 @@ namespace importerexporter.models
         {
             if (oldClassModel == null || newClassModel == null)
             {
-                throw new NotImplementedException(
+                throw new NullReferenceException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
 
@@ -66,7 +66,7 @@ namespace importerexporter.models
         {
             if (oldClassModel == null || newClassModel == null)
             {
-                throw new NotImplementedException(
+                throw new NullReferenceException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
             

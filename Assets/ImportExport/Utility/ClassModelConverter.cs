@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using importerexporter.models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
+using Object = System.Object;
 
 namespace importerexporter.utility
 {
-    public class ClassDataConverter : JsonConverter
+    public class ClassModelConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -24,7 +26,7 @@ namespace importerexporter.utility
 
             if (!root)
             {
-                writer.WritePropertyName("ClassDataFields");
+                writer.WritePropertyName("ClassFields");
             }
 
             writer.WriteStartObject();
@@ -33,6 +35,7 @@ namespace importerexporter.utility
             WriteKeyValue(writer, "Name", classModel.Name);
             WriteKeyValue(writer, "Guid", classModel.Guid);
             WriteKeyValue(writer, "FileID", classModel.FileID);
+            WriteKeyValue(writer, "IsIterable", classModel.IsIterable);
 
             writer.WritePropertyName("Fields");
             writer.WriteStartArray();
@@ -68,33 +71,32 @@ namespace importerexporter.utility
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
-            if (objectType == typeof(ClassModel))
+            if (objectType != typeof(ClassModel))
             {
-                JObject classData = JObject.Load(reader);
-                return Parse(classData);
+                throw new NotImplementedException("Not a ClassData object");
             }
+            JObject classData = JObject.Load(reader);
+            return Parse(classData);
 
-            throw new NotImplementedException("Not a ClassData object");
         }
-        public static ClassModel Parse(JObject classData)
+
+        private static ClassModel Parse(JObject classData)
         {
-            ClassModel current = new ClassModel();
-            current.FullName = (string) classData["FullName"];
-            current.Name = (string) classData["Name"];
-            current.NameLower = current.Name.ToLower();
+            ClassModel current = new ClassModel((string) classData["FullName"]);
+            current.NameLower = current.Name?.ToLower();
             current.Guid = (string) classData["Guid"];
             current.FileID = (string) classData["FileID"];
+            current.IsIterable= (bool) classData["IsIterable"];
 
             List<FieldModel> currentFields = new List<FieldModel>();
             foreach (JObject field in classData["Fields"])
             {
                 FieldModel currentField = new FieldModel();
                 currentField.Name = (string) field["Name"];
-                currentField.Type = new ClassModel();
-                currentField.Type.FullName = (string) field["Type"];
+                currentField.Type = new ClassModel((string) field["Type"]);
 
                 JToken classDataChild;
-                if (field.TryGetValue("ClassDataFields", out classDataChild))
+                if (field.TryGetValue("ClassFields", out classDataChild))
                 {
                     JObject classDataField = (JObject) classDataChild;
                     currentField.Type = Parse(classDataField);

@@ -68,6 +68,7 @@ namespace importerexporter
 
             //Get all meta files
             string[] classMetaFiles = Directory.GetFiles(path, "*.cs.meta", SearchOption.AllDirectories);
+            
             //Get all dlls
             string[] dllMetaFiles = Directory.GetFiles(path, "*.dll.meta", SearchOption.AllDirectories);
 
@@ -96,7 +97,7 @@ namespace importerexporter
                 }
             }
 
-            //todo : uncomment, commented for speed with debugging
+           
             // Loop through dlls  
             if (!constants.DEBUG)
             {
@@ -116,9 +117,10 @@ namespace importerexporter
                     string file = metaFile.Replace(".meta", "");
                     try
                     {
-                        if (Path.GetFileName(file).Contains("Newtonsoft.Json"))
+                        if (Path.GetFileName(file).Contains("Newtonsoft.Json") ||
+                            Path.GetFileName(file).Contains("YamlDotNet"))
                         {
-                            continue; 
+                            continue;
                         }
 
                         Assembly assembly = Assembly.LoadFile(file);
@@ -146,6 +148,8 @@ namespace importerexporter
         /// </summary>
         /// <param name="fileToChange"></param>
         /// <param name="oldIDs"></param>
+        /// <param name="newIDs"></param>
+        /// <param name="foundScripts"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassModel> oldIDs,
@@ -155,7 +159,7 @@ namespace importerexporter
                 "Start importing current project classData and migrating scene.", 0.5f);
             if (oldIDs == null || newIDs == null || foundScripts == null)
             {
-                throw new NotImplementedException("Some of the data with which to export is null.");
+                throw new NullReferenceException("Some of the data with which to export is null.");
             }
 
             string[] linesToChange = File.ReadAllLines(fileToChange);
@@ -175,7 +179,8 @@ namespace importerexporter
         /// <param name="newIDs">List of GUIDs and FileID for all currently in the project classes.</param>
         /// <param name="foundScripts"></param>
         /// <returns></returns>
-        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassModel> oldIDs, List<ClassModel> newIDs,
+        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassModel> oldIDs,
+            List<ClassModel> newIDs,
             ref List<FoundScript> foundScripts)
         {
             string sceneContent = string.Join("\r\n", linesToChange);
@@ -186,12 +191,7 @@ namespace importerexporter
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
             foreach (YamlDocument document in yamlDocuments)
             {
-//                if (document.RootNode.Start.Line > 12100) //todo : tussen 12000 en 13000 gaat iets fout 
-//                {
-//                    return linesToChange;
-//                }
-
-                YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
+                YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
 
                 YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
                 YamlNode oldGuidNode = monoBehaviour["m_Script"]["guid"];
@@ -199,13 +199,24 @@ namespace importerexporter
                 string oldFileId = oldFileIdNode.ToString();
                 string oldGuid = oldGuidNode.ToString();
 
-                ClassModel oldClassModel = oldIDs.FirstOrDefault(data => data.Guid == oldGuid && data.FileID == oldFileId);  // todo : this breaks
+                ClassModel oldClassModel =
+                    oldIDs.FirstOrDefault(data =>
+                        data.Guid == oldGuid && data.FileID == oldFileId);
                 if (oldClassModel == null)
                 {
-                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid + " oldFileID : " + oldFileId);
+                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid +
+                                   " oldFileID : " + oldFileId);
                     continue;
-                } 
-                FoundScript mapping = RecursiveFoundScriptTest( newIDs, ref foundScripts, oldClassModel); //todo : u040.prespective.prepair.physics.optics.IRBeamReflector is not found and never made?????
+                }
+
+                if (oldClassModel.NameLower.Contains("array"))
+                {
+                    Debug.Log("test");
+                }
+
+                FoundScript
+                    mapping = FoundScriptMappingRecursively(newIDs, ref foundScripts,
+                        oldClassModel);
                 if (mapping == null)
                 {
                     Debug.LogError("mapping is null for " + oldClassModel.FullName);
@@ -213,7 +224,6 @@ namespace importerexporter
                 }
 
                 int line = oldFileIdNode.Start.Line - 1;
-
                 if (!string.IsNullOrEmpty(mapping.newClassModel.Guid))
                 {
                     // Replace the Guid
@@ -222,30 +232,34 @@ namespace importerexporter
                 else
                 {
                     Debug.Log("Found empty guid");
-                    continue; 
+                    continue;
                     //todo : this should throw an error
                     //todo : this is when a non script is being used or the guid is not available. This should probably be a popup with a warning
                 }
-
 
                 if (!String.IsNullOrEmpty(oldFileId))
                 {
                     linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.newClassModel.FileID);
                 }
-
-
-                //Replace the fileID
             }
 
             return linesToChange;
         }
 
-        private FoundScript RecursiveFoundScriptTest(List<ClassModel> newIDs,
+        /// <summary>
+        /// Maps all foundScripts for all variables and children of the type of the variable
+        /// </summary>
+        /// <param name="newIDs">The IDs of the new project</param>
+        /// <param name="foundScripts">The existing foundScripts that will be looked in and added to</param>
+        /// <param name="oldClassModel">Current class data of the old project as this maps to the scene file</param>
+        /// <returns></returns>
+        /// <exception cref="NullReferenceException"></exception>
+        private FoundScript FoundScriptMappingRecursively(List<ClassModel> newIDs,
             ref List<FoundScript> foundScripts, ClassModel oldClassModel)
         {
             if (oldClassModel == null)
-            { 
-                throw new NotImplementedException("No old classData found");
+            {
+                throw new NullReferenceException("No old classData found");
             }
 
             FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
@@ -262,13 +276,13 @@ namespace importerexporter
                     return null;
                 }
             }
-            else if(replacementClassModel !=null)
+            else if (replacementClassModel != null)
             {
                 return existingFoundScript;
             }
             else
             {
-                 return null;
+                return null;
             }
 
             if (existingFoundScript == null)
@@ -279,13 +293,13 @@ namespace importerexporter
                     {
                         if (field.Type == null)
                         {
-                            throw new NotImplementedException("type of field is null for some reason");
-                        } //todo : check if already exists 
+                            throw new NullReferenceException("type of field is null for some reason");
+                        }
 
-                        RecursiveFoundScriptTest(newIDs, ref foundScripts, field.Type);
+                        FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
                     }
                 }
-                
+
                 existingFoundScript = new FoundScript
                 {
                     oldClassModel = oldClassModel,
@@ -297,7 +311,6 @@ namespace importerexporter
                     existingFoundScript.GenerateMappingNode(foundScripts);
                 }
 
-               
 
                 foundScripts.Add(existingFoundScript);
             }
@@ -367,7 +380,9 @@ namespace importerexporter
         /// <param name="newIDs"></param>
         /// <param name="old"></param>
         /// <returns></returns>
-        public ClassModel findNewID(List<ClassModel> newIDs, ClassModel old) // todo : check if the classname is the same but not the namespace
+        public ClassModel
+            findNewID(List<ClassModel> newIDs,
+                ClassModel old)
         {
             if (old == null)
             {
@@ -377,20 +392,22 @@ namespace importerexporter
             ClassModel newFileModel = newIDs.FirstOrDefault(data => data.FullName.Equals(old.FullName));
             if (newFileModel != null) return newFileModel;
 
-            Dictionary<string,ClassModel> allClassData = generateOptions(newIDs);
+            Dictionary<string, ClassModel> allClassData = generateOptions(newIDs);
             if (allClassData.ContainsKey(old.Name))
             {
                 return allClassData[old.Name];
             }
 
-            ClassModel[] classModels = allClassData.Select(pair => pair.Value).Where(model => model.NameLower == old.NameLower).ToArray();
+            ClassModel[] classModels = allClassData.Select(pair => pair.Value)
+                .Where(model => model.NameLower == old.NameLower).ToArray();
             if (classModels.Length == 1)
             {
                 return classModels[0];
             }
 
-            string[] options =  allClassData.Select(pair => pair.Key).OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
-            
+            string[] options = allClassData.Select(pair => pair.Key)
+                .OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
+
             string result = ImportWindow.OpenOptionsWindow(
                 "Could not find class, please select which class to use",
                 old.FullName,
@@ -402,12 +419,17 @@ namespace importerexporter
                 Debug.LogError("[Data loss] Could not find class for : " + old.FullName +
                                " and no new class was chosen. This script will not be migrated!");
 
-                return null; // todo : why is this always null
+                return null;
             }
-            
+
             return allClassData[result];
         }
 
+        /// <summary>
+        /// Generate the options of all Classes for the options window
+        /// </summary>
+        /// <param name="allIDs"></param>
+        /// <returns></returns>
         private Dictionary<string, ClassModel> generateOptions(List<ClassModel> allIDs)
         {
             Dictionary<string, ClassModel> dictionary = new Dictionary<string, ClassModel>();
@@ -419,6 +441,11 @@ namespace importerexporter
             return dictionary;
         }
 
+        /// <summary>
+        /// Recursively find all classes that are being used in old project to generate a choice menu for the options window
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="dictionary"></param>
         private void generateOptionsRecursive(ClassModel id, ref Dictionary<string, ClassModel> dictionary)
         {
             if (string.IsNullOrEmpty(id.FullName))

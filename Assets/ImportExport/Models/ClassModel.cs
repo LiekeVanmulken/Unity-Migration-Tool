@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using importerexporter.utility;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -9,9 +10,11 @@ namespace importerexporter.models
     /// Data model of a class
     /// </summary>
     [Serializable]
-    [JsonConverter(typeof(ClassDataConverter))]
+    [JsonConverter(typeof(ClassModelConverter))]
     public class ClassModel
     {
+        private Constants constants = Constants.Instance;
+
         /// <summary>
         /// Class namespace and name
         /// </summary>
@@ -40,24 +43,28 @@ namespace importerexporter.models
         [SerializeField] public string Guid;
 
         /// <summary>
+        /// Says whether it is an array or a list
+        /// </summary>
+        [SerializeField] public bool IsIterable;
+
+        /// <summary>
         /// All fields on the class
         /// </summary>
         [SerializeField] public FieldModel[] Fields;
 
-        public ClassModel()
+        public ClassModel(string fullName)
         {
+            fullName = initList(fullName);
+            initName(fullName);
+            this.FullName = fullName;
         }
-
+        
         public ClassModel(string fullName, string guid, string fileID = "11500000")
         {
-            this.FullName = fullName;
-            if (!string.IsNullOrEmpty(fullName))
-            {
-                string[] names = fullName.Split('.');
-                this.Name = names[names.Length - 1];
-                this.NameLower = this.Name.ToLower();
-            }
+            fullName = initList(fullName);
+            initName(fullName);
 
+            this.FullName = fullName;
             this.Guid = guid;
             this.FileID = fileID;
             this.Fields = FieldDataGenerationUtility.GenerateFieldData(fullName);
@@ -65,10 +72,49 @@ namespace importerexporter.models
 
         public ClassModel(Type type, int iteration = 0)
         {
-            this.FullName = type.FullName;
-            this.Name = type.Name;
+            string fullName = type.FullName;
+
+            fullName = initList(fullName);
+            initName(fullName);
+
+            this.FullName = fullName;
             this.Fields = FieldDataGenerationUtility.GenerateFieldData(type, iteration);
         }
+
+        /// <summary>
+        /// Checks if the class is a list or array
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        private string initList(string fullName)
+        {
+            // Check if its a list or array and if so use the name of the class that it holds
+            Match match = constants.IsListOrArrayRegex.Match(fullName);
+            if (match.Success)
+            {
+                IsIterable = true;
+                fullName = match.Value;
+            }
+
+            return fullName;
+        }
+
+        /// <summary>
+        /// Sets the name from the fullname
+        /// </summary>
+        /// <param name="fullName"></param>
+        private void initName(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName))
+            {
+                return;
+            }
+
+            string[] names = fullName.Split('.');
+            this.Name = names[names.Length - 1];
+            this.NameLower = this.Name.ToLower();
+        }
+
 
         public override string ToString()
         {

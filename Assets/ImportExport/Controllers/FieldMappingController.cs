@@ -75,6 +75,10 @@ namespace importerexporter
                 {
                     scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
                 }
+                else
+                {
+                    Debug.Log("Script found but no mapping for " + document.RootNode.ToString());
+                }
             }
 
             return scene;
@@ -87,7 +91,7 @@ namespace importerexporter
         /// <param name="currentMergeNodes"></param>
         /// <param name="rootYamlNode"></param>
         /// <returns></returns>
-        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes, YamlNode rootYamlNode,
+        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes, YamlNode rootYamlNode, // todo : refactor to multiple methods
             List<FoundScript> foundScripts)
         {
             IDictionary<YamlNode, YamlNode> yamlChildren = rootYamlNode.GetChildren();
@@ -100,68 +104,86 @@ namespace importerexporter
                 }
 
                 int line = yamlNode.Key.Start.Line - 1;
-                if (yamlNode.Value is YamlMappingNode)
+                switch (yamlNode.Value)
                 {
-                    var recursiveChildren = yamlNode.Value.GetChildren();
-                    if (recursiveChildren == null || recursiveChildren.Count == 0)
+                    case YamlMappingNode _:
                     {
-                        continue;
-                    }
-                    //todo : the parent of a children doesn't get changed
+                        var recursiveChildren = yamlNode.Value.GetChildren();
+                        if (recursiveChildren == null || recursiveChildren.Count == 0)
+                        {
+                            continue;
+                        }
+                        //todo : the parent of a children doesn't get changed
 
-                    string type = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey)?.Type;
-                    if (string.IsNullOrEmpty(type))
-                    {
-                        Debug.LogError("Type was null for yamlKey : " + yamlNodeKey);
-                        continue;
-                    }
-                    List<MergeNode> typeNodes =
-                        foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
-                    if (typeNodes != null)
-                    {
-                        scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
-                    }
-                    else
-                    {
-                        Debug.Log("Could not find subclasses of class : " + type);
-                    }
-                }
+                        string type = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey)?.Type;
+                        if (string.IsNullOrEmpty(type))
+                        {
+                            Debug.LogError("Type was null for yamlKey : " + yamlNodeKey);
+                            continue;
+                        }
 
-                if (yamlNode.Value is YamlSequenceNode)
-                {
-                    var items = yamlNode.Value.GetItems();
-                    if (items == null || items.Count == 0)
-                    {
-                        continue;
-                    }
-                    
-                    foreach (YamlNode item in items)
-                    {
                         List<MergeNode> typeNodes =
-                            foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == yamlNode.)?.MergeNodes;
+                            foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
                         if (typeNodes != null)
                         {
-                            scene = recursiveReplaceField(scene, typeNodes, item, foundScripts);
+                            scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
                         }
                         else
                         {
                             Debug.Log("Could not find subclasses of class : " + type);
-                        }   
+                        }
+
+                        break;
                     }
-                    
-                    
-                }
+                    case YamlSequenceNode _:
+                    {
+                        var items = yamlNode.Value.GetItems();
+                        if (items == null || items.Count == 0)
+                        {
+                            Debug.Log("Array or list was null for node : " + yamlNode.Key);
+                            continue;
+                        }
 
-                MergeNode currentMergeNode = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
+                        MergeNode currentMergeNode =
+                            currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
+                        if (currentMergeNode == null)
+                        {
+                            Debug.Log("Could not find current mergeNode(for list or array) of node : " + yamlNodeKey);
+                            continue;
+                        }
 
-                if (currentMergeNode!=null && !string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
-                {
-                    scene[line] = scene[line]
-                        .ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
-                }
-                else
-                {
-                    Debug.Log("Mapping failed for : " + yamlNodeKey + " node : " + yamlNode.ToString());
+                        FoundScript foundScript =
+                            foundScripts.FirstOrDefault(script => script.oldClassModel.Name == currentMergeNode.Type);
+                        if (foundScript == null)
+                        {
+                            Debug.Log("Could not find foundScript for MergeNode, Type : " + currentMergeNode.Type + " originalValue : " + currentMergeNode.OriginalValue);
+                            continue;
+                        }
+
+                        foreach (YamlNode item in items)
+                        {
+                            scene = recursiveReplaceField(scene, foundScript.MergeNodes, item, foundScripts);
+                        }
+
+                        break;
+                    }
+                    default:
+                    {
+                        MergeNode currentMergeNode =
+                            currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
+
+                        if (currentMergeNode != null && !string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
+                        {
+                            scene[line] = scene[line]
+                                .ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
+                        }
+                        else
+                        {
+                            Debug.Log("Mapping failed for : " + yamlNodeKey + " node : " + yamlNode.ToString());
+                        }
+
+                        break;
+                    }
                 }
             }
 

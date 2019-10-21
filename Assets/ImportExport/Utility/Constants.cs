@@ -38,7 +38,8 @@ namespace importerexporter.utility
 
         public readonly int RECURSION_DEPTH = 3;
         
-        public readonly Regex StandardclassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
+        public readonly Regex StandardClassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
+        public readonly Regex IsListOrArrayRegex = new Regex("(.*?(?=\\[\\]))|((?<=\\[\\[).*?(?=,))");
 
         /// <summary>
         /// Fields to exclude in the field mapping of the MonoBehaviour Yaml

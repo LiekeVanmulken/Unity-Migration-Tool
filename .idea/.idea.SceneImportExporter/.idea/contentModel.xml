@@ -26,7 +26,7 @@
             <e p="MergeNode.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
-            <e p="ClassDataConverter.cs" t="Include" />
+            <e p="ClassModelConverter.cs" t="Include" />
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
             <e p="Levenshtein.cs" t="Include" />

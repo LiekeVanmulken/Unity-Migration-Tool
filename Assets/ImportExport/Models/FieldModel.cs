@@ -32,8 +32,7 @@ namespace importerexporter.models
             if (iteration > constants.RECURSION_DEPTH
                 || isStandardClass(type.FullName) || type.IsEnum)
             {
-                this.Type = new ClassModel();
-                this.Type.FullName = type.FullName;
+                this.Type = new ClassModel(type.FullName);
                 return;
             }
 
@@ -43,7 +42,7 @@ namespace importerexporter.models
 
         private bool isStandardClass(string toCheck)
         {
-            return toCheck == null || constants.StandardclassesRegex.Match(toCheck).Success;
+            return toCheck == null || constants.StandardClassesRegex.Match(toCheck).Success;
         }
     }
 }

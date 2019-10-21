@@ -4,6 +4,7 @@
     "Name": "FileIDCalculationScript",
     "Guid": "842bf5de4730a264bb2062352b7be678",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -11,6 +12,7 @@
     "Name": "LibraryTestScript",
     "Guid": "8dee59ed53237c5428dd693f0a90ffa0",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "TestField",
@@ -23,6 +25,7 @@
     "Name": "TestScript1",
     "Guid": "cc55f0e6497cb994f8838590aeb61b0f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "test",
@@ -31,11 +34,12 @@
       {
         "Name": "testScriptSubClass",
         "Type": "TestScript1+TestScriptSubClass",
-        "ClassDataFields": {
+        "ClassFields": {
           "FullName": "TestScript1+TestScriptSubClass",
-          "Name": "TestScriptSubClass",
+          "Name": "TestScript1+TestScriptSubClass",
           "Guid": null,
           "FileID": null,
+          "IsIterable": false,
           "Fields": [
             {
               "Name": "publicString",
@@ -55,6 +59,7 @@
     "Name": "TestScript2",
     "Guid": "e8c8261986a36b0438cab0bddcc1102a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "testTestScript2",
@@ -71,25 +76,61 @@
     "Name": "TestScript_Arrays",
     "Guid": "b8ef4b47ef5acff4795a997b2a3ff344",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "arrayTest2",
-        "Type": "TestScript_Arrays+testSubClass2[]",
-        "ClassDataFields": {
-          "FullName": "TestScript_Arrays+testSubClass2[]",
-          "Name": "testSubClass2[]",
+        "Type": "TestScript_Arrays+testSubClass2",
+        "ClassFields": {
+          "FullName": "TestScript_Arrays+testSubClass2",
+          "Name": "TestScript_Arrays+testSubClass2",
           "Guid": null,
           "FileID": null,
-          "Fields": []
+          "IsIterable": true,
+          "Fields": [
+            {
+              "Name": "test",
+              "Type": "System.String"
+            },
+            {
+              "Name": "test2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "testList2",
+              "Type": "TestScript_Arrays+testSubClass2",
+              "ClassFields": {
+                "FullName": "TestScript_Arrays+testSubClass2",
+                "Name": "TestScript_Arrays+testSubClass2",
+                "Guid": null,
+                "FileID": null,
+                "IsIterable": true,
+                "Fields": [
+                  {
+                    "Name": "test",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "test2",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "testList2",
+                    "Type": "TestScript_Arrays+testSubClass2"
+                  }
+                ]
+              }
+            }
+          ]
         }
       },
       {
-        "Name": "listTest2",
-        "Type": "System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass2, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+        "Name": "listTest",
+        "Type": "TestScript_Arrays+testSubClass2"
       },
       {
-        "Name": "ListInListTest2",
-        "Type": "System.Collections.Generic.List`1[[System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass2, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"
+        "Name": "ListInListTest",
+        "Type": "System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass2"
       }
     ]
   },
@@ -98,6 +139,7 @@
     "Name": "ThreadTestWindow",
     "Guid": "b8ca028bbcc823e4eab023f576edf3aa",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "m_TitleContent",
@@ -114,6 +156,7 @@
     "Name": "UnityGuidRegeneratorMenu",
     "Guid": "65b7bf17bb0519a498031a2308ae408b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -121,6 +164,7 @@
     "Name": "YamlTestScript",
     "Guid": "7c091ffd2ee4b5340bf55879d4192f81",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "publicString",
@@ -137,6 +181,7 @@
     "Name": "AssetDatabaseTestScript",
     "Guid": "f1f1da8148f8dde4a888ea2f7c8339ae",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -144,6 +189,7 @@
     "Name": "FieldMappingController",
     "Guid": "091f90c4ba86cd74ab443c7df96f91f2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -151,6 +197,7 @@
     "Name": "IDController",
     "Guid": "4ca07665a835acb48855469fe3c91fa6",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -158,6 +205,7 @@
     "Name": "ClassModel",
     "Guid": "fe84a6d10dc54b83bd3d23fdfe7bfbd4",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "FullName",
@@ -180,14 +228,65 @@
         "Type": "System.String"
       },
       {
+        "Name": "IsIterable",
+        "Type": "System.Boolean"
+      },
+      {
         "Name": "Fields",
-        "Type": "importerexporter.models.FieldModel[]",
-        "ClassDataFields": {
-          "FullName": "importerexporter.models.FieldModel[]",
-          "Name": "FieldModel[]",
+        "Type": "importerexporter.models.FieldModel",
+        "ClassFields": {
+          "FullName": "importerexporter.models.FieldModel",
+          "Name": "FieldModel",
           "Guid": null,
           "FileID": null,
-          "Fields": []
+          "IsIterable": true,
+          "Fields": [
+            {
+              "Name": "Name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "Type",
+              "Type": "importerexporter.models.ClassModel",
+              "ClassFields": {
+                "FullName": "importerexporter.models.ClassModel",
+                "Name": "ClassModel",
+                "Guid": null,
+                "FileID": null,
+                "IsIterable": false,
+                "Fields": [
+                  {
+                    "Name": "FullName",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "Name",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "NameLower",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "FileID",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "Guid",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "IsIterable",
+                    "Type": "System.Boolean"
+                  },
+                  {
+                    "Name": "Fields",
+                    "Type": "importerexporter.models.FieldModel"
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
@@ -197,6 +296,7 @@
     "Name": "FieldDataGenerationUtility",
     "Guid": "1ca9ef96b41243d7b104800a5acfbdd3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -204,15 +304,17 @@
     "Name": "FoundScript",
     "Guid": "a034f86c65974b1d8553c713e65ec7a5",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "newClassModel",
         "Type": "importerexporter.models.ClassModel",
-        "ClassDataFields": {
+        "ClassFields": {
           "FullName": "importerexporter.models.ClassModel",
           "Name": "ClassModel",
           "Guid": null,
           "FileID": null,
+          "IsIterable": false,
           "Fields": [
             {
               "Name": "FullName",
@@ -235,14 +337,28 @@
               "Type": "System.String"
             },
             {
+              "Name": "IsIterable",
+              "Type": "System.Boolean"
+            },
+            {
               "Name": "Fields",
-              "Type": "importerexporter.models.FieldModel[]",
-              "ClassDataFields": {
-                "FullName": "importerexporter.models.FieldModel[]",
-                "Name": "FieldModel[]",
+              "Type": "importerexporter.models.FieldModel",
+              "ClassFields": {
+                "FullName": "importerexporter.models.FieldModel",
+                "Name": "FieldModel",
                 "Guid": null,
                 "FileID": null,
-                "Fields": []
+                "IsIterable": true,
+                "Fields": [
+                  {
+                    "Name": "Name",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "Type",
+                    "Type": "importerexporter.models.ClassModel"
+                  }
+                ]
               }
             }
           ]
@@ -251,11 +367,12 @@
       {
         "Name": "oldClassModel",
         "Type": "importerexporter.models.ClassModel",
-        "ClassDataFields": {
+        "ClassFields": {
           "FullName": "importerexporter.models.ClassModel",
           "Name": "ClassModel",
           "Guid": null,
           "FileID": null,
+          "IsIterable": false,
           "Fields": [
             {
               "Name": "FullName",
@@ -278,14 +395,28 @@
               "Type": "System.String"
             },
             {
+              "Name": "IsIterable",
+              "Type": "System.Boolean"
+            },
+            {
               "Name": "Fields",
-              "Type": "importerexporter.models.FieldModel[]",
-              "ClassDataFields": {
-                "FullName": "importerexporter.models.FieldModel[]",
-                "Name": "FieldModel[]",
+              "Type": "importerexporter.models.FieldModel",
+              "ClassFields": {
+                "FullName": "importerexporter.models.FieldModel",
+                "Name": "FieldModel",
                 "Guid": null,
                 "FileID": null,
-                "Fields": []
+                "IsIterable": true,
+                "Fields": [
+                  {
+                    "Name": "Name",
+                    "Type": "System.String"
+                  },
+                  {
+                    "Name": "Type",
+                    "Type": "importerexporter.models.ClassModel"
+                  }
+                ]
               }
             }
           ]
@@ -294,17 +425,18 @@
       {
         "Name": "YamlOptions",
         "Type": "YamlDotNet.RepresentationModel.YamlNode",
-        "ClassDataFields": {
+        "ClassFields": {
           "FullName": "YamlDotNet.RepresentationModel.YamlNode",
           "Name": "YamlNode",
           "Guid": null,
           "FileID": null,
+          "IsIterable": false,
           "Fields": []
         }
       },
       {
         "Name": "MergeNodes",
-        "Type": "System.Collections.Generic.List`1[[importerexporter.models.MergeNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+        "Type": "importerexporter.models.MergeNode"
       },
       {
         "Name": "HasBeenMapped",
@@ -317,6 +449,7 @@
     "Name": "MergeNode",
     "Guid": "f0d8a44576d44bb0a793db13058637e3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "OriginalValue",
@@ -332,15 +465,16 @@
       },
       {
         "Name": "Options",
-        "Type": "System.String[]"
+        "Type": "System.String"
       }
     ]
   },
   {
-    "FullName": "importerexporter.utility.ClassDataConverter",
-    "Name": "ClassDataConverter",
+    "FullName": "importerexporter.utility.ClassModelConverter",
+    "Name": "ClassModelConverter",
     "Guid": "a84e34841ba54132a5f966a956cf8d64",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -348,6 +482,7 @@
     "Name": "ExtensionMethods",
     "Guid": "011528f01c0649df957d6522c8d0486e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -355,6 +490,7 @@
     "Name": "Levenshtein",
     "Guid": "d5fd4a933e2b3594eaf7f6f3c4d36dd3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -362,6 +498,7 @@
     "Name": "MainThreadDispatcherEditorWindow",
     "Guid": "7138ff578a2841ba94125061fdae4080",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "m_TitleContent",
@@ -378,6 +515,7 @@
     "Name": "ImportWindow",
     "Guid": "2ed712396e38cdc498951843bc525be1",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "m_TitleContent",
@@ -394,10 +532,11 @@
     "Name": "MergingWizard",
     "Guid": "a75d1d53353376e4b9c5ca07fe0d229f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "onComplete",
-        "Type": "System.Action`1[[System.Collections.Generic.List`1[[importerexporter.models.FoundScript, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"
+        "Type": "System.Collections.Generic.List`1[[importerexporter.models.FoundScript"
       },
       {
         "Name": "m_TitleContent",
@@ -414,6 +553,7 @@
     "Name": "OptionsWizard",
     "Guid": "a5275cbd67d6d5d46970cbe43f3be633",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "completed",
@@ -434,6 +574,7 @@
     "Name": "GetNameSpaceFromGuidTestScript",
     "Guid": "a0f64faa1a4a2e2418bb92d6ffd077aa",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -441,6 +582,7 @@
     "Name": "AnchorNotFoundException",
     "Guid": "bef940054d2c25041ba1a961abae6c79",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -448,6 +590,7 @@
     "Name": "Emitter",
     "Guid": "f526134efcd8e424c86e492f85fc56ba",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -455,6 +598,7 @@
     "Name": "ForwardAnchorNotSupportedException",
     "Guid": "4a2bedb057911514fb2a96c1cc2db68d",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -462,6 +606,7 @@
     "Name": "HashCode",
     "Guid": "2cb3fe21d8ebcf0458b6008e1ba2ac08",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -469,6 +614,7 @@
     "Name": "IEmitter",
     "Guid": "ea595b7247a52d84796adae58a272de0",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -476,6 +622,7 @@
     "Name": "ILookAheadBuffer",
     "Guid": "574e18619ff79614f83b7fbaec47ae8c",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -483,6 +630,7 @@
     "Name": "IParser",
     "Guid": "fc2416e849d87aa4598d335c421f7117",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -490,6 +638,7 @@
     "Name": "IScanner",
     "Guid": "f5c28b5ab2d236944a6f5f2858aa75d8",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -497,6 +646,7 @@
     "Name": "LookAheadBuffer",
     "Guid": "4d909b1f8d7468e4188667b8b706d225",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -504,24 +654,27 @@
     "Name": "Mark",
     "Guid": "9a02d917bb4d2164ea20caaafce2bb0b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "Empty",
         "Type": "YamlDotNet.Core.Mark",
-        "ClassDataFields": {
+        "ClassFields": {
           "FullName": "YamlDotNet.Core.Mark",
           "Name": "Mark",
           "Guid": null,
           "FileID": null,
+          "IsIterable": false,
           "Fields": [
             {
               "Name": "Empty",
               "Type": "YamlDotNet.Core.Mark",
-              "ClassDataFields": {
+              "ClassFields": {
                 "FullName": "YamlDotNet.Core.Mark",
                 "Name": "Mark",
                 "Guid": null,
                 "FileID": null,
+                "IsIterable": false,
                 "Fields": [
                   {
                     "Name": "Empty",
@@ -540,6 +693,7 @@
     "Name": "MaximumRecursionLevelReachedException",
     "Guid": "e4964c5da9dbb7245bf01fd55f6fe5ed",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -547,6 +701,7 @@
     "Name": "MergingParser",
     "Guid": "2aee5019246749c40a971ff855ffba79",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -554,6 +709,7 @@
     "Name": "ParserExtensions",
     "Guid": "66d3fba9b1372874692968ce91d5bdef",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -561,6 +717,7 @@
     "Name": "ParserState",
     "Guid": "4c73f39f4ccd4a644bd851bffd5afa20",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "value__",
@@ -669,6 +826,7 @@
     "Name": "RecursionLevel",
     "Guid": "1bfe84905c0dd5245908543c8cca9169",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -676,6 +834,7 @@
     "Name": "ScalarStyle",
     "Guid": "d8499f656f1f893409f937b46c386cf2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "value__",
@@ -712,6 +871,7 @@
     "Name": "Scanner",
     "Guid": "c0682a65176cd1c42807d5c990f0cc8f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -719,6 +879,7 @@
     "Name": "SemanticErrorException",
     "Guid": "ce6eb4a71fe0a504cb2efded3a4ad217",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -726,6 +887,7 @@
     "Name": "SimpleKey",
     "Guid": "98526770a341dd64aaf15fb3fe79a6c1",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -733,6 +895,7 @@
     "Name": "StringLookAheadBuffer",
     "Guid": "b821a24261c0caf46b4f2267068dfa19",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -740,6 +903,7 @@
     "Name": "SyntaxErrorException",
     "Guid": "fd15bbcb74a3b3c49bcbbc67093b631d",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -747,6 +911,7 @@
     "Name": "TagDirectiveCollection",
     "Guid": "c5901f69158709e4395e0e73e80c1fc2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -754,6 +919,7 @@
     "Name": "YamlException",
     "Guid": "18ae75fcd5b1676418d42ac4d2c824c5",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -761,6 +927,7 @@
     "Name": "IParsingEventVisitor",
     "Guid": "34cdef8e5d4918149bf7185da865504b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -768,6 +935,7 @@
     "Name": "MappingEnd",
     "Guid": "32f12dd96a8cb4d4792ed76749f67b38",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -775,6 +943,7 @@
     "Name": "MappingStart",
     "Guid": "79e25e33bd9642a4ca1c8c5280b30984",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -782,6 +951,7 @@
     "Name": "MappingStyle",
     "Guid": "7bc885bebca1fac428d7482f06b4f41e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "value__",
@@ -806,6 +976,7 @@
     "Name": "NodeEvent",
     "Guid": "4fa0681239f68a3468223fe925e01d33",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -813,6 +984,7 @@
     "Name": "ParsingEvent",
     "Guid": "5dcecbbabc813c74bb16837d87a36f7e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -820,6 +992,7 @@
     "Name": "SequenceEnd",
     "Guid": "37a7a63228a311b46ae903ea604105df",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -827,6 +1000,7 @@
     "Name": "SequenceStart",
     "Guid": "d0414698332e0c643ad3fddd1b907b5e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -834,6 +1008,7 @@
     "Name": "SequenceStyle",
     "Guid": "f66466d1eedabbe4db084d2d0e64415b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "value__",
@@ -858,6 +1033,7 @@
     "Name": "Anchor",
     "Guid": "20dff0ad997e6bf4fb74167f52869056",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -865,6 +1041,7 @@
     "Name": "BlockEnd",
     "Guid": "0ac69775d00ee4d4ba4b918c06086302",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -872,6 +1049,7 @@
     "Name": "BlockEntry",
     "Guid": "c3a1850190300d5479da07fdb53767f0",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -879,6 +1057,7 @@
     "Name": "BlockMappingStart",
     "Guid": "9f8bc35d16193164aaee492bc767e9f8",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -886,6 +1065,7 @@
     "Name": "BlockSequenceStart",
     "Guid": "827b4413642f10d4891e4b1771c5ad45",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -893,6 +1073,7 @@
     "Name": "FlowEntry",
     "Guid": "f6de9d5d89c756c49882403cf8b79eed",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -900,6 +1081,7 @@
     "Name": "FlowMappingEnd",
     "Guid": "6e66c86850cf7a545bfa90d7c9b1831a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -907,6 +1089,7 @@
     "Name": "FlowMappingStart",
     "Guid": "d357652b21a405949a837dbef084c7e3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -914,6 +1097,7 @@
     "Name": "FlowSequenceEnd",
     "Guid": "5338410489b921f4c873cbed0c5b7754",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -921,6 +1105,7 @@
     "Name": "FlowSequenceStart",
     "Guid": "8248df61d7f1e7e4fbd6db14a760c5cd",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -928,6 +1113,7 @@
     "Name": "TagDirective",
     "Guid": "dc25c68d7148e424ba5d875871c1aec8",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -935,6 +1121,7 @@
     "Name": "VersionDirective",
     "Guid": "5e236aab8cd03d94295778001f592ec1",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -942,6 +1129,7 @@
     "Name": "ConvertYamlToJson",
     "Guid": "83e73fe5645753f4fbbca24d77bc6a66",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -949,6 +1137,7 @@
     "Name": "DeserializeObjectGraph",
     "Guid": "97155601043b6734ab06eaf3989b828a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -956,6 +1145,7 @@
     "Name": "DeserializingMultipleDocuments",
     "Guid": "f3200cc07f84b324e95a6e173a3a4206",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -963,6 +1153,7 @@
     "Name": "LoadingAYamlStream",
     "Guid": "29c4a0e11ccbfef4bac57240ea978b91",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -970,6 +1161,7 @@
     "Name": "SerializeObjectGraph",
     "Guid": "61d71e4f1e5e17c469a4362b7b1a7665",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -977,10 +1169,11 @@
     "Name": "ExampleRunner",
     "Guid": "6c2d347068a20b442a3cdbf631ad8ab3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "disabledTests",
-        "Type": "System.String[]"
+        "Type": "System.String"
       }
     ]
   },
@@ -989,6 +1182,7 @@
     "Name": "SampleAttribute",
     "Guid": "6bda79cf503a621448a23f79270d7184",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -996,6 +1190,7 @@
     "Name": "TestOutputHelperExtensions",
     "Guid": "d8ac1e6d1ee681b4796f24feda0ca81d",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1003,6 +1198,7 @@
     "Name": "ExpressionExtensions",
     "Guid": "b3ef112ac5442354085c4e3adaf8c612",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1010,6 +1206,7 @@
     "Name": "GenericCollectionToNonGenericAdapter",
     "Guid": "c773704ccfcc20642a3e3fa7f77562b6",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1017,6 +1214,7 @@
     "Name": "GenericDictionaryToNonGenericAdapter",
     "Guid": "cffb108910d12a64da4065701f0ae0bf",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1024,6 +1222,7 @@
     "Name": "ITestOutputHelper",
     "Guid": "8bf0bb99b386041429154edb2eec127f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1031,6 +1230,7 @@
     "Name": "DocumentLoadingState",
     "Guid": "5b2c2b39b93a5fa4a973c6e52accea86",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1038,6 +1238,7 @@
     "Name": "IYamlVisitor",
     "Guid": "e12b6dd8690a6674696c7a997fdbd895",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1045,6 +1246,7 @@
     "Name": "YamlAliasNode",
     "Guid": "72c7427f0fab35849b7545d301debcd5",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1052,6 +1254,7 @@
     "Name": "YamlDocument",
     "Guid": "aa500eae79de1e8429a325722afbf4e8",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1059,6 +1262,7 @@
     "Name": "YamlMappingNode",
     "Guid": "283c72dc1a159584988a79dd9d0a0a93",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1066,6 +1270,7 @@
     "Name": "YamlNode",
     "Guid": "b80625eae8f97124f832aed15c4c6b57",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1073,6 +1278,7 @@
     "Name": "YamlNodeIdentityEqualityComparer",
     "Guid": "70ec622c4d503a448ba4d5410c55d8bd",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1080,6 +1286,7 @@
     "Name": "YamlNodeType",
     "Guid": "2e67e7d5ff0719c4ebac2a3aa246b96a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "value__",
@@ -1108,6 +1315,7 @@
     "Name": "YamlScalarNode",
     "Guid": "d8152305d4536da4c91eb19aa04b401c",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1115,6 +1323,7 @@
     "Name": "YamlSequenceNode",
     "Guid": "58e9eea9b495b2f478b639f1d20a8951",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1122,6 +1331,7 @@
     "Name": "YamlStream",
     "Guid": "8da956833fe9bb440be293c2b18b1e29",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1129,6 +1339,7 @@
     "Name": "YamlVisitor",
     "Guid": "f0c6d456c0cd3544f98e1dac39bf17ed",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1136,6 +1347,7 @@
     "Name": "YamlVisitorBase",
     "Guid": "a982636aeeff0ee41b6666f4ae01957e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1143,6 +1355,7 @@
     "Name": "Deserializer",
     "Guid": "cee7b8e2c23b44c4c9d8b6fa9029e350",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1150,6 +1363,7 @@
     "Name": "DeserializerBuilder",
     "Guid": "f8eedbdb2d60b5c438d13b57396f5565",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1157,6 +1371,7 @@
     "Name": "EmissionPhaseObjectGraphVisitorArgs",
     "Guid": "bb4122e230b42de4cb90854ba842578c",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1164,6 +1379,7 @@
     "Name": "IAliasProvider",
     "Guid": "3a934679d1d7f204e9d25f18f7f397bb",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1171,6 +1387,7 @@
     "Name": "IEventEmitter",
     "Guid": "05f7588b91e030f438b48c4af7ecf613",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1178,6 +1395,7 @@
     "Name": "INamingConvention",
     "Guid": "f9e2e0524133523428f9f2498f7c06f7",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1185,6 +1403,7 @@
     "Name": "INodeDeserializer",
     "Guid": "2f27d06ef3f08024d8a6ee848351527a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1192,6 +1411,7 @@
     "Name": "INodeTypeResolver",
     "Guid": "fc7c4eab6abbae74eb74eee44a52e6a7",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1199,6 +1419,7 @@
     "Name": "IObjectDescriptor",
     "Guid": "bcb0a1a8415e8714ab58565d3f392aec",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1206,6 +1427,7 @@
     "Name": "IObjectFactory",
     "Guid": "86a19edb69863084e9364dec9fcda8c4",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1213,6 +1435,7 @@
     "Name": "IObjectGraphTraversalStrategy",
     "Guid": "33215c487a2a3f04cbbe41c318253ee0",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1220,6 +1443,7 @@
     "Name": "IPropertyDescriptor",
     "Guid": "c5985b699bccf7548a76738be6b6e551",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1227,6 +1451,7 @@
     "Name": "ITypeInspector",
     "Guid": "915f534464f498641ab97a0e2c651b77",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1234,6 +1459,7 @@
     "Name": "ITypeResolver",
     "Guid": "6c3bd4a3f0eca6e4f92ba855bc058d25",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1241,6 +1467,7 @@
     "Name": "IValueDeserializer",
     "Guid": "c1356281a3d017849a3240d70d9cfacd",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1248,6 +1475,7 @@
     "Name": "IValuePromise",
     "Guid": "432dc17fcd3e2cb40990aab6122f075f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1255,6 +1483,7 @@
     "Name": "IValueSerializer",
     "Guid": "ff3525defc264b14c816465f47cdaff0",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1262,6 +1491,7 @@
     "Name": "IYamlConvertible",
     "Guid": "e935f5c26bd25144096157783aa4f6d6",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1269,6 +1499,7 @@
     "Name": "IYamlSerializable",
     "Guid": "f42bad1c9f9fdf242b696f20c2e66259",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1276,6 +1507,7 @@
     "Name": "IYamlTypeConverter",
     "Guid": "f114886060e4acf46b36ac2c9f610cc3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1283,6 +1515,7 @@
     "Name": "LazyComponentRegistrationListExtensions",
     "Guid": "7fb8445f98c5ea943ac8e7aabe5ece7b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1290,6 +1523,7 @@
     "Name": "Nothing",
     "Guid": "8463bea3e5ea0764c8fde8598dcfe794",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1297,6 +1531,7 @@
     "Name": "ObjectDescriptor",
     "Guid": "13c3a8b94ac1de641806bb1733305bda",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1304,6 +1539,7 @@
     "Name": "SerializationOptions",
     "Guid": "0b7070fc0d7ceed47b84b18eb05b66cf",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "value__",
@@ -1340,6 +1576,7 @@
     "Name": "SerializerBuilder",
     "Guid": "5b467b3e0a9a9784c9a6eb58c50eceea",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1347,6 +1584,7 @@
     "Name": "StreamFragment",
     "Guid": "ccef6dc01b4e9ac45998c14da7d14c3e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1354,6 +1592,7 @@
     "Name": "TagMappings",
     "Guid": "2cc976dab2b9f8a43b435abbe2687e5a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1361,6 +1600,7 @@
     "Name": "YamlAttributeOverrides",
     "Guid": "fba02faec11e7ca41a8c8ce8ef7c4cc2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1368,6 +1608,7 @@
     "Name": "YamlAttributeOverridesInspector",
     "Guid": "0f1b1e1d3f9f9b74a9b7a7511a5e6844",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1375,6 +1616,7 @@
     "Name": "YamlAttributesTypeInspector",
     "Guid": "8bbeea575ee7a0b4cb53bf99b07e9949",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1382,6 +1624,7 @@
     "Name": "YamlFormatter",
     "Guid": "197ec9064396a7c42bfa14c2edfd50ad",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": [
       {
         "Name": "NumberFormat",
@@ -1394,6 +1637,7 @@
     "Name": "YamlIgnoreAttribute",
     "Guid": "ecf403b8b63963644a55535cb66115a5",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1401,6 +1645,7 @@
     "Name": "ChainedEventEmitter",
     "Guid": "ccb97ea0d5b5aff4d93a807363ef3ec7",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1408,6 +1653,7 @@
     "Name": "CustomTagEventEmitter",
     "Guid": "0cc50ca841931e244afaf9442602a1c7",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1415,6 +1661,7 @@
     "Name": "JsonEventEmitter",
     "Guid": "62580a3e5f0e5314e83b62758257428e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1422,6 +1669,7 @@
     "Name": "TypeAssigningEventEmitter",
     "Guid": "e1b82bb57f4eb7f4ba0ffad467f82555",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1429,6 +1677,7 @@
     "Name": "WriterEventEmitter",
     "Guid": "f2ea019325fb629499443d6af969a295",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1436,6 +1685,7 @@
     "Name": "CamelCaseNamingConvention",
     "Guid": "32043fa3c3d7af6489b8238353dcf810",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1443,6 +1693,7 @@
     "Name": "HyphenatedNamingConvention",
     "Guid": "d393465f17a55814a8ecb04e77f1e25c",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1450,6 +1701,7 @@
     "Name": "NullNamingConvention",
     "Guid": "1f1957c241ea377499c1656388ff9122",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1457,6 +1709,7 @@
     "Name": "PascalCaseNamingConvention",
     "Guid": "0514b2a4f30517e42bc79c445fe75383",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1464,6 +1717,7 @@
     "Name": "UnderscoredNamingConvention",
     "Guid": "dc07ca72c2bad00498d0cd0594f69151",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1471,6 +1725,7 @@
     "Name": "ArrayNodeDeserializer",
     "Guid": "20118ab09905856488b432270429ae5b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1478,6 +1733,7 @@
     "Name": "CollectionNodeDeserializer",
     "Guid": "d789c999a074aa34fbf2ccddd0d570a2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1485,6 +1741,7 @@
     "Name": "DictionaryNodeDeserializer",
     "Guid": "57789f348c365ce439f2085df1b24b73",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1492,6 +1749,7 @@
     "Name": "EnumerableNodeDeserializer",
     "Guid": "4b63af2cc4a9f5d4cbbadbdac863e5df",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1499,6 +1757,7 @@
     "Name": "NullNodeDeserializer",
     "Guid": "2dc4eb3386e00254a90e737f7663d298",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1506,6 +1765,7 @@
     "Name": "ObjectNodeDeserializer",
     "Guid": "203cafd2ca433854ab6bb7dcc51b861a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1513,6 +1773,7 @@
     "Name": "ScalarNodeDeserializer",
     "Guid": "acae7a1311005a143be6454d8b86b947",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1520,6 +1781,7 @@
     "Name": "TypeConverterNodeDeserializer",
     "Guid": "a4dc6d0569fe722448b3d925a66e2b45",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1527,6 +1789,7 @@
     "Name": "YamlConvertibleNodeDeserializer",
     "Guid": "4022214c4cbb6be40b7ad73e0620dc0c",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1534,6 +1797,7 @@
     "Name": "YamlSerializableNodeDeserializer",
     "Guid": "dd9decb2273378147889a787cb6bb8e1",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1541,6 +1805,7 @@
     "Name": "DefaultContainersNodeTypeResolver",
     "Guid": "a96ce7ab22cdeb245a28967001844e3f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1548,6 +1813,7 @@
     "Name": "TagNodeTypeResolver",
     "Guid": "699369e47bae32e4b87e9bcb955ee742",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1555,6 +1821,7 @@
     "Name": "TypeNameInTagNodeTypeResolver",
     "Guid": "abbd2aba7e216f54a8353afcce646479",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1562,6 +1829,7 @@
     "Name": "YamlConvertibleTypeResolver",
     "Guid": "e5460e40e01a3dd49a5ad78b1e3ece14",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1569,6 +1837,7 @@
     "Name": "YamlSerializableTypeResolver",
     "Guid": "69c24ee7afe12c1479e4bfd7e8595b7f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1576,6 +1845,7 @@
     "Name": "DefaultObjectFactory",
     "Guid": "d85c04bcbb9823e428994436b556c0c4",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1583,6 +1853,7 @@
     "Name": "LambdaObjectFactory",
     "Guid": "2ad19c2ee12f0cd41a32cf7dfe446c07",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1590,6 +1861,7 @@
     "Name": "FullObjectGraphTraversalStrategy",
     "Guid": "4d75872db0e63bf4e829d39ab3d05abd",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1597,6 +1869,7 @@
     "Name": "RoundtripObjectGraphTraversalStrategy",
     "Guid": "cc11b2a2ab4f92a4683501db76ecc278",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1604,6 +1877,7 @@
     "Name": "AnchorAssigner",
     "Guid": "c7a4420c17a267847b8d6973ad99346a",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1611,6 +1885,7 @@
     "Name": "AnchorAssigningObjectGraphVisitor",
     "Guid": "7c8b5b39c74f14248971b3c1a4ec83b2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1618,6 +1893,7 @@
     "Name": "ChainedObjectGraphVisitor",
     "Guid": "91c55744c252b51459a0c70f40c47827",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1625,6 +1901,7 @@
     "Name": "CustomSerializationObjectGraphVisitor",
     "Guid": "180ba37056bdea24393986bdab81340d",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1632,6 +1909,7 @@
     "Name": "DefaultExclusiveObjectGraphVisitor",
     "Guid": "6f0bed3472e6485468490ba7cf5c910e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1639,6 +1917,7 @@
     "Name": "EmittingObjectGraphVisitor",
     "Guid": "23b01227eabbc3c4eb0e2658ac27b23d",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1646,6 +1925,7 @@
     "Name": "PreProcessingPhaseObjectGraphVisitorSkeleton",
     "Guid": "f25be0bb475b7bc41b17713e640b1a93",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1653,6 +1933,7 @@
     "Name": "CachedTypeInspector",
     "Guid": "2831decc4a6e7dd49b872c7ae62d2568",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1660,6 +1941,7 @@
     "Name": "NamingConventionTypeInspector",
     "Guid": "3598909e9935cc3428cc982eb6802c40",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1667,6 +1949,7 @@
     "Name": "ReadableAndWritablePropertiesTypeInspector",
     "Guid": "b92a938ba5e921c4e92072dc91a2ab2b",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1674,6 +1957,7 @@
     "Name": "ReadablePropertiesTypeInspector",
     "Guid": "c9669f90a0f2f2a41b805a174d9be97e",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1681,6 +1965,7 @@
     "Name": "TypeInspectorSkeleton",
     "Guid": "ed437999b4d95dd4094909044396a0b2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1688,6 +1973,7 @@
     "Name": "DynamicTypeResolver",
     "Guid": "28ddf494ebac7fe4fb7704de7713a111",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1695,6 +1981,7 @@
     "Name": "StaticTypeResolver",
     "Guid": "684d1820910272c41957060731567d5c",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1702,6 +1989,7 @@
     "Name": "IPostDeserializationCallback",
     "Guid": "0a1b0915df335f34aa94272237836de2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1709,6 +1997,7 @@
     "Name": "ObjectAnchorCollection",
     "Guid": "2e3d78e3d62429040a9c8ab6066499ae",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1716,6 +2005,7 @@
     "Name": "ReflectionUtility",
     "Guid": "a47e4ee72331a6b4aaf1b7abd7b76d6d",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1723,6 +2013,7 @@
     "Name": "SerializerState",
     "Guid": "c783e372f00ca8e42a66fe82bbbe3fd2",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1730,6 +2021,7 @@
     "Name": "AliasValueDeserializer",
     "Guid": "2b42e3b48f16da04d81b23e165d66fc3",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   },
   {
@@ -1737,6 +2029,7 @@
     "Name": "NodeValueDeserializer",
     "Guid": "3782a2b6c58f1ae459162e3ce74fc25f",
     "FileID": "11500000",
+    "IsIterable": false,
     "Fields": []
   }
 ]

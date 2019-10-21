@@ -6,8 +6,8 @@ public class TestScript_Arrays : MonoBehaviour
 {
 
     public testSubClass2[] arrayTest2;
-    public List<testSubClass2> listTest2;
-    public List<List<testSubClass2>> ListInListTest2;
+    public List<testSubClass2> listTest;
+    public List<List<testSubClass2>> ListInListTest;
     
     // Start is called before the first frame update
     void Start()
