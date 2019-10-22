@@ -76,23 +76,25 @@ namespace importerexporter.utility
 
             for (var i = 0; i < members.Count; i++)
             {
+                
                 FieldInfo member = members[i];
-
+                Type currentType = member.FieldType;
+                
                 bool isIterable = false;
-                Type currentMember = member.GetType();
-                if (currentMember.IsArray)
+                
+                if (currentType.IsArray)
                 {
                     isIterable = true;
-                    type = type.GetElementType();
+                    currentType = currentType.GetElementType();
                 }
 
-                if (currentMember.IsGenericList())
+                if (currentType.IsGenericList())
                 {
                     isIterable = true;
-                    type = type.GetGenericArguments()[0];
+                    currentType = currentType.GetGenericArguments()[0];
                 }
 
-                values.Add(new FieldModel(type.Name, type, isIterable, iteration));
+                values.Add(new FieldModel(currentType.FullName, currentType, isIterable, iteration));
             }
 
             return values.ToArray();

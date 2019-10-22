@@ -13,8 +13,8 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "TestField",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       }
     ]
@@ -26,13 +26,14 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "test",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "testScriptSubClass",
+        "Name": "TestScriptSubClass",
         "Type": "TestScript1+TestScriptSubClass",
+        "IsIterable": false,
         "ClassFields": {
           "FullName": "TestScript1+TestScriptSubClass",
           "Name": "TestScript1+TestScriptSubClass",
@@ -40,18 +41,17 @@
           "FileID": null,
           "Fields": [
             {
-              "Name": "publicString",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "privateString",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             }
           ]
-        },
-        "IsIterable": false
+        }
       }
     ]
   },
@@ -62,13 +62,13 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "testTestScript2",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "privateTestScript2",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       }
     ]
@@ -80,134 +80,134 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "arrayTest2",
-        "Type": "TestScript_Arrays+testSubClass2[]",
+        "Name": "testSubClass2[]",
+        "Type": "TestScript_Arrays+testSubClass2",
+        "IsIterable": false,
         "ClassFields": {
-          "FullName": "TestScript_Arrays+testSubClass2[]",
-          "Name": "TestScript_Arrays+testSubClass2[]",
+          "FullName": "TestScript_Arrays+testSubClass2",
+          "Name": "TestScript_Arrays+testSubClass2",
           "Guid": null,
           "FileID": null,
           "Fields": [
             {
-              "Name": "test",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "test2",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "testList2",
-              "Type": "TestScript_Arrays+testSubClass2[]",
+              "Name": "testSubClass2[]",
+              "Type": "TestScript_Arrays+testSubClass2",
+              "IsIterable": false,
               "ClassFields": {
-                "FullName": "TestScript_Arrays+testSubClass2[]",
-                "Name": "TestScript_Arrays+testSubClass2[]",
+                "FullName": "TestScript_Arrays+testSubClass2",
+                "Name": "TestScript_Arrays+testSubClass2",
                 "Guid": null,
                 "FileID": null,
                 "Fields": [
                   {
-                    "Name": "test",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "test2",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "testList2",
-                    "Type": "TestScript_Arrays+testSubClass2[]",
+                    "Name": "testSubClass2[]",
+                    "Type": "TestScript_Arrays+testSubClass2",
+                    "IsIterable": false,
                     "ClassFields": {
-                      "FullName": "TestScript_Arrays+testSubClass2[]",
-                      "Name": "TestScript_Arrays+testSubClass2[]",
+                      "FullName": "TestScript_Arrays+testSubClass2",
+                      "Name": "TestScript_Arrays+testSubClass2",
                       "Guid": null,
                       "FileID": null,
                       "Fields": [
                         {
-                          "Name": "test",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "test2",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "testList2",
-                          "Type": "TestScript_Arrays+testSubClass2[]",
+                          "Name": "testSubClass2[]",
+                          "Type": "TestScript_Arrays+testSubClass2",
+                          "IsIterable": false,
                           "ClassFields": {
-                            "FullName": "TestScript_Arrays+testSubClass2[]",
-                            "Name": "TestScript_Arrays+testSubClass2[]",
+                            "FullName": "TestScript_Arrays+testSubClass2",
+                            "Name": "TestScript_Arrays+testSubClass2",
                             "Guid": null,
                             "FileID": null,
                             "Fields": [
                               {
-                                "Name": "test",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "test2",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "testList2",
-                                "Type": "TestScript_Arrays+testSubClass2[]",
+                                "Name": "testSubClass2[]",
+                                "Type": "TestScript_Arrays+testSubClass2",
+                                "IsIterable": false,
                                 "ClassFields": {
-                                  "FullName": "TestScript_Arrays+testSubClass2[]",
-                                  "Name": "TestScript_Arrays+testSubClass2[]",
+                                  "FullName": "TestScript_Arrays+testSubClass2",
+                                  "Name": "TestScript_Arrays+testSubClass2",
                                   "Guid": null,
                                   "FileID": null,
                                   "Fields": [
                                     {
-                                      "Name": "test",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "test2",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "testList2",
-                                      "Type": "TestScript_Arrays+testSubClass2[]",
-                                      "IsIterable": true
+                                      "Name": "testSubClass2[]",
+                                      "Type": "TestScript_Arrays+testSubClass2",
+                                      "IsIterable": false
                                     }
                                   ]
-                                },
-                                "IsIterable": true
+                                }
                               }
                             ]
-                          },
-                          "IsIterable": true
+                          }
                         }
                       ]
-                    },
-                    "IsIterable": true
+                    }
                   }
                 ]
-              },
-              "IsIterable": true
+              }
             }
           ]
-        },
-        "IsIterable": true
+        }
       },
       {
-        "Name": "listTest",
-        "Type": "TestScript_Arrays+testSubClass2",
-        "IsIterable": true
+        "Name": "List`1",
+        "Type": "List`1",
+        "IsIterable": false
       },
       {
-        "Name": "ListInListTest",
-        "Type": "System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass2",
-        "IsIterable": true
+        "Name": "List`1",
+        "Type": "List`1",
+        "IsIterable": false
       }
     ]
   },
@@ -218,13 +218,13 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "m_TitleContent",
-        "Type": "UnityEngine.GUIContent",
+        "Name": "GUIContent",
+        "Type": "GUIContent",
         "IsIterable": false
       },
       {
-        "Name": "m_Pos",
-        "Type": "UnityEngine.Rect",
+        "Name": "Rect",
+        "Type": "Rect",
         "IsIterable": false
       }
     ]
@@ -243,13 +243,13 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "publicString",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "privateSerializedString",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       }
     ]
@@ -282,47 +282,49 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "FullName",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "Name",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "NameLower",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "FileID",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "Guid",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "Fields",
-        "Type": "importerexporter.models.FieldModel[]",
+        "Name": "FieldModel[]",
+        "Type": "importerexporter.models.FieldModel",
+        "IsIterable": false,
         "ClassFields": {
-          "FullName": "importerexporter.models.FieldModel[]",
-          "Name": "FieldModel[]",
+          "FullName": "importerexporter.models.FieldModel",
+          "Name": "FieldModel",
           "Guid": null,
           "FileID": null,
           "Fields": [
             {
-              "Name": "Name",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Type",
+              "Name": "ClassModel",
               "Type": "importerexporter.models.ClassModel",
+              "IsIterable": false,
               "ClassFields": {
                 "FullName": "importerexporter.models.ClassModel",
                 "Name": "ClassModel",
@@ -330,47 +332,49 @@
                 "FileID": null,
                 "Fields": [
                   {
-                    "Name": "FullName",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "Name",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "NameLower",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "FileID",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "Guid",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "Fields",
-                    "Type": "importerexporter.models.FieldModel[]",
+                    "Name": "FieldModel[]",
+                    "Type": "importerexporter.models.FieldModel",
+                    "IsIterable": false,
                     "ClassFields": {
-                      "FullName": "importerexporter.models.FieldModel[]",
-                      "Name": "FieldModel[]",
+                      "FullName": "importerexporter.models.FieldModel",
+                      "Name": "FieldModel",
                       "Guid": null,
                       "FileID": null,
                       "Fields": [
                         {
-                          "Name": "Name",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Type",
+                          "Name": "ClassModel",
                           "Type": "importerexporter.models.ClassModel",
+                          "IsIterable": false,
                           "ClassFields": {
                             "FullName": "importerexporter.models.ClassModel",
                             "Name": "ClassModel",
@@ -378,83 +382,79 @@
                             "FileID": null,
                             "Fields": [
                               {
-                                "Name": "FullName",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "Name",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "NameLower",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "FileID",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "Guid",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "Fields",
-                                "Type": "importerexporter.models.FieldModel[]",
+                                "Name": "FieldModel[]",
+                                "Type": "importerexporter.models.FieldModel",
+                                "IsIterable": false,
                                 "ClassFields": {
-                                  "FullName": "importerexporter.models.FieldModel[]",
-                                  "Name": "FieldModel[]",
+                                  "FullName": "importerexporter.models.FieldModel",
+                                  "Name": "FieldModel",
                                   "Guid": null,
                                   "FileID": null,
                                   "Fields": [
                                     {
-                                      "Name": "Name",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Type",
+                                      "Name": "ClassModel",
                                       "Type": "importerexporter.models.ClassModel",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "IsIterable",
-                                      "Type": "System.Boolean",
+                                      "Name": "Boolean",
+                                      "Type": "Boolean",
                                       "IsIterable": false
                                     }
                                   ]
-                                },
-                                "IsIterable": true
+                                }
                               }
                             ]
-                          },
-                          "IsIterable": false
+                          }
                         },
                         {
-                          "Name": "IsIterable",
-                          "Type": "System.Boolean",
+                          "Name": "Boolean",
+                          "Type": "Boolean",
                           "IsIterable": false
                         }
                       ]
-                    },
-                    "IsIterable": true
+                    }
                   }
                 ]
-              },
-              "IsIterable": false
+              }
             },
             {
-              "Name": "IsIterable",
-              "Type": "System.Boolean",
+              "Name": "Boolean",
+              "Type": "Boolean",
               "IsIterable": false
             }
           ]
-        },
-        "IsIterable": true
+        }
       }
     ]
   },
@@ -472,8 +472,9 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "newClassModel",
+        "Name": "ClassModel",
         "Type": "importerexporter.models.ClassModel",
+        "IsIterable": false,
         "ClassFields": {
           "FullName": "importerexporter.models.ClassModel",
           "Name": "ClassModel",
@@ -481,47 +482,49 @@
           "FileID": null,
           "Fields": [
             {
-              "Name": "FullName",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Name",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "NameLower",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "FileID",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Guid",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Fields",
-              "Type": "importerexporter.models.FieldModel[]",
+              "Name": "FieldModel[]",
+              "Type": "importerexporter.models.FieldModel",
+              "IsIterable": false,
               "ClassFields": {
-                "FullName": "importerexporter.models.FieldModel[]",
-                "Name": "FieldModel[]",
+                "FullName": "importerexporter.models.FieldModel",
+                "Name": "FieldModel",
                 "Guid": null,
                 "FileID": null,
                 "Fields": [
                   {
-                    "Name": "Name",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "Type",
+                    "Name": "ClassModel",
                     "Type": "importerexporter.models.ClassModel",
+                    "IsIterable": false,
                     "ClassFields": {
                       "FullName": "importerexporter.models.ClassModel",
                       "Name": "ClassModel",
@@ -529,47 +532,49 @@
                       "FileID": null,
                       "Fields": [
                         {
-                          "Name": "FullName",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Name",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "NameLower",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "FileID",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Guid",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Fields",
-                          "Type": "importerexporter.models.FieldModel[]",
+                          "Name": "FieldModel[]",
+                          "Type": "importerexporter.models.FieldModel",
+                          "IsIterable": false,
                           "ClassFields": {
-                            "FullName": "importerexporter.models.FieldModel[]",
-                            "Name": "FieldModel[]",
+                            "FullName": "importerexporter.models.FieldModel",
+                            "Name": "FieldModel",
                             "Guid": null,
                             "FileID": null,
                             "Fields": [
                               {
-                                "Name": "Name",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "Type",
+                                "Name": "ClassModel",
                                 "Type": "importerexporter.models.ClassModel",
+                                "IsIterable": false,
                                 "ClassFields": {
                                   "FullName": "importerexporter.models.ClassModel",
                                   "Name": "ClassModel",
@@ -577,68 +582,64 @@
                                   "FileID": null,
                                   "Fields": [
                                     {
-                                      "Name": "FullName",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Name",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "NameLower",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "FileID",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Guid",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Fields",
-                                      "Type": "importerexporter.models.FieldModel[]",
-                                      "IsIterable": true
+                                      "Name": "FieldModel[]",
+                                      "Type": "importerexporter.models.FieldModel",
+                                      "IsIterable": false
                                     }
                                   ]
-                                },
-                                "IsIterable": false
+                                }
                               },
                               {
-                                "Name": "IsIterable",
-                                "Type": "System.Boolean",
+                                "Name": "Boolean",
+                                "Type": "Boolean",
                                 "IsIterable": false
                               }
                             ]
-                          },
-                          "IsIterable": true
+                          }
                         }
                       ]
-                    },
-                    "IsIterable": false
+                    }
                   },
                   {
-                    "Name": "IsIterable",
-                    "Type": "System.Boolean",
+                    "Name": "Boolean",
+                    "Type": "Boolean",
                     "IsIterable": false
                   }
                 ]
-              },
-              "IsIterable": true
+              }
             }
           ]
-        },
-        "IsIterable": false
+        }
       },
       {
-        "Name": "oldClassModel",
+        "Name": "ClassModel",
         "Type": "importerexporter.models.ClassModel",
+        "IsIterable": false,
         "ClassFields": {
           "FullName": "importerexporter.models.ClassModel",
           "Name": "ClassModel",
@@ -646,47 +647,49 @@
           "FileID": null,
           "Fields": [
             {
-              "Name": "FullName",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Name",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "NameLower",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "FileID",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Guid",
-              "Type": "System.String",
+              "Name": "String",
+              "Type": "String",
               "IsIterable": false
             },
             {
-              "Name": "Fields",
-              "Type": "importerexporter.models.FieldModel[]",
+              "Name": "FieldModel[]",
+              "Type": "importerexporter.models.FieldModel",
+              "IsIterable": false,
               "ClassFields": {
-                "FullName": "importerexporter.models.FieldModel[]",
-                "Name": "FieldModel[]",
+                "FullName": "importerexporter.models.FieldModel",
+                "Name": "FieldModel",
                 "Guid": null,
                 "FileID": null,
                 "Fields": [
                   {
-                    "Name": "Name",
-                    "Type": "System.String",
+                    "Name": "String",
+                    "Type": "String",
                     "IsIterable": false
                   },
                   {
-                    "Name": "Type",
+                    "Name": "ClassModel",
                     "Type": "importerexporter.models.ClassModel",
+                    "IsIterable": false,
                     "ClassFields": {
                       "FullName": "importerexporter.models.ClassModel",
                       "Name": "ClassModel",
@@ -694,47 +697,49 @@
                       "FileID": null,
                       "Fields": [
                         {
-                          "Name": "FullName",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Name",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "NameLower",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "FileID",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Guid",
-                          "Type": "System.String",
+                          "Name": "String",
+                          "Type": "String",
                           "IsIterable": false
                         },
                         {
-                          "Name": "Fields",
-                          "Type": "importerexporter.models.FieldModel[]",
+                          "Name": "FieldModel[]",
+                          "Type": "importerexporter.models.FieldModel",
+                          "IsIterable": false,
                           "ClassFields": {
-                            "FullName": "importerexporter.models.FieldModel[]",
-                            "Name": "FieldModel[]",
+                            "FullName": "importerexporter.models.FieldModel",
+                            "Name": "FieldModel",
                             "Guid": null,
                             "FileID": null,
                             "Fields": [
                               {
-                                "Name": "Name",
-                                "Type": "System.String",
+                                "Name": "String",
+                                "Type": "String",
                                 "IsIterable": false
                               },
                               {
-                                "Name": "Type",
+                                "Name": "ClassModel",
                                 "Type": "importerexporter.models.ClassModel",
+                                "IsIterable": false,
                                 "ClassFields": {
                                   "FullName": "importerexporter.models.ClassModel",
                                   "Name": "ClassModel",
@@ -742,85 +747,80 @@
                                   "FileID": null,
                                   "Fields": [
                                     {
-                                      "Name": "FullName",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Name",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "NameLower",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "FileID",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Guid",
-                                      "Type": "System.String",
+                                      "Name": "String",
+                                      "Type": "String",
                                       "IsIterable": false
                                     },
                                     {
-                                      "Name": "Fields",
-                                      "Type": "importerexporter.models.FieldModel[]",
-                                      "IsIterable": true
+                                      "Name": "FieldModel[]",
+                                      "Type": "importerexporter.models.FieldModel",
+                                      "IsIterable": false
                                     }
                                   ]
-                                },
-                                "IsIterable": false
+                                }
                               },
                               {
-                                "Name": "IsIterable",
-                                "Type": "System.Boolean",
+                                "Name": "Boolean",
+                                "Type": "Boolean",
                                 "IsIterable": false
                               }
                             ]
-                          },
-                          "IsIterable": true
+                          }
                         }
                       ]
-                    },
-                    "IsIterable": false
+                    }
                   },
                   {
-                    "Name": "IsIterable",
-                    "Type": "System.Boolean",
+                    "Name": "Boolean",
+                    "Type": "Boolean",
                     "IsIterable": false
                   }
                 ]
-              },
-              "IsIterable": true
+              }
             }
           ]
-        },
-        "IsIterable": false
+        }
       },
       {
-        "Name": "YamlOptions",
+        "Name": "YamlNode",
         "Type": "YamlDotNet.RepresentationModel.YamlNode",
+        "IsIterable": false,
         "ClassFields": {
           "FullName": "YamlDotNet.RepresentationModel.YamlNode",
           "Name": "YamlNode",
           "Guid": null,
           "FileID": null,
           "Fields": []
-        },
+        }
+      },
+      {
+        "Name": "List`1",
+        "Type": "List`1",
         "IsIterable": false
       },
       {
-        "Name": "MergeNodes",
-        "Type": "importerexporter.models.MergeNode",
-        "IsIterable": true
-      },
-      {
-        "Name": "HasBeenMapped",
-        "Type": "importerexporter.models.FoundScript+MappedState",
+        "Name": "MappedState",
+        "Type": "MappedState",
         "IsIterable": false
       }
     ]
@@ -832,29 +832,29 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "OriginalValue",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "NameToExportTo",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "Type",
-        "Type": "System.String",
+        "Name": "String",
+        "Type": "String",
         "IsIterable": false
       },
       {
-        "Name": "IsIterable",
-        "Type": "System.Boolean",
+        "Name": "Boolean",
+        "Type": "Boolean",
         "IsIterable": false
       },
       {
-        "Name": "Options",
-        "Type": "System.String",
-        "IsIterable": true
+        "Name": "String[]",
+        "Type": "String[]",
+        "IsIterable": false
       }
     ]
   },
@@ -886,13 +886,13 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "m_TitleContent",
-        "Type": "UnityEngine.GUIContent",
+        "Name": "GUIContent",
+        "Type": "GUIContent",
         "IsIterable": false
       },
       {
-        "Name": "m_Pos",
-        "Type": "UnityEngine.Rect",
+        "Name": "Rect",
+        "Type": "Rect",
         "IsIterable": false
       }
     ]
@@ -904,13 +904,13 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "m_TitleContent",
-        "Type": "UnityEngine.GUIContent",
+        "Name": "GUIContent",
+        "Type": "GUIContent",
         "IsIterable": false
       },
       {
-        "Name": "m_Pos",
-        "Type": "UnityEngine.Rect",
+        "Name": "Rect",
+        "Type": "Rect",
         "IsIterable": false
       }
     ]
@@ -922,18 +922,18 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "onComplete",
-        "Type": "System.Collections.Generic.List`1[[importerexporter.models.FoundScript",
-        "IsIterable": true
-      },
-      {
-        "Name": "m_TitleContent",
-        "Type": "UnityEngine.GUIContent",
+        "Name": "Action`1",
+        "Type": "Action`1",
         "IsIterable": false
       },
       {
-        "Name": "m_Pos",
-        "Type": "UnityEngine.Rect",
+        "Name": "GUIContent",
+        "Type": "GUIContent",
+        "IsIterable": false
+      },
+      {
+        "Name": "Rect",
+        "Type": "Rect",
         "IsIterable": false
       }
     ]
@@ -945,18 +945,18 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "completed",
-        "Type": "System.Boolean",
+        "Name": "Boolean",
+        "Type": "Boolean",
         "IsIterable": false
       },
       {
-        "Name": "m_TitleContent",
-        "Type": "UnityEngine.GUIContent",
+        "Name": "GUIContent",
+        "Type": "GUIContent",
         "IsIterable": false
       },
       {
-        "Name": "m_Pos",
-        "Type": "UnityEngine.Rect",
+        "Name": "Rect",
+        "Type": "Rect",
         "IsIterable": false
       }
     ]
@@ -1038,8 +1038,9 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "Empty",
+        "Name": "Mark",
         "Type": "YamlDotNet.Core.Mark",
+        "IsIterable": false,
         "ClassFields": {
           "FullName": "YamlDotNet.Core.Mark",
           "Name": "Mark",
@@ -1047,8 +1048,9 @@
           "FileID": null,
           "Fields": [
             {
-              "Name": "Empty",
+              "Name": "Mark",
               "Type": "YamlDotNet.Core.Mark",
+              "IsIterable": false,
               "ClassFields": {
                 "FullName": "YamlDotNet.Core.Mark",
                 "Name": "Mark",
@@ -1056,8 +1058,9 @@
                 "FileID": null,
                 "Fields": [
                   {
-                    "Name": "Empty",
+                    "Name": "Mark",
                     "Type": "YamlDotNet.Core.Mark",
+                    "IsIterable": false,
                     "ClassFields": {
                       "FullName": "YamlDotNet.Core.Mark",
                       "Name": "Mark",
@@ -1065,8 +1068,9 @@
                       "FileID": null,
                       "Fields": [
                         {
-                          "Name": "Empty",
+                          "Name": "Mark",
                           "Type": "YamlDotNet.Core.Mark",
+                          "IsIterable": false,
                           "ClassFields": {
                             "FullName": "YamlDotNet.Core.Mark",
                             "Name": "Mark",
@@ -1074,8 +1078,9 @@
                             "FileID": null,
                             "Fields": [
                               {
-                                "Name": "Empty",
+                                "Name": "Mark",
                                 "Type": "YamlDotNet.Core.Mark",
+                                "IsIterable": false,
                                 "ClassFields": {
                                   "FullName": "YamlDotNet.Core.Mark",
                                   "Name": "Mark",
@@ -1083,29 +1088,24 @@
                                   "FileID": null,
                                   "Fields": [
                                     {
-                                      "Name": "Empty",
+                                      "Name": "Mark",
                                       "Type": "YamlDotNet.Core.Mark",
                                       "IsIterable": false
                                     }
                                   ]
-                                },
-                                "IsIterable": false
+                                }
                               }
                             ]
-                          },
-                          "IsIterable": false
+                          }
                         }
                       ]
-                    },
-                    "IsIterable": false
+                    }
                   }
                 ]
-              },
-              "IsIterable": false
+              }
             }
           ]
-        },
-        "IsIterable": false
+        }
       }
     ]
   },
@@ -1137,128 +1137,128 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "value__",
-        "Type": "System.Int32",
+        "Name": "Int32",
+        "Type": "Int32",
         "IsIterable": false
       },
       {
-        "Name": "StreamStart",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "StreamEnd",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "ImplicitDocumentStart",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "DocumentStart",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "DocumentContent",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "DocumentEnd",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockNode",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockNodeOrIndentlessSequence",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowNode",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockSequenceFirstEntry",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockSequenceEntry",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "IndentlessSequenceEntry",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockMappingFirstKey",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockMappingKey",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "BlockMappingValue",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowSequenceFirstEntry",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowSequenceEntry",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowSequenceEntryMappingKey",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowSequenceEntryMappingValue",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowSequenceEntryMappingEnd",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowMappingFirstKey",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowMappingKey",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowMappingValue",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       },
       {
-        "Name": "FlowMappingEmptyValue",
-        "Type": "YamlDotNet.Core.ParserState",
+        "Name": "ParserState",
+        "Type": "ParserState",
         "IsIterable": false
       }
     ]
@@ -1277,38 +1277,38 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "value__",
-        "Type": "System.Int32",
+        "Name": "Int32",
+        "Type": "Int32",
         "IsIterable": false
       },
       {
-        "Name": "Any",
-        "Type": "YamlDotNet.Core.ScalarStyle",
+        "Name": "ScalarStyle",
+        "Type": "ScalarStyle",
         "IsIterable": false
       },
       {
-        "Name": "Plain",
-        "Type": "YamlDotNet.Core.ScalarStyle",
+        "Name": "ScalarStyle",
+        "Type": "ScalarStyle",
         "IsIterable": false
       },
       {
-        "Name": "SingleQuoted",
-        "Type": "YamlDotNet.Core.ScalarStyle",
+        "Name": "ScalarStyle",
+        "Type": "ScalarStyle",
         "IsIterable": false
       },
       {
-        "Name": "DoubleQuoted",
-        "Type": "YamlDotNet.Core.ScalarStyle",
+        "Name": "ScalarStyle",
+        "Type": "ScalarStyle",
         "IsIterable": false
       },
       {
-        "Name": "Literal",
-        "Type": "YamlDotNet.Core.ScalarStyle",
+        "Name": "ScalarStyle",
+        "Type": "ScalarStyle",
         "IsIterable": false
       },
       {
-        "Name": "Folded",
-        "Type": "YamlDotNet.Core.ScalarStyle",
+        "Name": "ScalarStyle",
+        "Type": "ScalarStyle",
         "IsIterable": false
       }
     ]
@@ -1390,23 +1390,23 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "value__",
-        "Type": "System.Int32",
+        "Name": "Int32",
+        "Type": "Int32",
         "IsIterable": false
       },
       {
-        "Name": "Any",
-        "Type": "YamlDotNet.Core.Events.MappingStyle",
+        "Name": "MappingStyle",
+        "Type": "MappingStyle",
         "IsIterable": false
       },
       {
-        "Name": "Block",
-        "Type": "YamlDotNet.Core.Events.MappingStyle",
+        "Name": "MappingStyle",
+        "Type": "MappingStyle",
         "IsIterable": false
       },
       {
-        "Name": "Flow",
-        "Type": "YamlDotNet.Core.Events.MappingStyle",
+        "Name": "MappingStyle",
+        "Type": "MappingStyle",
         "IsIterable": false
       }
     ]
@@ -1446,23 +1446,23 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "value__",
-        "Type": "System.Int32",
+        "Name": "Int32",
+        "Type": "Int32",
         "IsIterable": false
       },
       {
-        "Name": "Any",
-        "Type": "YamlDotNet.Core.Events.SequenceStyle",
+        "Name": "SequenceStyle",
+        "Type": "SequenceStyle",
         "IsIterable": false
       },
       {
-        "Name": "Block",
-        "Type": "YamlDotNet.Core.Events.SequenceStyle",
+        "Name": "SequenceStyle",
+        "Type": "SequenceStyle",
         "IsIterable": false
       },
       {
-        "Name": "Flow",
-        "Type": "YamlDotNet.Core.Events.SequenceStyle",
+        "Name": "SequenceStyle",
+        "Type": "SequenceStyle",
         "IsIterable": false
       }
     ]
@@ -1593,9 +1593,9 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "disabledTests",
-        "Type": "System.String",
-        "IsIterable": true
+        "Name": "String[]",
+        "Type": "String[]",
+        "IsIterable": false
       }
     ]
   },
@@ -1697,28 +1697,28 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "value__",
-        "Type": "System.Int32",
+        "Name": "Int32",
+        "Type": "Int32",
         "IsIterable": false
       },
       {
-        "Name": "Alias",
-        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
+        "Name": "YamlNodeType",
+        "Type": "YamlNodeType",
         "IsIterable": false
       },
       {
-        "Name": "Mapping",
-        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
+        "Name": "YamlNodeType",
+        "Type": "YamlNodeType",
         "IsIterable": false
       },
       {
-        "Name": "Scalar",
-        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
+        "Name": "YamlNodeType",
+        "Type": "YamlNodeType",
         "IsIterable": false
       },
       {
-        "Name": "Sequence",
-        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
+        "Name": "YamlNodeType",
+        "Type": "YamlNodeType",
         "IsIterable": false
       }
     ]
@@ -1926,38 +1926,38 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "value__",
-        "Type": "System.Int32",
+        "Name": "Int32",
+        "Type": "Int32",
         "IsIterable": false
       },
       {
-        "Name": "None",
-        "Type": "YamlDotNet.Serialization.SerializationOptions",
+        "Name": "SerializationOptions",
+        "Type": "SerializationOptions",
         "IsIterable": false
       },
       {
-        "Name": "Roundtrip",
-        "Type": "YamlDotNet.Serialization.SerializationOptions",
+        "Name": "SerializationOptions",
+        "Type": "SerializationOptions",
         "IsIterable": false
       },
       {
-        "Name": "DisableAliases",
-        "Type": "YamlDotNet.Serialization.SerializationOptions",
+        "Name": "SerializationOptions",
+        "Type": "SerializationOptions",
         "IsIterable": false
       },
       {
-        "Name": "EmitDefaults",
-        "Type": "YamlDotNet.Serialization.SerializationOptions",
+        "Name": "SerializationOptions",
+        "Type": "SerializationOptions",
         "IsIterable": false
       },
       {
-        "Name": "JsonCompatible",
-        "Type": "YamlDotNet.Serialization.SerializationOptions",
+        "Name": "SerializationOptions",
+        "Type": "SerializationOptions",
         "IsIterable": false
       },
       {
-        "Name": "DefaultToStaticType",
-        "Type": "YamlDotNet.Serialization.SerializationOptions",
+        "Name": "SerializationOptions",
+        "Type": "SerializationOptions",
         "IsIterable": false
       }
     ]
@@ -2011,8 +2011,8 @@
     "FileID": "11500000",
     "Fields": [
       {
-        "Name": "NumberFormat",
-        "Type": "System.Globalization.NumberFormatInfo",
+        "Name": "NumberFormatInfo",
+        "Type": "NumberFormatInfo",
         "IsIterable": false
       }
     ]
