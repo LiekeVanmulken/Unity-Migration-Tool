@@ -191,8 +191,9 @@ namespace importerexporter
                 return scene;
             }
 
+            string type = currentMergeNode.Type;
             FoundScript foundScript =
-                foundScripts.FirstOrDefault(script => script.oldClassModel.Name == currentMergeNode.Type);
+                foundScripts.FirstOrDefault(script => script.oldClassModel.Name == type);
             if (foundScript == null)
             {
                 Debug.Log("Could not find foundScript for MergeNode, Type : " + currentMergeNode.Type +
@@ -200,7 +201,8 @@ namespace importerexporter
                           currentMergeNode.OriginalValue);
                 return scene;
             }
-
+            int line = yamlNode.Key.Start.Line - 1;
+            scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
             foreach (YamlNode item in items)
             {
                 scene = recursiveReplaceField(scene, foundScript.MergeNodes, item, foundScripts);

@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using importerexporter.utility;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -12,6 +13,8 @@ namespace importerexporter.models
     [JsonConverter(typeof(ClassModelConverter))]
     public class ClassModel
     {
+        private readonly Constants constants = Constants.Instance;
+        
         /// <summary>
         /// Class namespace and name
         /// </summary>
@@ -63,12 +66,23 @@ namespace importerexporter.models
         public ClassModel(Type type, int iteration = 0)
         {
             string fullName = type.FullName;
+            fullName = initList(fullName);
             initName(fullName);
 
             this.FullName = fullName;
             this.Fields = FieldDataGenerationUtility.GenerateFieldData(type, iteration);
         }
+        private string initList(string fullName)
+        {
+            // Check if its a list or array and if so use the name of the class that it holds
+            Match match = constants.IsListOrArrayRegex.Match(fullName);
+            if (match.Success)
+            {
+                fullName = match.Value;
+            }
 
+            return fullName;
+        }
         /// <summary>
         /// Sets the name from the fullname
         /// </summary>

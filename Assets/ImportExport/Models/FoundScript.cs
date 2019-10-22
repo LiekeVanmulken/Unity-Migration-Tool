@@ -77,13 +77,16 @@ namespace importerexporter.models
 
             foreach (FieldModel field in oldClassModel.Fields)
             {
-                MergeNode mergeNode = new MergeNode();
-                mergeNode.OriginalValue = field.Name;
+                MergeNode mergeNode = new MergeNode
+                {
+                    OriginalValue = field.Name
+                };
 
                 FieldModel mergeNodeType = oldClassModel.Fields
                     .First(data => data.Name == mergeNode.OriginalValue);
 
-                mergeNode.Type = mergeNodeType?.Type?.FullName + (mergeNodeType != null && mergeNodeType.IsIterable ? "[]" : "");
+                mergeNode.Type = mergeNodeType.Type?.FullName;
+                mergeNode.IsIterable = mergeNodeType.IsIterable;
 
                 mergeNode.Options = newClassModel.Fields?
                                         .OrderBy(newField =>

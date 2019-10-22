@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -57,6 +58,7 @@ namespace importerexporter.utility
                     throw new NullReferenceException("Type of list or array could not be found : " + match.Value);
                 }
             }
+
             iteration++;
             List<FieldModel> values = new List<FieldModel>();
 
@@ -75,7 +77,22 @@ namespace importerexporter.utility
             for (var i = 0; i < members.Count; i++)
             {
                 FieldInfo member = members[i];
-                values.Add(new FieldModel(member.Name, member.FieldType, iteration));
+
+                bool isIterable = false;
+                Type currentMember = member.GetType();
+                if (currentMember.IsArray)
+                {
+                    isIterable = true;
+                    type = type.GetElementType();
+                }
+
+                if (currentMember.IsGenericList())
+                {
+                    isIterable = true;
+                    type = type.GetGenericArguments()[0];
+                }
+
+                values.Add(new FieldModel(type.Name, type, isIterable, iteration));
             }
 
             return values.ToArray();

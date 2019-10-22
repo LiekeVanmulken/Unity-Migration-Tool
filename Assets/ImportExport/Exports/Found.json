@@ -1,0 +1,1624 @@
+[
+  {
+    "newClassModel": {
+      "FullName": "TestScript1+TestScriptSubClass",
+      "Name": "TestScript1+TestScriptSubClass",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "publicString",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "privateString",
+          "Type": "System.String",
+          "IsIterable": false
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_test+TestScriptSubClass",
+      "Name": "TestScript_test+TestScriptSubClass",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "publicString_",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "privateString_",
+          "Type": "System.String",
+          "IsIterable": false
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "publicString_",
+        "NameToExportTo": "publicString",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "publicString",
+          "privateString"
+        ]
+      },
+      {
+        "OriginalValue": "privateString_",
+        "NameToExportTo": "privateString",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "privateString",
+          "publicString"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript1",
+      "Name": "TestScript1",
+      "Guid": "cc55f0e6497cb994f8838590aeb61b0f",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testScriptSubClass",
+          "Type": "TestScript1+TestScriptSubClass",
+          "ClassFields": {
+            "FullName": "TestScript1+TestScriptSubClass",
+            "Name": "TestScript1+TestScriptSubClass",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "publicString",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "privateString",
+                "Type": "System.String",
+                "IsIterable": false
+              }
+            ]
+          },
+          "IsIterable": false
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_test",
+      "Name": "TestScript_test",
+      "Guid": "b0326906019e46f43a17e92aac4442b8",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testScriptSubClass_",
+          "Type": "TestScript_test+TestScriptSubClass",
+          "ClassFields": {
+            "FullName": "TestScript_test+TestScriptSubClass",
+            "Name": "TestScript_test+TestScriptSubClass",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "publicString_",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "privateString_",
+                "Type": "System.String",
+                "IsIterable": false
+              }
+            ]
+          },
+          "IsIterable": false
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "testScriptSubClass"
+        ]
+      },
+      {
+        "OriginalValue": "testScriptSubClass_",
+        "NameToExportTo": "testScriptSubClass",
+        "Type": "TestScript_test+TestScriptSubClass",
+        "IsIterable": false,
+        "Options": [
+          "testScriptSubClass",
+          "test"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript2",
+      "Name": "TestScript2",
+      "Guid": "e8c8261986a36b0438cab0bddcc1102a",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "testTestScript2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "privateTestScript2",
+          "Type": "System.String",
+          "IsIterable": false
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript2",
+      "Name": "TestScript2",
+      "Guid": "b6138d64e06ad664d9730e1d9b013863",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "testTestScript2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "privateTestScript2",
+          "Type": "System.String",
+          "IsIterable": false
+        }
+      ]
+    },
+    "FieldsToMerge": [],
+    "HasBeenMapped": "Mapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass2[]",
+      "Name": "TestScript_Arrays+testSubClass2[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList2",
+          "Type": "TestScript_Arrays+testSubClass2[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2[]",
+            "Name": "TestScript_Arrays+testSubClass2[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2[]",
+                  "Name": "TestScript_Arrays+testSubClass2[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2[]",
+                        "Name": "TestScript_Arrays+testSubClass2[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2[]",
+                              "Name": "TestScript_Arrays+testSubClass2[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2[]",
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass[]",
+      "Name": "TestScript_Arrays+testSubClass[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList",
+          "Type": "TestScript_Arrays+testSubClass[]",
+          "IsIterable": true
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "test2",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "test2",
+        "NameToExportTo": "test2",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test2",
+          "test",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "testList",
+        "NameToExportTo": "testList2",
+        "Type": "TestScript_Arrays+testSubClass[]",
+        "IsIterable": true,
+        "Options": [
+          "testList2",
+          "test",
+          "test2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass2[]",
+      "Name": "TestScript_Arrays+testSubClass2[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList2",
+          "Type": "TestScript_Arrays+testSubClass2[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2[]",
+            "Name": "TestScript_Arrays+testSubClass2[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2[]",
+                  "Name": "TestScript_Arrays+testSubClass2[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2[]",
+                        "Name": "TestScript_Arrays+testSubClass2[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2[]",
+                              "Name": "TestScript_Arrays+testSubClass2[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2[]",
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass[]",
+      "Name": "TestScript_Arrays+testSubClass[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList",
+          "Type": "TestScript_Arrays+testSubClass[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass[]",
+            "Name": "TestScript_Arrays+testSubClass[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList",
+                "Type": "TestScript_Arrays+testSubClass[]",
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "test2",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "test2",
+        "NameToExportTo": "test2",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test2",
+          "test",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "testList",
+        "NameToExportTo": "testList2",
+        "Type": "TestScript_Arrays+testSubClass[]",
+        "IsIterable": true,
+        "Options": [
+          "testList2",
+          "test",
+          "test2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass2[]",
+      "Name": "TestScript_Arrays+testSubClass2[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList2",
+          "Type": "TestScript_Arrays+testSubClass2[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2[]",
+            "Name": "TestScript_Arrays+testSubClass2[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2[]",
+                  "Name": "TestScript_Arrays+testSubClass2[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2[]",
+                        "Name": "TestScript_Arrays+testSubClass2[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2[]",
+                              "Name": "TestScript_Arrays+testSubClass2[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2[]",
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass[]",
+      "Name": "TestScript_Arrays+testSubClass[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList",
+          "Type": "TestScript_Arrays+testSubClass[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass[]",
+            "Name": "TestScript_Arrays+testSubClass[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList",
+                "Type": "TestScript_Arrays+testSubClass[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass[]",
+                  "Name": "TestScript_Arrays+testSubClass[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList",
+                      "Type": "TestScript_Arrays+testSubClass[]",
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "test2",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "test2",
+        "NameToExportTo": "test2",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test2",
+          "test",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "testList",
+        "NameToExportTo": "testList2",
+        "Type": "TestScript_Arrays+testSubClass[]",
+        "IsIterable": true,
+        "Options": [
+          "testList2",
+          "test",
+          "test2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass2[]",
+      "Name": "TestScript_Arrays+testSubClass2[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList2",
+          "Type": "TestScript_Arrays+testSubClass2[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2[]",
+            "Name": "TestScript_Arrays+testSubClass2[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2[]",
+                  "Name": "TestScript_Arrays+testSubClass2[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2[]",
+                        "Name": "TestScript_Arrays+testSubClass2[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2[]",
+                              "Name": "TestScript_Arrays+testSubClass2[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2[]",
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass[]",
+      "Name": "TestScript_Arrays+testSubClass[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList",
+          "Type": "TestScript_Arrays+testSubClass[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass[]",
+            "Name": "TestScript_Arrays+testSubClass[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList",
+                "Type": "TestScript_Arrays+testSubClass[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass[]",
+                  "Name": "TestScript_Arrays+testSubClass[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList",
+                      "Type": "TestScript_Arrays+testSubClass[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass[]",
+                        "Name": "TestScript_Arrays+testSubClass[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList",
+                            "Type": "TestScript_Arrays+testSubClass[]",
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "test2",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "test2",
+        "NameToExportTo": "test2",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test2",
+          "test",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "testList",
+        "NameToExportTo": "testList2",
+        "Type": "TestScript_Arrays+testSubClass[]",
+        "IsIterable": true,
+        "Options": [
+          "testList2",
+          "test",
+          "test2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass2[]",
+      "Name": "TestScript_Arrays+testSubClass2[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList2",
+          "Type": "TestScript_Arrays+testSubClass2[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2[]",
+            "Name": "TestScript_Arrays+testSubClass2[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2[]",
+                  "Name": "TestScript_Arrays+testSubClass2[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2[]",
+                        "Name": "TestScript_Arrays+testSubClass2[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2[]",
+                              "Name": "TestScript_Arrays+testSubClass2[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2[]",
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass[]",
+      "Name": "TestScript_Arrays+testSubClass[]",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "System.String",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList",
+          "Type": "TestScript_Arrays+testSubClass[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass[]",
+            "Name": "TestScript_Arrays+testSubClass[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList",
+                "Type": "TestScript_Arrays+testSubClass[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass[]",
+                  "Name": "TestScript_Arrays+testSubClass[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList",
+                      "Type": "TestScript_Arrays+testSubClass[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass[]",
+                        "Name": "TestScript_Arrays+testSubClass[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList",
+                            "Type": "TestScript_Arrays+testSubClass[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass[]",
+                              "Name": "TestScript_Arrays+testSubClass[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList",
+                                  "Type": "TestScript_Arrays+testSubClass[]",
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "test2",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "test2",
+        "NameToExportTo": "test2",
+        "Type": "System.String",
+        "IsIterable": false,
+        "Options": [
+          "test2",
+          "test",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "testList",
+        "NameToExportTo": "testList2",
+        "Type": "TestScript_Arrays+testSubClass[]",
+        "IsIterable": true,
+        "Options": [
+          "testList2",
+          "test",
+          "test2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays",
+      "Name": "TestScript_Arrays",
+      "Guid": "b8ef4b47ef5acff4795a997b2a3ff344",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "arrayTest2",
+          "Type": "TestScript_Arrays+testSubClass2[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2[]",
+            "Name": "TestScript_Arrays+testSubClass2[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2[]",
+                  "Name": "TestScript_Arrays+testSubClass2[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2[]",
+                        "Name": "TestScript_Arrays+testSubClass2[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2[]",
+                              "Name": "TestScript_Arrays+testSubClass2[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2[]",
+                                  "ClassFields": {
+                                    "FullName": "TestScript_Arrays+testSubClass2[]",
+                                    "Name": "TestScript_Arrays+testSubClass2[]",
+                                    "Guid": null,
+                                    "FileID": null,
+                                    "Fields": [
+                                      {
+                                        "Name": "test",
+                                        "Type": "System.String",
+                                        "IsIterable": false
+                                      },
+                                      {
+                                        "Name": "test2",
+                                        "Type": "System.String",
+                                        "IsIterable": false
+                                      },
+                                      {
+                                        "Name": "testList2",
+                                        "Type": "TestScript_Arrays+testSubClass2[]",
+                                        "IsIterable": true
+                                      }
+                                    ]
+                                  },
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        },
+        {
+          "Name": "listTest",
+          "Type": "TestScript_Arrays+testSubClass2",
+          "IsIterable": true
+        },
+        {
+          "Name": "ListInListTest",
+          "Type": "System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass2",
+          "IsIterable": true
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays",
+      "Name": "TestScript_Arrays",
+      "Guid": "bf7415756e838ff41a9ed93ee0202160",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "arrayTest",
+          "Type": "TestScript_Arrays+testSubClass[]",
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass[]",
+            "Name": "TestScript_Arrays+testSubClass[]",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "System.String",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList",
+                "Type": "TestScript_Arrays+testSubClass[]",
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass[]",
+                  "Name": "TestScript_Arrays+testSubClass[]",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "System.String",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList",
+                      "Type": "TestScript_Arrays+testSubClass[]",
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass[]",
+                        "Name": "TestScript_Arrays+testSubClass[]",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "System.String",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList",
+                            "Type": "TestScript_Arrays+testSubClass[]",
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass[]",
+                              "Name": "TestScript_Arrays+testSubClass[]",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "System.String",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList",
+                                  "Type": "TestScript_Arrays+testSubClass[]",
+                                  "ClassFields": {
+                                    "FullName": "TestScript_Arrays+testSubClass[]",
+                                    "Name": "TestScript_Arrays+testSubClass[]",
+                                    "Guid": null,
+                                    "FileID": null,
+                                    "Fields": [
+                                      {
+                                        "Name": "test",
+                                        "Type": "System.String",
+                                        "IsIterable": false
+                                      },
+                                      {
+                                        "Name": "test2",
+                                        "Type": "System.String",
+                                        "IsIterable": false
+                                      },
+                                      {
+                                        "Name": "testList",
+                                        "Type": "TestScript_Arrays+testSubClass[]",
+                                        "IsIterable": true
+                                      }
+                                    ]
+                                  },
+                                  "IsIterable": true
+                                }
+                              ]
+                            },
+                            "IsIterable": true
+                          }
+                        ]
+                      },
+                      "IsIterable": true
+                    }
+                  ]
+                },
+                "IsIterable": true
+              }
+            ]
+          },
+          "IsIterable": true
+        },
+        {
+          "Name": "listTest",
+          "Type": "TestScript_Arrays+testSubClass",
+          "IsIterable": true
+        },
+        {
+          "Name": "ListInListTest",
+          "Type": "System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass",
+          "IsIterable": true
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "arrayTest",
+        "NameToExportTo": "arrayTest2",
+        "Type": "TestScript_Arrays+testSubClass[]",
+        "IsIterable": true,
+        "Options": [
+          "arrayTest2",
+          "listTest",
+          "ListInListTest"
+        ]
+      },
+      {
+        "OriginalValue": "listTest",
+        "NameToExportTo": "listTest",
+        "Type": "TestScript_Arrays+testSubClass",
+        "IsIterable": true,
+        "Options": [
+          "listTest",
+          "arrayTest2",
+          "ListInListTest"
+        ]
+      },
+      {
+        "OriginalValue": "ListInListTest",
+        "NameToExportTo": "ListInListTest",
+        "Type": "System.Collections.Generic.List`1[[TestScript_Arrays+testSubClass",
+        "IsIterable": true,
+        "Options": [
+          "ListInListTest",
+          "listTest",
+          "arrayTest2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  }
+]

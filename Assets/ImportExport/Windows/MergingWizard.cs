@@ -121,7 +121,8 @@ namespace importerexporter.windows
                         EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
                     GUI.enabled = wrapper.FieldSelectionStates[j];
                     EditorGUILayout.LabelField(originalName, richtextStyle, GetColumnWidth(5));
-                    EditorGUILayout.LabelField(fieldToMerge.Type , richtextStyle, GetColumnWidth(6));
+                    EditorGUILayout.LabelField(fieldToMerge.Type + (fieldToMerge.IsIterable ? "[]" : ""), richtextStyle,
+                        GetColumnWidth(6));
 
                     GUILayout.EndHorizontal();
 
@@ -130,7 +131,7 @@ namespace importerexporter.windows
                     EditorGUILayout.LabelField("", GetColumnWidth(1));
 
                     EditorGUILayout.BeginVertical();
-                    
+
                     wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
                         fieldToMerge.Options, GetColumnWidth(5));
 

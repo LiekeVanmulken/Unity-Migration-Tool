@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using importerexporter.models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 using Object = System.Object;
 
 namespace importerexporter.utility
@@ -47,11 +46,11 @@ namespace importerexporter.utility
                     if (fieldData.Type != null)
                     {
                         WriteKeyValue(writer, "Type", fieldData.Type.FullName);
+                        WriteKeyValue(writer, "IsIterable", fieldData.IsIterable);
                         if (fieldData.Type.Fields != null)
                         {
                             WriteJsonRecursively(writer, fieldData.Type, serializer, depth + 1);
                         }
-                        WriteKeyValue(writer, "IsIterable", fieldData.IsIterable.ToString());
                     }
 
                     writer.WriteEndObject();
@@ -92,9 +91,8 @@ namespace importerexporter.utility
             {
                 FieldModel currentField = new FieldModel();
                 currentField.Name = (string) field["Name"];
-                currentField.IsIterable= (bool) classData["IsIterable"];
-
                 currentField.Type = new ClassModel((string) field["Type"]);
+                currentField.IsIterable= (bool) field["IsIterable"];
 
                 JToken classDataChild;
                 if (field.TryGetValue("ClassFields", out classDataChild))
