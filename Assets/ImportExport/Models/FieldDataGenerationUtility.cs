@@ -94,7 +94,7 @@ namespace importerexporter.utility
                     currentType = currentType.GetGenericArguments()[0];
                 }
 
-                values.Add(new FieldModel(currentType.FullName, currentType, isIterable, iteration));
+                values.Add(new FieldModel(member.Name, currentType, isIterable, iteration));
             }
 
             return values.ToArray();
