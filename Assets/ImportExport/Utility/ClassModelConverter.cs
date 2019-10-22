@@ -35,7 +35,6 @@ namespace importerexporter.utility
             WriteKeyValue(writer, "Name", classModel.Name);
             WriteKeyValue(writer, "Guid", classModel.Guid);
             WriteKeyValue(writer, "FileID", classModel.FileID);
-            WriteKeyValue(writer, "IsIterable", classModel.IsIterable);
 
             writer.WritePropertyName("Fields");
             writer.WriteStartArray();
@@ -52,6 +51,7 @@ namespace importerexporter.utility
                         {
                             WriteJsonRecursively(writer, fieldData.Type, serializer, depth + 1);
                         }
+                        WriteKeyValue(writer, "IsIterable", fieldData.IsIterable.ToString());
                     }
 
                     writer.WriteEndObject();
@@ -86,13 +86,14 @@ namespace importerexporter.utility
             current.NameLower = current.Name?.ToLower();
             current.Guid = (string) classData["Guid"];
             current.FileID = (string) classData["FileID"];
-            current.IsIterable= (bool) classData["IsIterable"];
 
             List<FieldModel> currentFields = new List<FieldModel>();
             foreach (JObject field in classData["Fields"])
             {
                 FieldModel currentField = new FieldModel();
                 currentField.Name = (string) field["Name"];
+                currentField.IsIterable= (bool) classData["IsIterable"];
+
                 currentField.Type = new ClassModel((string) field["Type"]);
 
                 JToken classDataChild;

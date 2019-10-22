@@ -69,27 +69,31 @@ namespace importerexporter.models
                 throw new NullReferenceException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
-            
+
+            if (oldClassModel.NameLower.Contains("array") || oldClassModel.NameLower.Contains("testsubclas"))
+            {
+                Debug.Log("test");
+            }
+
             foreach (FieldModel field in oldClassModel.Fields)
             {
-
-
                 MergeNode mergeNode = new MergeNode();
                 mergeNode.OriginalValue = field.Name;
 
                 FieldModel mergeNodeType = oldClassModel.Fields
                     .First(data => data.Name == mergeNode.OriginalValue);
 
-                mergeNode.Type = mergeNodeType?.Type?.FullName;
+                mergeNode.Type = mergeNodeType?.Type?.FullName + (mergeNodeType != null && mergeNodeType.IsIterable ? "[]" : "");
 
                 mergeNode.Options = newClassModel.Fields?
-                    .OrderBy(newField =>
-                        Levenshtein.Compute(
-                            field.Name,
-                            newField.Name))
-                    .Select(data => data.Name).ToArray();
+                                        .OrderBy(newField =>
+                                            Levenshtein.Compute(
+                                                field.Name,
+                                                newField.Name))
+                                        .Select(data => data.Name).ToArray() ?? new string[0];
 
-                mergeNode.NameToExportTo = mergeNode.Options?.Length > 0 ? mergeNode.Options[0] : "";
+
+                mergeNode.NameToExportTo = mergeNode.Options.Length > 0 ? mergeNode.Options[0] : "";
 
                 MergeNodes.Add(mergeNode);
             }

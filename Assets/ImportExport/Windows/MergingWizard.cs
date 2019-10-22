@@ -1,5 +1,4 @@
-﻿
-using System.Linq;
+﻿using System.Linq;
 #if UNITY_EDITOR
 using importerexporter.models;
 using System;
@@ -122,7 +121,7 @@ namespace importerexporter.windows
                         EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
                     GUI.enabled = wrapper.FieldSelectionStates[j];
                     EditorGUILayout.LabelField(originalName, richtextStyle, GetColumnWidth(5));
-                    EditorGUILayout.LabelField(fieldToMerge.Type, richtextStyle, GetColumnWidth(6));
+                    EditorGUILayout.LabelField(fieldToMerge.Type , richtextStyle, GetColumnWidth(6));
 
                     GUILayout.EndHorizontal();
 
@@ -131,20 +130,9 @@ namespace importerexporter.windows
                     EditorGUILayout.LabelField("", GetColumnWidth(1));
 
                     EditorGUILayout.BeginVertical();
-                    try
-                    {
-                        if (fieldToMerge.Options == null)
-                        {
-                            fieldToMerge.Options = new String[0];
-                        }
-
-                        wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
-                            fieldToMerge.Options, GetColumnWidth(5));
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("options test");
-                    }
+                    
+                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
+                        fieldToMerge.Options, GetColumnWidth(5));
 
                     int optionsIndex = wrapper.OptionSelections[j];
                     if (fieldToMerge.Options != null && optionsIndex < fieldToMerge.Options.Length)

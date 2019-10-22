@@ -68,7 +68,7 @@ namespace importerexporter
 
             //Get all meta files
             string[] classMetaFiles = Directory.GetFiles(path, "*.cs.meta", SearchOption.AllDirectories);
-            
+
             //Get all dlls
             string[] dllMetaFiles = Directory.GetFiles(path, "*.dll.meta", SearchOption.AllDirectories);
 
@@ -97,7 +97,7 @@ namespace importerexporter
                 }
             }
 
-           
+
             // Loop through dlls  
             if (!constants.DEBUG)
             {
@@ -209,7 +209,7 @@ namespace importerexporter
                     continue;
                 }
 
-                if (oldClassModel.NameLower.Contains("array"))
+                if (oldClassModel.Name.ToLower().Contains("testsubclass2"))
                 {
                     Debug.Log("test");
                 }
@@ -270,6 +270,11 @@ namespace importerexporter
                     ?.newClassModel;
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
+                if (oldClassModel.Name.ToLower().Contains("testsubclass"))
+                {
+                    Debug.Log("test3");
+                }
+
                 replacementClassModel = findNewID(newIDs, oldClassModel);
                 if (replacementClassModel == null)
                 {
@@ -285,35 +290,40 @@ namespace importerexporter
                 return null;
             }
 
-            if (existingFoundScript == null)
+            if (existingFoundScript != null)
             {
-                if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
-                {
-                    foreach (FieldModel field in oldClassModel.Fields)
-                    {
-                        if (field.Type == null)
-                        {
-                            throw new NullReferenceException("type of field is null for some reason");
-                        }
-
-                        FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
-                    }
-                }
-
-                existingFoundScript = new FoundScript
-                {
-                    oldClassModel = oldClassModel,
-                    newClassModel = replacementClassModel
-                };
-                MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-                if (hasBeenMapped == MappedState.NotMapped)
-                {
-                    existingFoundScript.GenerateMappingNode(foundScripts);
-                }
-
-
-                foundScripts.Add(existingFoundScript);
+                return existingFoundScript;
             }
+
+            //If it doesn't exist then create it
+
+            if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
+            {
+                foreach (FieldModel field in oldClassModel.Fields)
+                {
+                    // Check if the type is null as this would cause so errors in the mapping
+                    if (field.Type == null)
+                    {
+                        throw new NullReferenceException("type of field is null for some reason");
+                    }
+
+                    FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
+                }
+            }
+
+            existingFoundScript = new FoundScript
+            {
+                oldClassModel = oldClassModel,
+                newClassModel = replacementClassModel // todo : fields is null when its an iterable
+            };
+            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+            if (hasBeenMapped == MappedState.NotMapped)
+            {
+                existingFoundScript.GenerateMappingNode(foundScripts);
+            }
+
+
+            foundScripts.Add(existingFoundScript);
 
             return existingFoundScript;
         }
@@ -332,10 +342,11 @@ namespace importerexporter
 
             List<Type> types = assemblies.SelectMany(x => x.GetTypes())
                 .Where(x => x.Name.ToLower() == fileNameLower).ToList();
+
             if (types.Count == 0)
             {
                 Debug.Log("Checked for type  \"" + fileName +
-                          "\" no types were found."); //todo : should this also give a popup?
+                          "\" no types were found.");
                 return null;
             }
 
@@ -380,24 +391,25 @@ namespace importerexporter
         /// <param name="newIDs"></param>
         /// <param name="old"></param>
         /// <returns></returns>
-        public ClassModel
-            findNewID(List<ClassModel> newIDs,
-                ClassModel old)
+        private ClassModel findNewID(List<ClassModel> newIDs, ClassModel old)
         {
             if (old == null)
             {
                 throw new NullReferenceException("Old ClassData cannot be null in the findNewID");
             }
 
+            // Check if there is an exact match
             ClassModel newFileModel = newIDs.FirstOrDefault(data => data.FullName.Equals(old.FullName));
             if (newFileModel != null) return newFileModel;
 
+            //Get all classes including all subclasses and check if it might be a subclass
             Dictionary<string, ClassModel> allClassData = generateOptions(newIDs);
             if (allClassData.ContainsKey(old.Name))
             {
                 return allClassData[old.Name];
             }
 
+            // Check if there is an exact match with only the classname
             ClassModel[] classModels = allClassData.Select(pair => pair.Value)
                 .Where(model => model.NameLower == old.NameLower).ToArray();
             if (classModels.Length == 1)
@@ -405,15 +417,18 @@ namespace importerexporter
                 return classModels[0];
             }
 
+            // Generate the options for the options window
             string[] options = allClassData.Select(pair => pair.Key)
                 .OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
 
+            // Open the options window
             string result = ImportWindow.OpenOptionsWindow(
                 "Could not find class, please select which class to use",
                 old.FullName,
                 options
             );
 
+            // Return the selected class
             if (string.IsNullOrEmpty(result))
             {
                 Debug.LogError("[Data loss] Could not find class for : " + old.FullName +
@@ -453,7 +468,34 @@ namespace importerexporter
                 return;
             }
 
-            if (!dictionary.ContainsKey(id.FullName) || string.IsNullOrEmpty(dictionary[id.FullName].Guid))
+            if (id.FullName.Contains("testSubClass"))
+            {
+                Debug.Log("test4");
+            }
+
+            if (!dictionary.ContainsKey(id.FullName))
+            {
+                dictionary[id.FullName] = id;
+            }
+            else
+            {
+                //Compile all information
+                if (dictionary[id.FullName].Fields == null)
+                {
+                    dictionary[id.FullName].Fields = id.Fields;
+                }
+
+                if (dictionary[id.FullName].Guid == null)
+                {
+                    dictionary[id.FullName].Guid = id.Guid;
+                    dictionary[id.FullName].FileID = id.FileID;
+                }
+            }
+
+            if (!dictionary.ContainsKey(id.FullName) ||
+                ((string.IsNullOrEmpty(dictionary[id.FullName].Guid) && dictionary[id.FullName].Fields == null) ||
+                 dictionary[id.FullName].Fields == null)
+            )
             {
                 dictionary[id.FullName] = id;
             }
@@ -470,7 +512,10 @@ namespace importerexporter
                     continue;
                 }
 
-                generateOptionsRecursive(field.Type, ref dictionary);
+                if (field.Type.FullName != id.FullName)
+                {
+                    generateOptionsRecursive(field.Type, ref dictionary);
+                }
             }
         }
     }

@@ -42,6 +42,11 @@ namespace importerexporter.utility
         /// <returns></returns>
         public static FieldModel[] GenerateFieldData(Type type, int iteration)
         {
+            if (type.Name.ToLower().Contains("testsubclas"))
+            {
+                Debug.Log("test2");
+            }
+
             Match match = constants.IsListOrArrayRegex.Match(type.FullName);
             if (match.Success)
             {
