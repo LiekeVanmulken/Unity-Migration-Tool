@@ -74,6 +74,19 @@
     ]
   },
   {
+    "FullName": "TestScriptQuaternion",
+    "Name": "TestScriptQuaternion",
+    "Guid": "146bef973f633e2489d759752ee7403d",
+    "FileID": "11500000",
+    "Fields": [
+      {
+        "Name": "testQuaternion2",
+        "Type": "testQuaternion2",
+        "IsIterable": false
+      }
+    ]
+  },
+  {
     "FullName": "TestScript_Arrays",
     "Name": "TestScript_Arrays",
     "Guid": "b8ef4b47ef5acff4795a997b2a3ff344",
@@ -318,11 +331,6 @@
             }
           ]
         }
-      },
-      {
-        "Name": "ListInListTest",
-        "Type": "ListInListTest",
-        "IsIterable": true
       }
     ]
   },
@@ -377,14 +385,14 @@
     "Fields": []
   },
   {
-    "FullName": "importerexporter.FieldMappingController",
+    "FullName": "importerexporter.controllers.FieldMappingController",
     "Name": "FieldMappingController",
     "Guid": "091f90c4ba86cd74ab443c7df96f91f2",
     "FileID": "11500000",
     "Fields": []
   },
   {
-    "FullName": "importerexporter.IDController",
+    "FullName": "importerexporter.controllers.IDController",
     "Name": "IDController",
     "Guid": "4ca07665a835acb48855469fe3c91fa6",
     "FileID": "11500000",

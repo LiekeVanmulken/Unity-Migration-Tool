@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿
+using importerexporter.controllers;
+#if UNITY_EDITOR
 using importerexporter.models;
 using importerexporter.utility;
 using System.Linq;

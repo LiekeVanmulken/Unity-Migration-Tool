@@ -1,67 +1,6 @@
 [
   {
     "newClassModel": {
-      "FullName": "TestScript1+TestScriptSubClass",
-      "Name": "TestScript1+TestScriptSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "publicString",
-          "Type": "publicString",
-          "IsIterable": false
-        },
-        {
-          "Name": "privateString",
-          "Type": "privateString",
-          "IsIterable": false
-        }
-      ]
-    },
-    "oldClassModel": {
-      "FullName": "TestScript_test+TestScriptSubClass",
-      "Name": "TestScript_test+TestScriptSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "publicString_",
-          "Type": "publicString_",
-          "IsIterable": false
-        },
-        {
-          "Name": "privateString_",
-          "Type": "privateString_",
-          "IsIterable": false
-        }
-      ]
-    },
-    "FieldsToMerge": [
-      {
-        "OriginalValue": "publicString_",
-        "NameToExportTo": "publicString",
-        "Type": "publicString_",
-        "IsIterable": false,
-        "Options": [
-          "publicString",
-          "privateString"
-        ]
-      },
-      {
-        "OriginalValue": "privateString_",
-        "NameToExportTo": "privateString",
-        "Type": "privateString_",
-        "IsIterable": false,
-        "Options": [
-          "privateString",
-          "publicString"
-        ]
-      }
-    ],
-    "HasBeenMapped": "NotMapped"
-  },
-  {
-    "newClassModel": {
       "FullName": "TestScript1",
       "Name": "TestScript1",
       "Guid": "cc55f0e6497cb994f8838590aeb61b0f",
@@ -159,6 +98,67 @@
   },
   {
     "newClassModel": {
+      "FullName": "TestScript1+TestScriptSubClass",
+      "Name": "TestScript1+TestScriptSubClass",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "publicString",
+          "Type": "publicString",
+          "IsIterable": false
+        },
+        {
+          "Name": "privateString",
+          "Type": "privateString",
+          "IsIterable": false
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_test+TestScriptSubClass",
+      "Name": "TestScript_test+TestScriptSubClass",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "publicString_",
+          "Type": "publicString_",
+          "IsIterable": false
+        },
+        {
+          "Name": "privateString_",
+          "Type": "privateString_",
+          "IsIterable": false
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "publicString_",
+        "NameToExportTo": "publicString",
+        "Type": "publicString_",
+        "IsIterable": false,
+        "Options": [
+          "publicString",
+          "privateString"
+        ]
+      },
+      {
+        "OriginalValue": "privateString_",
+        "NameToExportTo": "privateString",
+        "Type": "privateString_",
+        "IsIterable": false,
+        "Options": [
+          "privateString",
+          "publicString"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
       "FullName": "TestScript2",
       "Name": "TestScript2",
       "Guid": "e8c8261986a36b0438cab0bddcc1102a",
@@ -196,1116 +196,6 @@
     },
     "FieldsToMerge": [],
     "HasBeenMapped": "Mapped"
-  },
-  {
-    "newClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass2",
-      "Name": "TestScript_Arrays+testSubClass2",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList2",
-          "Type": "TestScript_Arrays+testSubClass2",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass2",
-            "Name": "TestScript_Arrays+testSubClass2",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList2",
-                "Type": "TestScript_Arrays+testSubClass2",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass2",
-                  "Name": "TestScript_Arrays+testSubClass2",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList2",
-                      "Type": "TestScript_Arrays+testSubClass2",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass2",
-                        "Name": "TestScript_Arrays+testSubClass2",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList2",
-                            "Type": "TestScript_Arrays+testSubClass2",
-                            "IsIterable": true,
-                            "ClassFields": {
-                              "FullName": "TestScript_Arrays+testSubClass2",
-                              "Name": "TestScript_Arrays+testSubClass2",
-                              "Guid": null,
-                              "FileID": null,
-                              "Fields": [
-                                {
-                                  "Name": "test",
-                                  "Type": "test",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "test2",
-                                  "Type": "test2",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "testList2",
-                                  "Type": "TestScript_Arrays+testSubClass2",
-                                  "IsIterable": true
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "oldClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass",
-      "Name": "TestScript_Arrays+testSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList",
-          "Type": "TestScript_Arrays+testSubClass",
-          "IsIterable": true
-        }
-      ]
-    },
-    "FieldsToMerge": [
-      {
-        "OriginalValue": "test",
-        "NameToExportTo": "test",
-        "Type": "test",
-        "IsIterable": false,
-        "Options": [
-          "test",
-          "test2",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "test2",
-        "NameToExportTo": "test2",
-        "Type": "test2",
-        "IsIterable": false,
-        "Options": [
-          "test2",
-          "test",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "testList",
-        "NameToExportTo": "testList2",
-        "Type": "TestScript_Arrays+testSubClass",
-        "IsIterable": true,
-        "Options": [
-          "testList2",
-          "test",
-          "test2"
-        ]
-      }
-    ],
-    "HasBeenMapped": "NotMapped"
-  },
-  {
-    "newClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass2",
-      "Name": "TestScript_Arrays+testSubClass2",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList2",
-          "Type": "TestScript_Arrays+testSubClass2",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass2",
-            "Name": "TestScript_Arrays+testSubClass2",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList2",
-                "Type": "TestScript_Arrays+testSubClass2",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass2",
-                  "Name": "TestScript_Arrays+testSubClass2",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList2",
-                      "Type": "TestScript_Arrays+testSubClass2",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass2",
-                        "Name": "TestScript_Arrays+testSubClass2",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList2",
-                            "Type": "TestScript_Arrays+testSubClass2",
-                            "IsIterable": true,
-                            "ClassFields": {
-                              "FullName": "TestScript_Arrays+testSubClass2",
-                              "Name": "TestScript_Arrays+testSubClass2",
-                              "Guid": null,
-                              "FileID": null,
-                              "Fields": [
-                                {
-                                  "Name": "test",
-                                  "Type": "test",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "test2",
-                                  "Type": "test2",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "testList2",
-                                  "Type": "TestScript_Arrays+testSubClass2",
-                                  "IsIterable": true
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "oldClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass",
-      "Name": "TestScript_Arrays+testSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList",
-          "Type": "TestScript_Arrays+testSubClass",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass",
-            "Name": "TestScript_Arrays+testSubClass",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList",
-                "Type": "TestScript_Arrays+testSubClass",
-                "IsIterable": true
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "FieldsToMerge": [
-      {
-        "OriginalValue": "test",
-        "NameToExportTo": "test",
-        "Type": "test",
-        "IsIterable": false,
-        "Options": [
-          "test",
-          "test2",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "test2",
-        "NameToExportTo": "test2",
-        "Type": "test2",
-        "IsIterable": false,
-        "Options": [
-          "test2",
-          "test",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "testList",
-        "NameToExportTo": "testList2",
-        "Type": "TestScript_Arrays+testSubClass",
-        "IsIterable": true,
-        "Options": [
-          "testList2",
-          "test",
-          "test2"
-        ]
-      }
-    ],
-    "HasBeenMapped": "NotMapped"
-  },
-  {
-    "newClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass2",
-      "Name": "TestScript_Arrays+testSubClass2",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList2",
-          "Type": "TestScript_Arrays+testSubClass2",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass2",
-            "Name": "TestScript_Arrays+testSubClass2",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList2",
-                "Type": "TestScript_Arrays+testSubClass2",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass2",
-                  "Name": "TestScript_Arrays+testSubClass2",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList2",
-                      "Type": "TestScript_Arrays+testSubClass2",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass2",
-                        "Name": "TestScript_Arrays+testSubClass2",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList2",
-                            "Type": "TestScript_Arrays+testSubClass2",
-                            "IsIterable": true,
-                            "ClassFields": {
-                              "FullName": "TestScript_Arrays+testSubClass2",
-                              "Name": "TestScript_Arrays+testSubClass2",
-                              "Guid": null,
-                              "FileID": null,
-                              "Fields": [
-                                {
-                                  "Name": "test",
-                                  "Type": "test",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "test2",
-                                  "Type": "test2",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "testList2",
-                                  "Type": "TestScript_Arrays+testSubClass2",
-                                  "IsIterable": true
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "oldClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass",
-      "Name": "TestScript_Arrays+testSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList",
-          "Type": "TestScript_Arrays+testSubClass",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass",
-            "Name": "TestScript_Arrays+testSubClass",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList",
-                "Type": "TestScript_Arrays+testSubClass",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass",
-                  "Name": "TestScript_Arrays+testSubClass",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList",
-                      "Type": "TestScript_Arrays+testSubClass",
-                      "IsIterable": true
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "FieldsToMerge": [
-      {
-        "OriginalValue": "test",
-        "NameToExportTo": "test",
-        "Type": "test",
-        "IsIterable": false,
-        "Options": [
-          "test",
-          "test2",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "test2",
-        "NameToExportTo": "test2",
-        "Type": "test2",
-        "IsIterable": false,
-        "Options": [
-          "test2",
-          "test",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "testList",
-        "NameToExportTo": "testList2",
-        "Type": "TestScript_Arrays+testSubClass",
-        "IsIterable": true,
-        "Options": [
-          "testList2",
-          "test",
-          "test2"
-        ]
-      }
-    ],
-    "HasBeenMapped": "NotMapped"
-  },
-  {
-    "newClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass2",
-      "Name": "TestScript_Arrays+testSubClass2",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList2",
-          "Type": "TestScript_Arrays+testSubClass2",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass2",
-            "Name": "TestScript_Arrays+testSubClass2",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList2",
-                "Type": "TestScript_Arrays+testSubClass2",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass2",
-                  "Name": "TestScript_Arrays+testSubClass2",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList2",
-                      "Type": "TestScript_Arrays+testSubClass2",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass2",
-                        "Name": "TestScript_Arrays+testSubClass2",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList2",
-                            "Type": "TestScript_Arrays+testSubClass2",
-                            "IsIterable": true,
-                            "ClassFields": {
-                              "FullName": "TestScript_Arrays+testSubClass2",
-                              "Name": "TestScript_Arrays+testSubClass2",
-                              "Guid": null,
-                              "FileID": null,
-                              "Fields": [
-                                {
-                                  "Name": "test",
-                                  "Type": "test",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "test2",
-                                  "Type": "test2",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "testList2",
-                                  "Type": "TestScript_Arrays+testSubClass2",
-                                  "IsIterable": true
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "oldClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass",
-      "Name": "TestScript_Arrays+testSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList",
-          "Type": "TestScript_Arrays+testSubClass",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass",
-            "Name": "TestScript_Arrays+testSubClass",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList",
-                "Type": "TestScript_Arrays+testSubClass",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass",
-                  "Name": "TestScript_Arrays+testSubClass",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList",
-                      "Type": "TestScript_Arrays+testSubClass",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass",
-                        "Name": "TestScript_Arrays+testSubClass",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList",
-                            "Type": "TestScript_Arrays+testSubClass",
-                            "IsIterable": true
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "FieldsToMerge": [
-      {
-        "OriginalValue": "test",
-        "NameToExportTo": "test",
-        "Type": "test",
-        "IsIterable": false,
-        "Options": [
-          "test",
-          "test2",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "test2",
-        "NameToExportTo": "test2",
-        "Type": "test2",
-        "IsIterable": false,
-        "Options": [
-          "test2",
-          "test",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "testList",
-        "NameToExportTo": "testList2",
-        "Type": "TestScript_Arrays+testSubClass",
-        "IsIterable": true,
-        "Options": [
-          "testList2",
-          "test",
-          "test2"
-        ]
-      }
-    ],
-    "HasBeenMapped": "NotMapped"
-  },
-  {
-    "newClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass2",
-      "Name": "TestScript_Arrays+testSubClass2",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList2",
-          "Type": "TestScript_Arrays+testSubClass2",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass2",
-            "Name": "TestScript_Arrays+testSubClass2",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList2",
-                "Type": "TestScript_Arrays+testSubClass2",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass2",
-                  "Name": "TestScript_Arrays+testSubClass2",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList2",
-                      "Type": "TestScript_Arrays+testSubClass2",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass2",
-                        "Name": "TestScript_Arrays+testSubClass2",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList2",
-                            "Type": "TestScript_Arrays+testSubClass2",
-                            "IsIterable": true,
-                            "ClassFields": {
-                              "FullName": "TestScript_Arrays+testSubClass2",
-                              "Name": "TestScript_Arrays+testSubClass2",
-                              "Guid": null,
-                              "FileID": null,
-                              "Fields": [
-                                {
-                                  "Name": "test",
-                                  "Type": "test",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "test2",
-                                  "Type": "test2",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "testList2",
-                                  "Type": "TestScript_Arrays+testSubClass2",
-                                  "IsIterable": true
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "oldClassModel": {
-      "FullName": "TestScript_Arrays+testSubClass",
-      "Name": "TestScript_Arrays+testSubClass",
-      "Guid": null,
-      "FileID": null,
-      "Fields": [
-        {
-          "Name": "test",
-          "Type": "test",
-          "IsIterable": false
-        },
-        {
-          "Name": "test2",
-          "Type": "test2",
-          "IsIterable": false
-        },
-        {
-          "Name": "testList",
-          "Type": "TestScript_Arrays+testSubClass",
-          "IsIterable": true,
-          "ClassFields": {
-            "FullName": "TestScript_Arrays+testSubClass",
-            "Name": "TestScript_Arrays+testSubClass",
-            "Guid": null,
-            "FileID": null,
-            "Fields": [
-              {
-                "Name": "test",
-                "Type": "test",
-                "IsIterable": false
-              },
-              {
-                "Name": "test2",
-                "Type": "test2",
-                "IsIterable": false
-              },
-              {
-                "Name": "testList",
-                "Type": "TestScript_Arrays+testSubClass",
-                "IsIterable": true,
-                "ClassFields": {
-                  "FullName": "TestScript_Arrays+testSubClass",
-                  "Name": "TestScript_Arrays+testSubClass",
-                  "Guid": null,
-                  "FileID": null,
-                  "Fields": [
-                    {
-                      "Name": "test",
-                      "Type": "test",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "test2",
-                      "Type": "test2",
-                      "IsIterable": false
-                    },
-                    {
-                      "Name": "testList",
-                      "Type": "TestScript_Arrays+testSubClass",
-                      "IsIterable": true,
-                      "ClassFields": {
-                        "FullName": "TestScript_Arrays+testSubClass",
-                        "Name": "TestScript_Arrays+testSubClass",
-                        "Guid": null,
-                        "FileID": null,
-                        "Fields": [
-                          {
-                            "Name": "test",
-                            "Type": "test",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "test2",
-                            "Type": "test2",
-                            "IsIterable": false
-                          },
-                          {
-                            "Name": "testList",
-                            "Type": "TestScript_Arrays+testSubClass",
-                            "IsIterable": true,
-                            "ClassFields": {
-                              "FullName": "TestScript_Arrays+testSubClass",
-                              "Name": "TestScript_Arrays+testSubClass",
-                              "Guid": null,
-                              "FileID": null,
-                              "Fields": [
-                                {
-                                  "Name": "test",
-                                  "Type": "test",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "test2",
-                                  "Type": "test2",
-                                  "IsIterable": false
-                                },
-                                {
-                                  "Name": "testList",
-                                  "Type": "TestScript_Arrays+testSubClass",
-                                  "IsIterable": true
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "FieldsToMerge": [
-      {
-        "OriginalValue": "test",
-        "NameToExportTo": "test",
-        "Type": "test",
-        "IsIterable": false,
-        "Options": [
-          "test",
-          "test2",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "test2",
-        "NameToExportTo": "test2",
-        "Type": "test2",
-        "IsIterable": false,
-        "Options": [
-          "test2",
-          "test",
-          "testList2"
-        ]
-      },
-      {
-        "OriginalValue": "testList",
-        "NameToExportTo": "testList2",
-        "Type": "TestScript_Arrays+testSubClass",
-        "IsIterable": true,
-        "Options": [
-          "testList2",
-          "test",
-          "test2"
-        ]
-      }
-    ],
-    "HasBeenMapped": "NotMapped"
   },
   {
     "newClassModel": {
@@ -1553,11 +443,6 @@
               }
             ]
           }
-        },
-        {
-          "Name": "ListInListTest",
-          "Type": "ListInListTest",
-          "IsIterable": true
         }
       ]
     },
@@ -1822,8 +707,7 @@
         "IsIterable": true,
         "Options": [
           "arrayTest2",
-          "listTest",
-          "ListInListTest"
+          "listTest"
         ]
       },
       {
@@ -1833,19 +717,325 @@
         "IsIterable": true,
         "Options": [
           "listTest",
-          "arrayTest2",
-          "ListInListTest"
+          "arrayTest2"
         ]
       },
       {
         "OriginalValue": "ListInListTest",
-        "NameToExportTo": "ListInListTest",
+        "NameToExportTo": "listTest",
         "Type": "ListInListTest",
         "IsIterable": true,
         "Options": [
-          "ListInListTest",
           "listTest",
           "arrayTest2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass2",
+      "Name": "TestScript_Arrays+testSubClass2",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "test",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "test2",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList2",
+          "Type": "TestScript_Arrays+testSubClass2",
+          "IsIterable": true,
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass2",
+            "Name": "TestScript_Arrays+testSubClass2",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "test",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "test2",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList2",
+                "Type": "TestScript_Arrays+testSubClass2",
+                "IsIterable": true,
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass2",
+                  "Name": "TestScript_Arrays+testSubClass2",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "test",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "test2",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList2",
+                      "Type": "TestScript_Arrays+testSubClass2",
+                      "IsIterable": true,
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass2",
+                        "Name": "TestScript_Arrays+testSubClass2",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "test",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "test2",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList2",
+                            "Type": "TestScript_Arrays+testSubClass2",
+                            "IsIterable": true,
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass2",
+                              "Name": "TestScript_Arrays+testSubClass2",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "test",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "test2",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList2",
+                                  "Type": "TestScript_Arrays+testSubClass2",
+                                  "IsIterable": true
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScript_Arrays+testSubClass",
+      "Name": "TestScript_Arrays+testSubClass",
+      "Guid": null,
+      "FileID": null,
+      "Fields": [
+        {
+          "Name": "test",
+          "Type": "test",
+          "IsIterable": false
+        },
+        {
+          "Name": "test2",
+          "Type": "test2",
+          "IsIterable": false
+        },
+        {
+          "Name": "testList",
+          "Type": "TestScript_Arrays+testSubClass",
+          "IsIterable": true,
+          "ClassFields": {
+            "FullName": "TestScript_Arrays+testSubClass",
+            "Name": "TestScript_Arrays+testSubClass",
+            "Guid": null,
+            "FileID": null,
+            "Fields": [
+              {
+                "Name": "test",
+                "Type": "test",
+                "IsIterable": false
+              },
+              {
+                "Name": "test2",
+                "Type": "test2",
+                "IsIterable": false
+              },
+              {
+                "Name": "testList",
+                "Type": "TestScript_Arrays+testSubClass",
+                "IsIterable": true,
+                "ClassFields": {
+                  "FullName": "TestScript_Arrays+testSubClass",
+                  "Name": "TestScript_Arrays+testSubClass",
+                  "Guid": null,
+                  "FileID": null,
+                  "Fields": [
+                    {
+                      "Name": "test",
+                      "Type": "test",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "test2",
+                      "Type": "test2",
+                      "IsIterable": false
+                    },
+                    {
+                      "Name": "testList",
+                      "Type": "TestScript_Arrays+testSubClass",
+                      "IsIterable": true,
+                      "ClassFields": {
+                        "FullName": "TestScript_Arrays+testSubClass",
+                        "Name": "TestScript_Arrays+testSubClass",
+                        "Guid": null,
+                        "FileID": null,
+                        "Fields": [
+                          {
+                            "Name": "test",
+                            "Type": "test",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "test2",
+                            "Type": "test2",
+                            "IsIterable": false
+                          },
+                          {
+                            "Name": "testList",
+                            "Type": "TestScript_Arrays+testSubClass",
+                            "IsIterable": true,
+                            "ClassFields": {
+                              "FullName": "TestScript_Arrays+testSubClass",
+                              "Name": "TestScript_Arrays+testSubClass",
+                              "Guid": null,
+                              "FileID": null,
+                              "Fields": [
+                                {
+                                  "Name": "test",
+                                  "Type": "test",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "test2",
+                                  "Type": "test2",
+                                  "IsIterable": false
+                                },
+                                {
+                                  "Name": "testList",
+                                  "Type": "TestScript_Arrays+testSubClass",
+                                  "IsIterable": true
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "test",
+        "NameToExportTo": "test",
+        "Type": "test",
+        "IsIterable": false,
+        "Options": [
+          "test",
+          "test2",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "test2",
+        "NameToExportTo": "test2",
+        "Type": "test2",
+        "IsIterable": false,
+        "Options": [
+          "test2",
+          "test",
+          "testList2"
+        ]
+      },
+      {
+        "OriginalValue": "testList",
+        "NameToExportTo": "testList2",
+        "Type": "TestScript_Arrays+testSubClass",
+        "IsIterable": true,
+        "Options": [
+          "testList2",
+          "test",
+          "test2"
+        ]
+      }
+    ],
+    "HasBeenMapped": "NotMapped"
+  },
+  {
+    "newClassModel": {
+      "FullName": "TestScriptQuaternion",
+      "Name": "TestScriptQuaternion",
+      "Guid": "146bef973f633e2489d759752ee7403d",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "testQuaternion2",
+          "Type": "testQuaternion2",
+          "IsIterable": false
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScriptQuaternion",
+      "Name": "TestScriptQuaternion",
+      "Guid": "6ba2f5e7f7478954e92f9d176461fa93",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "testQuaternion",
+          "Type": "testQuaternion",
+          "IsIterable": false
+        }
+      ]
+    },
+    "FieldsToMerge": [
+      {
+        "OriginalValue": "testQuaternion",
+        "NameToExportTo": "testQuaternion2",
+        "Type": "testQuaternion",
+        "IsIterable": false,
+        "Options": [
+          "testQuaternion2"
         ]
       }
     ],

@@ -15,11 +15,11 @@ namespace importerexporter.models
         public MergeNode()
         {
         }
-
-        public MergeNode(string originalValue, string nameToExportTo)
-        {
-            OriginalValue = originalValue;
-            NameToExportTo = nameToExportTo;
-        }
+        
+//        public MergeNode(string originalValue, string nameToExportTo)
+//        {
+//            OriginalValue = originalValue;
+//            NameToExportTo = nameToExportTo;
+//        }
     }
 }

@@ -1,14 +1,19 @@
 ﻿#if UNITY_EDITOR
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using importerexporter.controllers.customlogic;
 using importerexporter.models;
 using importerexporter.utility;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
-namespace importerexporter
+namespace importerexporter.controllers
 {
     /// <summary>
     /// Maps fields to move values.
@@ -72,11 +77,34 @@ namespace importerexporter
                 }
                 else
                 {
-                    Debug.Log("Script found that has no mapping (No members will be replaced), Node: " + document.RootNode.ToString());
+                    Debug.Log("Script found that has no mapping (No members will be replaced), Node: " +
+                              document.RootNode.ToString());
                 }
             }
 
             return scene;
+        }
+
+        private static List<KeyValuePair<Type, CustomMappingLogicAttribute>> getCustomLogics()
+        {
+            List<KeyValuePair<Type, CustomMappingLogicAttribute>> pairs =
+                new List<KeyValuePair<Type, CustomMappingLogicAttribute>>();
+
+            // this is making the assumption that all assemblies we need are already loaded.
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (Type type in assembly.GetTypes())
+                {
+                    object[] attribs = type.GetCustomAttributes(typeof(CustomMappingLogicAttribute), false);
+                    if (attribs != null && attribs.Length > 0)
+                    {
+                        pairs.Add(new KeyValuePair<Type, CustomMappingLogicAttribute>(type,
+                            (CustomMappingLogicAttribute) attribs.First()));
+                    }
+                }
+            }
+
+            return pairs;
         }
 
         /// <summary>
@@ -101,31 +129,99 @@ namespace importerexporter
 
                 int line = yamlNode.Key.Start.Line - 1;
 
+
+                MergeNode currentMergeNode =
+                    currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
+                if (currentMergeNode == null)
+                {
+                    Debug.Log("Could not find mergeNode for key : " + yamlNodeKey);
+                }
+
+                if (CheckCustomLogic(ref scene, foundScripts, currentMergeNode, yamlNode, yamlNodeKey, line))
+                {
+                    continue;
+                }
+
+
                 if (yamlNode.Value is YamlMappingNode)
                 {
-                    scene = handleMappingNode(scene, currentMergeNodes, foundScripts, yamlNode, yamlNodeKey);
+                    scene = handleMappingNode(scene, currentMergeNode, foundScripts, yamlNode);
                 }
                 else if (yamlNode.Value is YamlSequenceNode)
                 {
-                    scene = handleSequenceNode(scene, currentMergeNodes, foundScripts, yamlNode, yamlNodeKey);
+                    scene = handleSequenceNode(scene, currentMergeNode, foundScripts, yamlNode);
                 }
                 else
                 {
-                    scene = handleValueNode(scene, currentMergeNodes, yamlNodeKey, line, yamlNode);
+                    scene = handleValueNode(scene, currentMergeNode, yamlNodeKey, line, yamlNode);
                 }
             }
 
             return scene;
         }
 
-        private static string[] handleValueNode(string[] scene, List<MergeNode> currentMergeNodes, string yamlNodeKey,
-            int
-                line,
+        /// <summary>
+        /// Checks if there is some custom logic that can be called.
+        /// And calls that logic
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="foundScripts"></param>
+        /// <param name="currentMergeNode"></param>
+        /// <param name="yamlNode"></param>
+        /// <param name="yamlNodeKey"></param>
+        /// <param name="line"></param>
+        /// <returns>True when it handles logic, else false and it still needs to be handled</returns>
+        private static bool CheckCustomLogic(ref string[] scene, List<FoundScript> foundScripts, MergeNode currentMergeNode,
+            KeyValuePair<YamlNode, YamlNode> yamlNode, string yamlNodeKey, int line)
+        {
+            string type = currentMergeNode.Type;
+            if (string.IsNullOrEmpty(type))
+            {
+                Debug.LogError("Type was null for yamlKey : " + yamlNode.Key.ToString());
+                return false;
+            }
+            FoundScript foundScript = 
+                foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type);
+
+            if (foundScript == null )
+            {
+                Debug.LogError("Could not find foundScript for type : " + type);
+                return false;
+            }
+
+            List<KeyValuePair<Type,CustomMappingLogicAttribute>> pairs = getCustomLogics();
+
+            bool hasValue;
+            foreach (KeyValuePair<Type, CustomMappingLogicAttribute> pair in pairs)
+            {
+                if(yamlNode.Key.ToString() == pair.Value.)
+            }
+
+//            if (yamlNode.Key.ToString() != new TestCustomMappingLogic().fieldThatHasCustomData)
+//            {
+//                return false;
+//            }
+            
+            
+            scene = handleValueNode(scene, currentMergeNode, yamlNodeKey, line, yamlNode);
+
+            YamlNode value = new TestCustomMappingLogic().CustomLogic(yamlNode, foundScripts);
+            int lineTest = yamlNode.Value.Start.Line - 1;
+
+            var regex = new Regex("(.*?)(?=:)");
+            string key = regex.Match(scene[lineTest]).Value;
+            scene[lineTest] = key + ": " + value.ToString();
+                
+                
+            return true;
+
+        }
+
+        private static string[] handleValueNode(string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
+            int line,
             KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
-            MergeNode currentMergeNode =
-                currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
-            if (currentMergeNode != null && !string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
+            if (!string.IsNullOrEmpty(currentMergeNode.NameToExportTo))
             {
                 scene[line] = scene[line]
                     .ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
@@ -138,10 +234,9 @@ namespace importerexporter
             return scene;
         }
 
-        private string[] handleMappingNode(string[] scene, List<MergeNode> currentMergeNodes,
+        private string[] handleMappingNode(string[] scene, MergeNode currentMergeNode,
             List<FoundScript> foundScripts
-            , KeyValuePair<YamlNode, YamlNode> yamlNode,
-            string yamlNodeKey)
+            , KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
             var recursiveChildren = yamlNode.Value.GetChildren();
             if (recursiveChildren == null || recursiveChildren.Count == 0)
@@ -149,11 +244,10 @@ namespace importerexporter
                 return scene;
             }
 
-            MergeNode currentMergeNode = currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
-            string type = currentMergeNode?.Type;
+            string type = currentMergeNode.Type;
             if (string.IsNullOrEmpty(type))
             {
-                Debug.LogError("Type was null for yamlKey : " + yamlNodeKey);
+                Debug.LogError("Type was null for yamlKey : " + yamlNode.Key.ToString());
                 return scene;
             }
 
@@ -175,18 +269,9 @@ namespace importerexporter
             return scene;
         }
 
-        private string[] handleSequenceNode(string[] scene, List<MergeNode> currentMergeNodes, List<FoundScript>
-                foundScripts, KeyValuePair<YamlNode, YamlNode> yamlNode,
-            string yamlNodeKey)
+        private string[] handleSequenceNode(string[] scene, MergeNode currentMergeNode, List<FoundScript>
+            foundScripts, KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
-            MergeNode currentMergeNode =
-                currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
-            if (currentMergeNode == null)
-            {
-                Debug.Log("Could not find current mergeNode(for list or array) of node : " + yamlNodeKey);
-                return scene;
-            }
-
             int line = yamlNode.Key.Start.Line - 1;
             scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
 
@@ -204,7 +289,6 @@ namespace importerexporter
             var items = yamlNode.Value.GetItems();
             if (items == null || items.Count == 0)
             {
-                Debug.Log("Array or list was null for node : " + yamlNode.Key);
                 return scene;
             }
 

@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using importerexporter.windows;
 
-namespace importerexporter
+namespace importerexporter.controllers
 {
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
@@ -265,7 +265,7 @@ namespace importerexporter
                     ?.newClassModel;
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
-                replacementClassModel = findNewID(newIDs, oldClassModel);
+                replacementClassModel = findNewID(newIDs, oldClassModel); //todo : testScript gets called double
                 if (replacementClassModel == null)
                 {
                     return null;
@@ -285,6 +285,20 @@ namespace importerexporter
                 return existingFoundScript;
             }
 
+
+            existingFoundScript = new FoundScript
+            {
+                oldClassModel = oldClassModel,
+                newClassModel = replacementClassModel
+            };
+            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+            if (hasBeenMapped == MappedState.NotMapped)
+            {
+                existingFoundScript.GenerateMappingNode(foundScripts);
+            }
+
+            foundScripts.Add(existingFoundScript);
+
             //If it doesn't exist then create it
 
             if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
@@ -300,21 +314,6 @@ namespace importerexporter
                     FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
                 }
             }
-
-            existingFoundScript = new FoundScript
-            {
-                oldClassModel = oldClassModel,
-                newClassModel = replacementClassModel // todo : fields is null when its an iterable
-            };
-            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-            if (hasBeenMapped == MappedState.NotMapped)
-            {
-                existingFoundScript.GenerateMappingNode(foundScripts);
-            }
-
-
-            foundScripts.Add(existingFoundScript);
-
             return existingFoundScript;
         }
 
