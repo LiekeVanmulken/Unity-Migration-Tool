@@ -209,11 +209,6 @@ namespace importerexporter
                     continue;
                 }
 
-                if (oldClassModel.Name.ToLower().Contains("testsubclass2"))
-                {
-                    Debug.Log("test");
-                }
-
                 FoundScript
                     mapping = FoundScriptMappingRecursively(newIDs, ref foundScripts,
                         oldClassModel);
@@ -270,11 +265,6 @@ namespace importerexporter
                     ?.newClassModel;
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
-                if (oldClassModel.Name.ToLower().Contains("testsubclass"))
-                {
-                    Debug.Log("test3");
-                }
-
                 replacementClassModel = findNewID(newIDs, oldClassModel);
                 if (replacementClassModel == null)
                 {
@@ -466,11 +456,6 @@ namespace importerexporter
             if (string.IsNullOrEmpty(id.FullName))
             {
                 return;
-            }
-
-            if (id.FullName.Contains("testSubClass"))
-            {
-                Debug.Log("test4");
             }
 
             if (!dictionary.ContainsKey(id.FullName))

@@ -70,11 +70,6 @@ namespace importerexporter.models
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
 
-            if (oldClassModel.NameLower.Contains("array") || oldClassModel.NameLower.Contains("testsubclas"))
-            {
-                Debug.Log("test");
-            }
-
             foreach (FieldModel field in oldClassModel.Fields)
             {
                 MergeNode mergeNode = new MergeNode

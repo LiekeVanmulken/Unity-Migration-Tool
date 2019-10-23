@@ -93,11 +93,6 @@ namespace importerexporter
             IDictionary<YamlNode, YamlNode> yamlChildren = rootYamlNode.GetChildren();
             foreach (KeyValuePair<YamlNode, YamlNode> yamlNode in yamlChildren)
             {
-                if (yamlNode.Key.ToString() == "testList")
-                {
-                    Debug.Log("test6");
-                }
-
                 string yamlNodeKey = yamlNode.Key.ToString();
                 if (constants.MonoBehaviourFieldExclusionList.Contains(yamlNodeKey))
                 {
