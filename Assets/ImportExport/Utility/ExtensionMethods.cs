@@ -16,6 +16,12 @@ namespace importerexporter.utility
         {
             return ((YamlMappingNode) node).Children;
         }
+
+        public static IList<YamlNode> GetItems(this YamlNode node)
+        {
+            return ((YamlSequenceNode) node).Children;
+        }
+
         public static string ReplaceFirst(this string text, string search, string replace)
         {
             int pos = text.IndexOf(search);
@@ -23,11 +29,18 @@ namespace importerexporter.utility
             {
                 return text;
             }
+
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
+
         public static bool IsNullOrEmpty(this Array array)
         {
             return (array == null || array.Length == 0);
+        }
+
+        public static bool IsGenericList(this Type type)
+        {
+            return (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>)));
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using importerexporter.utility;
 using UnityEngine;
 
@@ -22,28 +23,31 @@ namespace importerexporter.models
         /// </summary>
         [SerializeField] public ClassModel Type;
 
+        /// <summary>
+        /// Says whether it is an array or a list
+        /// </summary>
+        [SerializeField] public bool IsIterable;
+
         public FieldModel()
         {
         }
 
-        public FieldModel(string name, Type type, int iteration)
+        public FieldModel(string name, Type type, bool isIterable, int iteration)
         {
+            this.IsIterable = isIterable;
             this.Name = name;
             if (iteration > constants.RECURSION_DEPTH
-                || isStandardClass(type.FullName) || type.IsEnum)
+                || isStandardClass(type.FullName) || type.IsEnum )
             {
-                this.Type = new ClassModel();
-                this.Type.FullName = type.FullName;
+                this.Type = new ClassModel(name);
                 return;
             }
 
             this.Type = new ClassModel(type, iteration);
         }
-
-
         private bool isStandardClass(string toCheck)
         {
-            return toCheck == null || constants.StandardclassesRegex.Match(toCheck).Success;
+            return toCheck == null || constants.StandardClassesRegex.Match(toCheck).Success;
         }
     }
 }

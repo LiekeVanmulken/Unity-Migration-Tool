@@ -55,7 +55,7 @@ namespace importerexporter.models
         {
             if (oldClassModel == null || newClassModel == null)
             {
-                throw new NotImplementedException(
+                throw new NullReferenceException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
 
@@ -66,44 +66,32 @@ namespace importerexporter.models
         {
             if (oldClassModel == null || newClassModel == null)
             {
-                throw new NotImplementedException(
+                throw new NullReferenceException(
                     "Can't call an empty checkHasBeenMapped without knowing the oldClassData and the newClassData");
             }
-            
+
             foreach (FieldModel field in oldClassModel.Fields)
             {
-
-
-                MergeNode mergeNode = new MergeNode();
-                mergeNode.OriginalValue = field.Name;
+                MergeNode mergeNode = new MergeNode
+                {
+                    OriginalValue = field.Name
+                };
 
                 FieldModel mergeNodeType = oldClassModel.Fields
                     .First(data => data.Name == mergeNode.OriginalValue);
 
-                mergeNode.Type = mergeNodeType?.Type?.FullName;
-
-                FoundScript mapping =
-                    existingFoundScripts.FirstOrDefault(script => script.oldClassModel.FullName == mergeNode.Type);
-
-                Func<FieldModel, bool> typeCheckPredicate;
-                if (mapping == null)
-                {
-                    typeCheckPredicate = data => data.Type.FullName == mergeNode.Type;
-                }
-                else
-                {
-                    typeCheckPredicate = data => data.Type.FullName == mapping.newClassModel.FullName;
-                }
+                mergeNode.Type = mergeNodeType.Type?.FullName;
+                mergeNode.IsIterable = mergeNodeType.IsIterable;
 
                 mergeNode.Options = newClassModel.Fields?
-                    .Where(typeCheckPredicate) // todo this doesn't work anymore because it needs the foundScript for this
-                    .OrderBy(newField =>
-                        Levenshtein.Compute(
-                            field.Name,
-                            newField.Name))
-                    .Select(data => data.Name).ToArray();
+                                        .OrderBy(newField =>
+                                            Levenshtein.Compute(
+                                                field.Name,
+                                                newField.Name))
+                                        .Select(data => data.Name).ToArray() ?? new string[0];
 
-                mergeNode.NameToExportTo = mergeNode.Options?.Length > 0 ? mergeNode.Options[0] : "";
+
+                mergeNode.NameToExportTo = mergeNode.Options.Length > 0 ? mergeNode.Options[0] : "";
 
                 MergeNodes.Add(mergeNode);
             }

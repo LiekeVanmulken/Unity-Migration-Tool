@@ -9,6 +9,7 @@ namespace importerexporter.models
         [SerializeField] public string OriginalValue;
         [SerializeField] public string NameToExportTo;
         [SerializeField] public string Type;
+        [SerializeField] public bool IsIterable;
         [SerializeField] public string[] Options;
         
         public MergeNode()

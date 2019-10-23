@@ -14,6 +14,7 @@
         <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="Controllers" t="Include">
+            <e p="CustomLogic.cs" t="Include" />
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />
           </e>
@@ -25,7 +26,7 @@
             <e p="MergeNode.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
-            <e p="ClassDataConverter.cs" t="Include" />
+            <e p="ClassModelConverter.cs" t="Include" />
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
             <e p="Levenshtein.cs" t="Include" />

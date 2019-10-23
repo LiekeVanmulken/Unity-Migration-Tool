@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using importerexporter.models;
 using UnityEngine;
 
@@ -12,6 +14,7 @@ namespace importerexporter.utility
     /// </summary>
     public static class FieldDataGenerationUtility
     {
+        private static Constants constants = Constants.Instance;
         private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         /// <summary>
@@ -40,6 +43,17 @@ namespace importerexporter.utility
         /// <returns></returns>
         public static FieldModel[] GenerateFieldData(Type type, int iteration)
         {
+            Match match = constants.IsListOrArrayRegex.Match(type.FullName);
+            if (match.Success)
+            {
+                type = assemblies.SelectMany(x => x.GetTypes())
+                    .FirstOrDefault(x => x.FullName == match.Value);
+                if (type == null)
+                {
+                    throw new NullReferenceException("Type of list or array could not be found : " + match.Value);
+                }
+            }
+
             iteration++;
             List<FieldModel> values = new List<FieldModel>();
 
@@ -57,8 +71,25 @@ namespace importerexporter.utility
 
             for (var i = 0; i < members.Count; i++)
             {
+                
                 FieldInfo member = members[i];
-                values.Add(new FieldModel(member.Name, member.FieldType, iteration));
+                Type currentType = member.FieldType;
+                
+                bool isIterable = false;
+                
+                if (currentType.IsArray)
+                {
+                    isIterable = true;
+                    currentType = currentType.GetElementType();
+                }
+
+                if (currentType.IsGenericList())
+                {
+                    isIterable = true;
+                    currentType = currentType.GetGenericArguments()[0];
+                }
+
+                values.Add(new FieldModel(member.Name, currentType, isIterable, iteration));
             }
 
             return values.ToArray();
