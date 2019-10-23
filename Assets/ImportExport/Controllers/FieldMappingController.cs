@@ -72,7 +72,7 @@ namespace importerexporter
                 }
                 else
                 {
-                    Debug.Log("Script found but no mapping for " + document.RootNode.ToString());
+                    Debug.Log("Script found that has no mapping (No members will be replaced), Node: " + document.RootNode.ToString());
                 }
             }
 
