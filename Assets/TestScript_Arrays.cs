@@ -6,7 +6,6 @@ public class TestScript_Arrays : MonoBehaviour
 {
     public testSubClass2[] arrayTest2;
     public List<testSubClass2> listTest;
-    public List<List<testSubClass2>> ListInListTest;
     
     [Serializable]
     public class testSubClass2
