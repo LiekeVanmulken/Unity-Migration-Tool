@@ -36,7 +36,7 @@ namespace importerexporter.utility
 
         public readonly bool DEBUG = false;
 
-        public readonly int RECURSION_DEPTH = 6;
+        public readonly int RECURSION_DEPTH = 3;
         
         public readonly Regex StandardClassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
         public readonly Regex IsListOrArrayRegex = new Regex("(.*?(?=\\[\\]))|((?<=\\[\\[).*?(?=,))");
