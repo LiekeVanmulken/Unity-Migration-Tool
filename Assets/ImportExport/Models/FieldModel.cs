@@ -39,7 +39,7 @@ namespace importerexporter.models
             if (iteration > constants.RECURSION_DEPTH
                 || isStandardClass(type.FullName) || type.IsEnum )
             {
-                this.Type = new ClassModel(name);
+                this.Type = new ClassModel(type.FullName);
                 return;
             }
 

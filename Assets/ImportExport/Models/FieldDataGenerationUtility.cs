@@ -72,8 +72,14 @@ namespace importerexporter.utility
             for (var i = 0; i < members.Count; i++)
             {
                 
+
                 FieldInfo member = members[i];
                 Type currentType = member.FieldType;
+                
+                if (member.Name.ToLower().Contains("quater"))
+                {
+                    Debug.Log("test");
+                }
                 
                 bool isIterable = false;
                 

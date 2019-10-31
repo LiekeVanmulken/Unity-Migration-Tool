@@ -11,9 +11,12 @@ namespace importerexporter.models
         [SerializeField] public string Type;
         [SerializeField] public bool IsIterable;
         [SerializeField] public string[] Options;
+
+        public FoundScript Parent;
         
-        public MergeNode()
+        public MergeNode(FoundScript parent)
         {
+            this.Parent = parent;
         }
         
 //        public MergeNode(string originalValue, string nameToExportTo)

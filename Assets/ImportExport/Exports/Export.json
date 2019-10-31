@@ -14,7 +14,7 @@
     "Fields": [
       {
         "Name": "TestField",
-        "Type": "TestField",
+        "Type": "System.String",
         "IsIterable": false
       }
     ]
@@ -27,7 +27,7 @@
     "Fields": [
       {
         "Name": "test",
-        "Type": "test",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
@@ -42,12 +42,12 @@
           "Fields": [
             {
               "Name": "publicString",
-              "Type": "publicString",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "privateString",
-              "Type": "privateString",
+              "Type": "System.String",
               "IsIterable": false
             }
           ]
@@ -63,12 +63,12 @@
     "Fields": [
       {
         "Name": "testTestScript2",
-        "Type": "testTestScript2",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "privateTestScript2",
-        "Type": "privateTestScript2",
+        "Type": "System.String",
         "IsIterable": false
       }
     ]
@@ -81,7 +81,7 @@
     "Fields": [
       {
         "Name": "testQuaternion2",
-        "Type": "testQuaternion2",
+        "Type": "UnityEngine.Vector3",
         "IsIterable": false
       }
     ]
@@ -104,12 +104,12 @@
           "Fields": [
             {
               "Name": "test",
-              "Type": "test",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "test2",
-              "Type": "test2",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
@@ -124,12 +124,12 @@
                 "Fields": [
                   {
                     "Name": "test",
-                    "Type": "test",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
                     "Name": "test2",
-                    "Type": "test2",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
@@ -144,12 +144,12 @@
                       "Fields": [
                         {
                           "Name": "test",
-                          "Type": "test",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "test2",
-                          "Type": "test2",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
@@ -164,12 +164,12 @@
                             "Fields": [
                               {
                                 "Name": "test",
-                                "Type": "test",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
                                 "Name": "test2",
-                                "Type": "test2",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
@@ -184,12 +184,12 @@
                                   "Fields": [
                                     {
                                       "Name": "test",
-                                      "Type": "test",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "test2",
-                                      "Type": "test2",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
@@ -224,12 +224,12 @@
           "Fields": [
             {
               "Name": "test",
-              "Type": "test",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "test2",
-              "Type": "test2",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
@@ -244,12 +244,12 @@
                 "Fields": [
                   {
                     "Name": "test",
-                    "Type": "test",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
                     "Name": "test2",
-                    "Type": "test2",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
@@ -264,12 +264,12 @@
                       "Fields": [
                         {
                           "Name": "test",
-                          "Type": "test",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "test2",
-                          "Type": "test2",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
@@ -284,12 +284,12 @@
                             "Fields": [
                               {
                                 "Name": "test",
-                                "Type": "test",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
                                 "Name": "test2",
-                                "Type": "test2",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
@@ -304,12 +304,12 @@
                                   "Fields": [
                                     {
                                       "Name": "test",
-                                      "Type": "test",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "test2",
-                                      "Type": "test2",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
@@ -342,12 +342,12 @@
     "Fields": [
       {
         "Name": "m_TitleContent",
-        "Type": "m_TitleContent",
+        "Type": "UnityEngine.GUIContent",
         "IsIterable": false
       },
       {
         "Name": "m_Pos",
-        "Type": "m_Pos",
+        "Type": "UnityEngine.Rect",
         "IsIterable": false
       }
     ]
@@ -367,12 +367,12 @@
     "Fields": [
       {
         "Name": "publicString",
-        "Type": "publicString",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "privateSerializedString",
-        "Type": "privateSerializedString",
+        "Type": "System.String",
         "IsIterable": false
       }
     ]
@@ -406,27 +406,27 @@
     "Fields": [
       {
         "Name": "FullName",
-        "Type": "FullName",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "Name",
-        "Type": "Name",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "NameLower",
-        "Type": "NameLower",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "FileID",
-        "Type": "FileID",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "Guid",
-        "Type": "Guid",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
@@ -441,7 +441,7 @@
           "Fields": [
             {
               "Name": "Name",
-              "Type": "Name",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
@@ -456,27 +456,27 @@
                 "Fields": [
                   {
                     "Name": "FullName",
-                    "Type": "FullName",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
                     "Name": "Name",
-                    "Type": "Name",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
                     "Name": "NameLower",
-                    "Type": "NameLower",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
                     "Name": "FileID",
-                    "Type": "FileID",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
                     "Name": "Guid",
-                    "Type": "Guid",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
@@ -491,7 +491,7 @@
                       "Fields": [
                         {
                           "Name": "Name",
-                          "Type": "Name",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
@@ -506,27 +506,27 @@
                             "Fields": [
                               {
                                 "Name": "FullName",
-                                "Type": "FullName",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
                                 "Name": "Name",
-                                "Type": "Name",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
                                 "Name": "NameLower",
-                                "Type": "NameLower",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
                                 "Name": "FileID",
-                                "Type": "FileID",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
                                 "Name": "Guid",
-                                "Type": "Guid",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
@@ -541,7 +541,7 @@
                                   "Fields": [
                                     {
                                       "Name": "Name",
-                                      "Type": "Name",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
@@ -551,7 +551,7 @@
                                     },
                                     {
                                       "Name": "IsIterable",
-                                      "Type": "IsIterable",
+                                      "Type": "System.Boolean",
                                       "IsIterable": false
                                     }
                                   ]
@@ -562,7 +562,7 @@
                         },
                         {
                           "Name": "IsIterable",
-                          "Type": "IsIterable",
+                          "Type": "System.Boolean",
                           "IsIterable": false
                         }
                       ]
@@ -573,7 +573,7 @@
             },
             {
               "Name": "IsIterable",
-              "Type": "IsIterable",
+              "Type": "System.Boolean",
               "IsIterable": false
             }
           ]
@@ -606,27 +606,27 @@
           "Fields": [
             {
               "Name": "FullName",
-              "Type": "FullName",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "Name",
-              "Type": "Name",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "NameLower",
-              "Type": "NameLower",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "FileID",
-              "Type": "FileID",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "Guid",
-              "Type": "Guid",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
@@ -641,7 +641,7 @@
                 "Fields": [
                   {
                     "Name": "Name",
-                    "Type": "Name",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
@@ -656,27 +656,27 @@
                       "Fields": [
                         {
                           "Name": "FullName",
-                          "Type": "FullName",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "Name",
-                          "Type": "Name",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "NameLower",
-                          "Type": "NameLower",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "FileID",
-                          "Type": "FileID",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "Guid",
-                          "Type": "Guid",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
@@ -691,7 +691,7 @@
                             "Fields": [
                               {
                                 "Name": "Name",
-                                "Type": "Name",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
@@ -706,27 +706,27 @@
                                   "Fields": [
                                     {
                                       "Name": "FullName",
-                                      "Type": "FullName",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "Name",
-                                      "Type": "Name",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "NameLower",
-                                      "Type": "NameLower",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "FileID",
-                                      "Type": "FileID",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "Guid",
-                                      "Type": "Guid",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
@@ -739,7 +739,7 @@
                               },
                               {
                                 "Name": "IsIterable",
-                                "Type": "IsIterable",
+                                "Type": "System.Boolean",
                                 "IsIterable": false
                               }
                             ]
@@ -750,7 +750,7 @@
                   },
                   {
                     "Name": "IsIterable",
-                    "Type": "IsIterable",
+                    "Type": "System.Boolean",
                     "IsIterable": false
                   }
                 ]
@@ -771,27 +771,27 @@
           "Fields": [
             {
               "Name": "FullName",
-              "Type": "FullName",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "Name",
-              "Type": "Name",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "NameLower",
-              "Type": "NameLower",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "FileID",
-              "Type": "FileID",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "Guid",
-              "Type": "Guid",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
@@ -806,7 +806,7 @@
                 "Fields": [
                   {
                     "Name": "Name",
-                    "Type": "Name",
+                    "Type": "System.String",
                     "IsIterable": false
                   },
                   {
@@ -821,27 +821,27 @@
                       "Fields": [
                         {
                           "Name": "FullName",
-                          "Type": "FullName",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "Name",
-                          "Type": "Name",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "NameLower",
-                          "Type": "NameLower",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "FileID",
-                          "Type": "FileID",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
                           "Name": "Guid",
-                          "Type": "Guid",
+                          "Type": "System.String",
                           "IsIterable": false
                         },
                         {
@@ -856,7 +856,7 @@
                             "Fields": [
                               {
                                 "Name": "Name",
-                                "Type": "Name",
+                                "Type": "System.String",
                                 "IsIterable": false
                               },
                               {
@@ -871,27 +871,27 @@
                                   "Fields": [
                                     {
                                       "Name": "FullName",
-                                      "Type": "FullName",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "Name",
-                                      "Type": "Name",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "NameLower",
-                                      "Type": "NameLower",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "FileID",
-                                      "Type": "FileID",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
                                       "Name": "Guid",
-                                      "Type": "Guid",
+                                      "Type": "System.String",
                                       "IsIterable": false
                                     },
                                     {
@@ -904,7 +904,7 @@
                               },
                               {
                                 "Name": "IsIterable",
-                                "Type": "IsIterable",
+                                "Type": "System.Boolean",
                                 "IsIterable": false
                               }
                             ]
@@ -915,7 +915,7 @@
                   },
                   {
                     "Name": "IsIterable",
-                    "Type": "IsIterable",
+                    "Type": "System.Boolean",
                     "IsIterable": false
                   }
                 ]
@@ -948,27 +948,27 @@
           "Fields": [
             {
               "Name": "OriginalValue",
-              "Type": "OriginalValue",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "NameToExportTo",
-              "Type": "NameToExportTo",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "Type",
-              "Type": "Type",
+              "Type": "System.String",
               "IsIterable": false
             },
             {
               "Name": "IsIterable",
-              "Type": "IsIterable",
+              "Type": "System.Boolean",
               "IsIterable": false
             },
             {
               "Name": "Options",
-              "Type": "Options",
+              "Type": "System.String",
               "IsIterable": true
             }
           ]
@@ -976,7 +976,7 @@
       },
       {
         "Name": "HasBeenMapped",
-        "Type": "HasBeenMapped",
+        "Type": "importerexporter.models.FoundScript+MappedState",
         "IsIterable": false
       }
     ]
@@ -989,27 +989,27 @@
     "Fields": [
       {
         "Name": "OriginalValue",
-        "Type": "OriginalValue",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "NameToExportTo",
-        "Type": "NameToExportTo",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "Type",
-        "Type": "Type",
+        "Type": "System.String",
         "IsIterable": false
       },
       {
         "Name": "IsIterable",
-        "Type": "IsIterable",
+        "Type": "System.Boolean",
         "IsIterable": false
       },
       {
         "Name": "Options",
-        "Type": "Options",
+        "Type": "System.String",
         "IsIterable": true
       }
     ]
@@ -1043,12 +1043,12 @@
     "Fields": [
       {
         "Name": "m_TitleContent",
-        "Type": "m_TitleContent",
+        "Type": "UnityEngine.GUIContent",
         "IsIterable": false
       },
       {
         "Name": "m_Pos",
-        "Type": "m_Pos",
+        "Type": "UnityEngine.Rect",
         "IsIterable": false
       }
     ]
@@ -1061,12 +1061,12 @@
     "Fields": [
       {
         "Name": "m_TitleContent",
-        "Type": "m_TitleContent",
+        "Type": "UnityEngine.GUIContent",
         "IsIterable": false
       },
       {
         "Name": "m_Pos",
-        "Type": "m_Pos",
+        "Type": "UnityEngine.Rect",
         "IsIterable": false
       }
     ]
@@ -1079,17 +1079,17 @@
     "Fields": [
       {
         "Name": "onComplete",
-        "Type": "onComplete",
+        "Type": "System.Action`1[[System.Collections.Generic.List`1[[importerexporter.models.FoundScript, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]",
         "IsIterable": false
       },
       {
         "Name": "m_TitleContent",
-        "Type": "m_TitleContent",
+        "Type": "UnityEngine.GUIContent",
         "IsIterable": false
       },
       {
         "Name": "m_Pos",
-        "Type": "m_Pos",
+        "Type": "UnityEngine.Rect",
         "IsIterable": false
       }
     ]
@@ -1102,17 +1102,17 @@
     "Fields": [
       {
         "Name": "completed",
-        "Type": "completed",
+        "Type": "System.Boolean",
         "IsIterable": false
       },
       {
         "Name": "m_TitleContent",
-        "Type": "m_TitleContent",
+        "Type": "UnityEngine.GUIContent",
         "IsIterable": false
       },
       {
         "Name": "m_Pos",
-        "Type": "m_Pos",
+        "Type": "UnityEngine.Rect",
         "IsIterable": false
       }
     ]
@@ -1163,13 +1163,6 @@
     "FullName": "YamlDotNet.Core.ILookAheadBuffer",
     "Name": "ILookAheadBuffer",
     "Guid": "574e18619ff79614f83b7fbaec47ae8c",
-    "FileID": "11500000",
-    "Fields": []
-  },
-  {
-    "FullName": "YamlDotNet.Core.IParser",
-    "Name": "IParser",
-    "Guid": "fc2416e849d87aa4598d335c421f7117",
     "FileID": "11500000",
     "Fields": []
   },
@@ -1294,127 +1287,127 @@
     "Fields": [
       {
         "Name": "value__",
-        "Type": "value__",
+        "Type": "System.Int32",
         "IsIterable": false
       },
       {
         "Name": "StreamStart",
-        "Type": "StreamStart",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "StreamEnd",
-        "Type": "StreamEnd",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "ImplicitDocumentStart",
-        "Type": "ImplicitDocumentStart",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "DocumentStart",
-        "Type": "DocumentStart",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "DocumentContent",
-        "Type": "DocumentContent",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "DocumentEnd",
-        "Type": "DocumentEnd",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockNode",
-        "Type": "BlockNode",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockNodeOrIndentlessSequence",
-        "Type": "BlockNodeOrIndentlessSequence",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowNode",
-        "Type": "FlowNode",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockSequenceFirstEntry",
-        "Type": "BlockSequenceFirstEntry",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockSequenceEntry",
-        "Type": "BlockSequenceEntry",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "IndentlessSequenceEntry",
-        "Type": "IndentlessSequenceEntry",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockMappingFirstKey",
-        "Type": "BlockMappingFirstKey",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockMappingKey",
-        "Type": "BlockMappingKey",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "BlockMappingValue",
-        "Type": "BlockMappingValue",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowSequenceFirstEntry",
-        "Type": "FlowSequenceFirstEntry",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowSequenceEntry",
-        "Type": "FlowSequenceEntry",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowSequenceEntryMappingKey",
-        "Type": "FlowSequenceEntryMappingKey",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowSequenceEntryMappingValue",
-        "Type": "FlowSequenceEntryMappingValue",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowSequenceEntryMappingEnd",
-        "Type": "FlowSequenceEntryMappingEnd",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowMappingFirstKey",
-        "Type": "FlowMappingFirstKey",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowMappingKey",
-        "Type": "FlowMappingKey",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowMappingValue",
-        "Type": "FlowMappingValue",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       },
       {
         "Name": "FlowMappingEmptyValue",
-        "Type": "FlowMappingEmptyValue",
+        "Type": "YamlDotNet.Core.ParserState",
         "IsIterable": false
       }
     ]
@@ -1434,37 +1427,37 @@
     "Fields": [
       {
         "Name": "value__",
-        "Type": "value__",
+        "Type": "System.Int32",
         "IsIterable": false
       },
       {
         "Name": "Any",
-        "Type": "Any",
+        "Type": "YamlDotNet.Core.ScalarStyle",
         "IsIterable": false
       },
       {
         "Name": "Plain",
-        "Type": "Plain",
+        "Type": "YamlDotNet.Core.ScalarStyle",
         "IsIterable": false
       },
       {
         "Name": "SingleQuoted",
-        "Type": "SingleQuoted",
+        "Type": "YamlDotNet.Core.ScalarStyle",
         "IsIterable": false
       },
       {
         "Name": "DoubleQuoted",
-        "Type": "DoubleQuoted",
+        "Type": "YamlDotNet.Core.ScalarStyle",
         "IsIterable": false
       },
       {
         "Name": "Literal",
-        "Type": "Literal",
+        "Type": "YamlDotNet.Core.ScalarStyle",
         "IsIterable": false
       },
       {
         "Name": "Folded",
-        "Type": "Folded",
+        "Type": "YamlDotNet.Core.ScalarStyle",
         "IsIterable": false
       }
     ]
@@ -1547,22 +1540,22 @@
     "Fields": [
       {
         "Name": "value__",
-        "Type": "value__",
+        "Type": "System.Int32",
         "IsIterable": false
       },
       {
         "Name": "Any",
-        "Type": "Any",
+        "Type": "YamlDotNet.Core.Events.MappingStyle",
         "IsIterable": false
       },
       {
         "Name": "Block",
-        "Type": "Block",
+        "Type": "YamlDotNet.Core.Events.MappingStyle",
         "IsIterable": false
       },
       {
         "Name": "Flow",
-        "Type": "Flow",
+        "Type": "YamlDotNet.Core.Events.MappingStyle",
         "IsIterable": false
       }
     ]
@@ -1603,22 +1596,22 @@
     "Fields": [
       {
         "Name": "value__",
-        "Type": "value__",
+        "Type": "System.Int32",
         "IsIterable": false
       },
       {
         "Name": "Any",
-        "Type": "Any",
+        "Type": "YamlDotNet.Core.Events.SequenceStyle",
         "IsIterable": false
       },
       {
         "Name": "Block",
-        "Type": "Block",
+        "Type": "YamlDotNet.Core.Events.SequenceStyle",
         "IsIterable": false
       },
       {
         "Name": "Flow",
-        "Type": "Flow",
+        "Type": "YamlDotNet.Core.Events.SequenceStyle",
         "IsIterable": false
       }
     ]
@@ -1750,7 +1743,7 @@
     "Fields": [
       {
         "Name": "disabledTests",
-        "Type": "disabledTests",
+        "Type": "System.String",
         "IsIterable": true
       }
     ]
@@ -1854,27 +1847,27 @@
     "Fields": [
       {
         "Name": "value__",
-        "Type": "value__",
+        "Type": "System.Int32",
         "IsIterable": false
       },
       {
         "Name": "Alias",
-        "Type": "Alias",
+        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
         "IsIterable": false
       },
       {
         "Name": "Mapping",
-        "Type": "Mapping",
+        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
         "IsIterable": false
       },
       {
         "Name": "Scalar",
-        "Type": "Scalar",
+        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
         "IsIterable": false
       },
       {
         "Name": "Sequence",
-        "Type": "Sequence",
+        "Type": "YamlDotNet.RepresentationModel.YamlNodeType",
         "IsIterable": false
       }
     ]
@@ -2062,13 +2055,6 @@
     "Fields": []
   },
   {
-    "FullName": "YamlDotNet.Serialization.Nothing",
-    "Name": "Nothing",
-    "Guid": "8463bea3e5ea0764c8fde8598dcfe794",
-    "FileID": "11500000",
-    "Fields": []
-  },
-  {
     "FullName": "YamlDotNet.Serialization.ObjectDescriptor",
     "Name": "ObjectDescriptor",
     "Guid": "13c3a8b94ac1de641806bb1733305bda",
@@ -2083,37 +2069,37 @@
     "Fields": [
       {
         "Name": "value__",
-        "Type": "value__",
+        "Type": "System.Int32",
         "IsIterable": false
       },
       {
         "Name": "None",
-        "Type": "None",
+        "Type": "YamlDotNet.Serialization.SerializationOptions",
         "IsIterable": false
       },
       {
         "Name": "Roundtrip",
-        "Type": "Roundtrip",
+        "Type": "YamlDotNet.Serialization.SerializationOptions",
         "IsIterable": false
       },
       {
         "Name": "DisableAliases",
-        "Type": "DisableAliases",
+        "Type": "YamlDotNet.Serialization.SerializationOptions",
         "IsIterable": false
       },
       {
         "Name": "EmitDefaults",
-        "Type": "EmitDefaults",
+        "Type": "YamlDotNet.Serialization.SerializationOptions",
         "IsIterable": false
       },
       {
         "Name": "JsonCompatible",
-        "Type": "JsonCompatible",
+        "Type": "YamlDotNet.Serialization.SerializationOptions",
         "IsIterable": false
       },
       {
         "Name": "DefaultToStaticType",
-        "Type": "DefaultToStaticType",
+        "Type": "YamlDotNet.Serialization.SerializationOptions",
         "IsIterable": false
       }
     ]
@@ -2168,7 +2154,7 @@
     "Fields": [
       {
         "Name": "NumberFormat",
-        "Type": "NumberFormat",
+        "Type": "System.Globalization.NumberFormatInfo",
         "IsIterable": false
       }
     ]
