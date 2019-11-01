@@ -12,7 +12,7 @@ namespace importerexporter.controllers.customlogic
             // Get all values
             YamlNode yamlNodes = yamlDocument.RootNode.GetChildren()["MonoBehaviour"];
             
-            // Get the value we wish to change, this is the originalValue and has not been changed in the yamldocument
+            // Get the value we wish to change, this is the originalValue and has not been changed in the yaml document
             // That's why we need to use the original name to transform the data
             YamlNode value = yamlNodes["testQuaternion"];
             int line = value.Start.Line - 1;

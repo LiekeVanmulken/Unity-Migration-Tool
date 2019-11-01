@@ -231,7 +231,7 @@ namespace importerexporter.windows
 
                 mergingWizard.onComplete = (list) =>
                 {
-                    MergingWizardCompleted(list, rootPath, scenePath, lastSceneExport);
+                    MergingWizardCompleted(foundScripts, list, rootPath, scenePath, lastSceneExport);
                 };
             }
             else
@@ -259,16 +259,30 @@ namespace importerexporter.windows
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
-        /// <param name="mergeNodes"></param>
+        /// <param name="scripts"></param>
+        /// <param name="mergedFoundScripts"></param>
         /// <param name="rootPath"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string rootPath,
+        private void MergingWizardCompleted(List<FoundScript> originalFoundScripts, List<FoundScript> mergedFoundScripts, string rootPath,
             string scenePath,
             string[] linesToChange)
         {
+            // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
+            for (var i = 0; i < originalFoundScripts.Count; i++)
+            {
+                FoundScript originalFoundScript = originalFoundScripts[i];
+                FoundScript changedFoundScript = mergedFoundScripts.FirstOrDefault(script =>
+                    script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
+                if (changedFoundScript != null)
+                {
+                    originalFoundScripts[i] = changedFoundScript;
+                }
+            }
+
+
             string[] newSceneExport =
-                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
+                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, originalFoundScripts);
 
             Debug.Log(string.Join("\n", newSceneExport));
 

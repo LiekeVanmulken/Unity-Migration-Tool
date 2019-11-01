@@ -4,6 +4,6 @@
 //[CustomMappingLogic(typeof(QuaternionCustomMappingLogic))]
 public class TestScriptQuaternion : MonoBehaviour
 {
-    public Vector3 testQuaternion2;
+    public Vector3 testQuaternion;
     
 }

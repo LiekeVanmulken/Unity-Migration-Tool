@@ -1,12 +1,9 @@
-﻿
+﻿#if UNITY_EDITOR
 
-using YamlDotNet.Serialization;
-#if UNITY_EDITOR
-using System;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using importerexporter.controllers.customlogic;
 using importerexporter.models;
 using importerexporter.utility;
@@ -68,15 +65,18 @@ namespace importerexporter.controllers
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
 
-                FoundScript scriptType =     
+                FoundScript scriptType =
                     foundScripts.FirstOrDefault(node =>
                         node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
-                
-              
-                if (scriptType != null)     
+
+                if (scriptType != null)
                 {
-                    scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
-                    CheckCustomLogic(ref scene, scriptType, document);
+                    if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped)
+                    {
+                        scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
+                    }
+
+                    CheckCustomLogic(ref scene, document, scriptType);
                 }
                 else
                 {
@@ -84,11 +84,6 @@ namespace importerexporter.controllers
                               document.RootNode.ToString());
                 }
             }
-//            var serializer = new SerializerBuilder().Build();
-//            var serializer = new SerializerBuilder().Build();
-//            string yaml = serializer.Serialize(yamlStream);
-//            Debug.Log( "test + \n " + yaml);
-
             return scene;
         }
 
@@ -145,7 +140,6 @@ namespace importerexporter.controllers
 //                    continue;
                 }
 
-              
 
                 if (yamlNode.Value is YamlMappingNode)
                 {
@@ -176,15 +170,16 @@ namespace importerexporter.controllers
         /// <param name="line"></param>
         /// <returns>True when it handles logic, else false and it still needs to be handled</returns>
         private static bool CheckCustomLogic(ref string[] scene,
-            FoundScript foundScript, YamlDocument document)
+            YamlDocument document, FoundScript foundScript)
         {
             if (!Constants.Instance.CustomLogicMapping.ContainsKey(foundScript.newClassModel.FullName))
             {
                 return false;
             }
+
             ICustomMappingLogic customLogic = Constants.Instance.CustomLogicMapping[foundScript.newClassModel.FullName];
-            customLogic.CustomLogic(ref scene,ref document, foundScript);
-             return true;
+            customLogic.CustomLogic(ref scene, ref document, foundScript);
+            return true;
         }
 
         private static string[] handleValueNode(string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
@@ -220,9 +215,10 @@ namespace importerexporter.controllers
                 Debug.LogError("Type was null for yamlKey : " + yamlNode.Key.ToString());
                 return scene;
             }
+
             int line = yamlNode.Key.Start.Line - 1;
             scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
-            
+
             List<MergeNode> typeNodes =
                 foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
             if (typeNodes != null)
