@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using importerexporter.windows;
+using UnityEditor.Experimental.GraphView;
 
 namespace importerexporter.controllers
 {
@@ -74,6 +75,8 @@ namespace importerexporter.controllers
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
 
+            int gcCount = 0;
+            int gcLimit = 500;
             List<ClassModel> data = new List<ClassModel>();
             foreach (string file in classMetaFiles)
             {
@@ -95,6 +98,13 @@ namespace importerexporter.controllers
 
                     data.Add(new ClassModel(className, match.Value));
                 }
+
+                gcCount++;
+                if (gcCount > gcLimit)
+                {
+                    GC.Collect();
+                }
+
             }
 
 
@@ -129,6 +139,13 @@ namespace importerexporter.controllers
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
                             data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+                            
+                            
+                            gcCount++;
+                            if (gcCount > gcLimit)
+                            {
+                                GC.Collect();
+                            }
                         }
                     }
                     catch (Exception e)
