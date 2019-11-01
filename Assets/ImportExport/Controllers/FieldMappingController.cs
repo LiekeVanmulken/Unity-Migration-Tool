@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using importerexporter.controllers.customlogic;
 using importerexporter.models;
 using importerexporter.utility;
@@ -84,42 +83,36 @@ namespace importerexporter.controllers
                     Debug.Log("Script found that has no mapping (No members will be replaced), Node: " +
                               document.RootNode.ToString());
                 }
-               
-
             }
 //            var serializer = new SerializerBuilder().Build();
-            
-            
-            var serializer = new SerializerBuilder().Build();
-            string yaml = serializer.Serialize(yamlStream);
-
-            
-            Debug.Log( "test + \n " + yaml);
+//            var serializer = new SerializerBuilder().Build();
+//            string yaml = serializer.Serialize(yamlStream);
+//            Debug.Log( "test + \n " + yaml);
 
             return scene;
         }
 
-        private static List<KeyValuePair<Type, CustomMappingLogicAttribute>> getCustomLogics()
-        {
-            List<KeyValuePair<Type, CustomMappingLogicAttribute>> pairs =
-                new List<KeyValuePair<Type, CustomMappingLogicAttribute>>();
-
-            // this is making the assumption that all assemblies we need are already loaded.
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (Type type in assembly.GetTypes())
-                {
-                    object[] attribs = type.GetCustomAttributes(typeof(CustomMappingLogicAttribute), false);
-                    if (attribs != null && attribs.Length > 0)
-                    {
-                        pairs.Add(new KeyValuePair<Type, CustomMappingLogicAttribute>(type,
-                            (CustomMappingLogicAttribute) attribs.First()));
-                    }
-                }
-            }
-
-            return pairs;
-        }
+//        private static List<KeyValuePair<Type, CustomMappingLogicAttribute>> getCustomLogics()
+//        {
+//            List<KeyValuePair<Type, CustomMappingLogicAttribute>> pairs =
+//                new List<KeyValuePair<Type, CustomMappingLogicAttribute>>();
+//
+//            // this is making the assumption that all assemblies we need are already loaded.
+//            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+//            {
+//                foreach (Type type in assembly.GetTypes())
+//                {
+//                    object[] attribs = type.GetCustomAttributes(typeof(CustomMappingLogicAttribute), false);
+//                    if (attribs != null && attribs.Length > 0)
+//                    {
+//                        pairs.Add(new KeyValuePair<Type, CustomMappingLogicAttribute>(type,
+//                            (CustomMappingLogicAttribute) attribs.First()));
+//                    }
+//                }
+//            }
+//
+//            return pairs;
+//        }
 
         /// <summary>
         /// Helper method for the<see cref="ReplaceFieldsByMergeNodes"/> to replace the fields in the scripts.
@@ -190,7 +183,7 @@ namespace importerexporter.controllers
                 return false;
             }
             ICustomMappingLogic customLogic = Constants.Instance.CustomLogicMapping[foundScript.newClassModel.FullName];
-            customLogic.CustomLogic(ref document, foundScript);
+            customLogic.CustomLogic(ref scene,ref document, foundScript);
              return true;
         }
 
@@ -227,20 +220,18 @@ namespace importerexporter.controllers
                 Debug.LogError("Type was null for yamlKey : " + yamlNode.Key.ToString());
                 return scene;
             }
-
+            int line = yamlNode.Key.Start.Line - 1;
+            scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
+            
             List<MergeNode> typeNodes =
                 foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
             if (typeNodes != null)
             {
-                int line = yamlNode.Key.Start.Line - 1;
-                scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
-
                 scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
             }
-
             else
             {
-                Debug.Log("Could not find subclasses of class : " + type);
+                Debug.Log("Found a mappingNode but could not find subclasses in class : " + type);
             }
 
             return scene;

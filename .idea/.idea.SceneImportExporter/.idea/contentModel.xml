@@ -15,7 +15,9 @@
         <e p="ImportExport" t="Include">
           <e p="Controllers" t="Include">
             <e p="CustomLogic" t="Include">
-              <e p="CustomLogic.cs" t="Include" />
+              <e p="CustomMappingLogicAttribute.cs" t="Include" />
+              <e p="ICustomMappingLogic.cs" t="Include" />
+              <e p="QuaternionCustomMappingLogic.cs" t="Include" />
             </e>
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />

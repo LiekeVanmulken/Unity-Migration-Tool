@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace importerexporter.models
@@ -12,11 +13,9 @@ namespace importerexporter.models
         [SerializeField] public bool IsIterable;
         [SerializeField] public string[] Options;
 
-        public FoundScript Parent;
         
         public MergeNode(FoundScript parent)
         {
-            this.Parent = parent;
         }
         
 //        public MergeNode(string originalValue, string nameToExportTo)

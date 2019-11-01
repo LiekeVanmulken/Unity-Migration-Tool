@@ -41,7 +41,6 @@ namespace importerexporter.models
 
         public FoundScript()
         {
-            InitMergeNodeParentReference();
         }
 
         public FoundScript(ClassModel oldClassModel, ClassModel newNewClassModel, YamlNode yamlOptions)
@@ -50,15 +49,6 @@ namespace importerexporter.models
             this.oldClassModel = oldClassModel;
             this.YamlOptions = yamlOptions;
             this.HasBeenMapped = CheckHasBeenMapped(oldClassModel, newNewClassModel);
-            InitMergeNodeParentReference();
-        }
-
-        private void InitMergeNodeParentReference()
-        {
-            foreach (MergeNode mergeNode in MergeNodes)
-            {
-                mergeNode.Parent = this;
-            }
         }
 
         public MappedState CheckHasBeenMapped()
