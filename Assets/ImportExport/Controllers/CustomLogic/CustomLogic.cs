@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using importerexporter.models;
+using importerexporter.utility;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
+using YamlDotNet.Serialization;
 
 namespace importerexporter.controllers.customlogic
 {
@@ -26,18 +30,19 @@ namespace importerexporter.controllers.customlogic
 
     public interface ICustomMappingLogic
     {
-        YamlNode CustomLogic(KeyValuePair<YamlNode, YamlNode> yamlNode, List<FoundScript> foundScripts);
+        void CustomLogic(ref YamlDocument yamlDocument, FoundScript foundScript);
     }
 
 
-    public class TestCustomMappingLogic : ICustomMappingLogic
+    public class QuaternionCustomMappingLogic : ICustomMappingLogic
     {
-        public string fieldThatHasCustomData = "testQuaternion";
 
-        public YamlNode CustomLogic(KeyValuePair<YamlNode, YamlNode> yamlNode, List<FoundScript> foundScripts)
+        public void CustomLogic(ref YamlDocument yamlDocument, FoundScript foundScript)
         {
-            YamlNode key = yamlNode.Key;
-            YamlNode value = yamlNode.Value;
+            
+            YamlNode yamlNodes = yamlDocument.RootNode.GetChildren()["MonoBehaviour"];
+            YamlNode value = yamlNodes["testQuaternion"];
+            
 
             Vector3 newValue = new Quaternion(
                 float.Parse(value["x"].ToString()),
@@ -45,8 +50,16 @@ namespace importerexporter.controllers.customlogic
                 float.Parse(value["z"].ToString()),
                 float.Parse(value["w"].ToString())
             ).eulerAngles;
+            yamlNodes.GetChildren().Remove("testQuaternion");
 
-            return "{ x : " + newValue.x + ", y : " + newValue.y + ", z : " + newValue.z + " }";
+            var result = "{ x : " + newValue.x + ", y : " + newValue.y + ", z : " + newValue.z + " }";
+            yamlNodes.GetChildren().Add(new KeyValuePair<YamlNode, YamlNode>("testQuaternion",result));
+            
+            var serializer = new SerializerBuilder().Build();
+            string yaml = serializer.Serialize(yamlDocument.RootNode);
+
+            
+            Debug.Log(yaml);
         }
     }
 }

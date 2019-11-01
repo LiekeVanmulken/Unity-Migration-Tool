@@ -1,11 +1,12 @@
-﻿#if UNITY_EDITOR
+﻿
 
+using YamlDotNet.Serialization;
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using importerexporter.controllers.customlogic;
 using importerexporter.models;
@@ -68,19 +69,32 @@ namespace importerexporter.controllers
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
 
-                FoundScript scriptType =
+                FoundScript scriptType =     
                     foundScripts.FirstOrDefault(node =>
                         node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
-                if (scriptType != null)
+                
+              
+                if (scriptType != null)     
                 {
                     scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
+                    CheckCustomLogic(ref scene, scriptType, document);
                 }
                 else
                 {
                     Debug.Log("Script found that has no mapping (No members will be replaced), Node: " +
                               document.RootNode.ToString());
                 }
+               
+
             }
+//            var serializer = new SerializerBuilder().Build();
+            
+            
+            var serializer = new SerializerBuilder().Build();
+            string yaml = serializer.Serialize(yamlStream);
+
+            
+            Debug.Log( "test + \n " + yaml);
 
             return scene;
         }
@@ -134,14 +148,11 @@ namespace importerexporter.controllers
                     currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
                 if (currentMergeNode == null)
                 {
-                    Debug.Log("Could not find mergeNode for key : " + yamlNodeKey);
+                    Debug.Log("[DataLoss] Could not find mergeNode for key : " + yamlNodeKey);
+//                    continue;
                 }
 
-                if (CheckCustomLogic(ref scene, foundScripts, currentMergeNode, yamlNode, yamlNodeKey, line))
-                {
-                    continue;
-                }
-
+              
 
                 if (yamlNode.Value is YamlMappingNode)
                 {
@@ -171,50 +182,16 @@ namespace importerexporter.controllers
         /// <param name="yamlNodeKey"></param>
         /// <param name="line"></param>
         /// <returns>True when it handles logic, else false and it still needs to be handled</returns>
-        private static bool CheckCustomLogic(ref string[] scene, List<FoundScript> foundScripts, MergeNode currentMergeNode,
-            KeyValuePair<YamlNode, YamlNode> yamlNode, string yamlNodeKey, int line)
+        private static bool CheckCustomLogic(ref string[] scene,
+            FoundScript foundScript, YamlDocument document)
         {
-            string type = currentMergeNode.Type;
-            if (string.IsNullOrEmpty(type))
+            if (!Constants.Instance.CustomLogicMapping.ContainsKey(foundScript.newClassModel.FullName))
             {
-                Debug.LogError("Type was null for yamlKey : " + yamlNode.Key.ToString());
                 return false;
             }
-            FoundScript foundScript = 
-                foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type);
-
-            if (foundScript == null )
-            {
-                Debug.LogError("Could not find foundScript for type : " + type);
-                return false;
-            }
-
-            List<KeyValuePair<Type,CustomMappingLogicAttribute>> pairs = getCustomLogics();
-
-            bool hasValue;
-            foreach (KeyValuePair<Type, CustomMappingLogicAttribute> pair in pairs)
-            {
-                if(yamlNode.Key.ToString() == pair.Value.)
-            }
-
-//            if (yamlNode.Key.ToString() != new TestCustomMappingLogic().fieldThatHasCustomData)
-//            {
-//                return false;
-//            }
-            
-            
-            scene = handleValueNode(scene, currentMergeNode, yamlNodeKey, line, yamlNode);
-
-            YamlNode value = new TestCustomMappingLogic().CustomLogic(yamlNode, foundScripts);
-            int lineTest = yamlNode.Value.Start.Line - 1;
-
-            var regex = new Regex("(.*?)(?=:)");
-            string key = regex.Match(scene[lineTest]).Value;
-            scene[lineTest] = key + ": " + value.ToString();
-                
-                
-            return true;
-
+            ICustomMappingLogic customLogic = Constants.Instance.CustomLogicMapping[foundScript.newClassModel.FullName];
+            customLogic.CustomLogic(ref document, foundScript);
+             return true;
         }
 
         private static string[] handleValueNode(string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
@@ -274,8 +251,8 @@ namespace importerexporter.controllers
         {
             int line = yamlNode.Key.Start.Line - 1;
             scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
-
             string type = currentMergeNode.Type;
+
             FoundScript foundScript =
                 foundScripts.FirstOrDefault(script => script.oldClassModel.Name == type);
             if (foundScript == null)

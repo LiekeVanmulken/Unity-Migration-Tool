@@ -14,7 +14,7 @@ namespace importerexporter.models
     public class ClassModel
     {
         private readonly Constants constants = Constants.Instance;
-        
+
         /// <summary>
         /// Class namespace and name
         /// </summary>
@@ -52,7 +52,7 @@ namespace importerexporter.models
             initName(fullName);
             this.FullName = fullName;
         }
-        
+
         public ClassModel(string fullName, string guid, string fileID = "11500000")
         {
             initName(fullName);
@@ -72,6 +72,13 @@ namespace importerexporter.models
             this.FullName = fullName;
             this.Fields = FieldDataGenerationUtility.GenerateFieldData(type, iteration);
         }
+
+        /// <summary>
+        /// Check if its an array or list and if it it get the containing class
+        /// This is so we can get the fields of the containing class as a list or array won't have fields
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
         private string initList(string fullName)
         {
             // Check if its a list or array and if so use the name of the class that it holds
@@ -83,6 +90,7 @@ namespace importerexporter.models
 
             return fullName;
         }
+
         /// <summary>
         /// Sets the name from the fullname
         /// </summary>
@@ -93,6 +101,7 @@ namespace importerexporter.models
             {
                 return;
             }
+
             string[] names = fullName.Split('.');
             this.Name = names[names.Length - 1];
             this.NameLower = this.Name.ToLower();
