@@ -72,7 +72,7 @@ namespace importerexporter.models
 
             foreach (FieldModel field in oldClassModel.Fields)
             {
-                MergeNode mergeNode = new MergeNode
+                MergeNode mergeNode = new MergeNode()
                 {
                     OriginalValue = field.Name
                 };

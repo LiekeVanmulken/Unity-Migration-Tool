@@ -71,7 +71,6 @@ namespace importerexporter.utility
 
             for (var i = 0; i < members.Count; i++)
             {
-                
                 FieldInfo member = members[i];
                 Type currentType = member.FieldType;
                 

@@ -11,8 +11,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using importerexporter.windows;
+using UnityEditor.Experimental.GraphView;
 
-namespace importerexporter
+namespace importerexporter.controllers
 {
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
@@ -74,6 +75,8 @@ namespace importerexporter
 
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
 
+            int gcCount = 0;
+            int gcLimit = 500;
             List<ClassModel> data = new List<ClassModel>();
             foreach (string file in classMetaFiles)
             {
@@ -95,6 +98,13 @@ namespace importerexporter
 
                     data.Add(new ClassModel(className, match.Value));
                 }
+
+                gcCount++;
+                if (gcCount > gcLimit)
+                {
+                    GC.Collect();
+                }
+
             }
 
 
@@ -129,6 +139,13 @@ namespace importerexporter
                             ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
                             data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
+                            
+                            
+                            gcCount++;
+                            if (gcCount > gcLimit)
+                            {
+                                GC.Collect();
+                            }
                         }
                     }
                     catch (Exception e)
@@ -265,7 +282,7 @@ namespace importerexporter
                     ?.newClassModel;
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
-                replacementClassModel = findNewID(newIDs, oldClassModel);
+                replacementClassModel = findNewID(newIDs, oldClassModel); //todo : testScript gets called double
                 if (replacementClassModel == null)
                 {
                     return null;
@@ -285,6 +302,20 @@ namespace importerexporter
                 return existingFoundScript;
             }
 
+
+            existingFoundScript = new FoundScript
+            {
+                oldClassModel = oldClassModel,
+                newClassModel = replacementClassModel
+            };
+            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+            if (hasBeenMapped == MappedState.NotMapped)
+            {
+                existingFoundScript.GenerateMappingNode(foundScripts);
+            }
+
+            foundScripts.Add(existingFoundScript);
+
             //If it doesn't exist then create it
 
             if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
@@ -300,21 +331,6 @@ namespace importerexporter
                     FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
                 }
             }
-
-            existingFoundScript = new FoundScript
-            {
-                oldClassModel = oldClassModel,
-                newClassModel = replacementClassModel // todo : fields is null when its an iterable
-            };
-            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-            if (hasBeenMapped == MappedState.NotMapped)
-            {
-                existingFoundScript.GenerateMappingNode(foundScripts);
-            }
-
-
-            foundScripts.Add(existingFoundScript);
-
             return existingFoundScript;
         }
 

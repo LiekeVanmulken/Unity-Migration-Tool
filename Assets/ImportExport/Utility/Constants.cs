@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using importerexporter.controllers.customlogic;
 
 namespace importerexporter.utility
 {
@@ -57,5 +58,11 @@ namespace importerexporter.utility
             "m_Name",
             "m_EditorClassIdentifier"
         };
+
+        public readonly Dictionary<string, ICustomMappingLogic> CustomLogicMapping =
+            new Dictionary<string, ICustomMappingLogic>()
+            {
+                {typeof(TestScriptQuaternion).FullName, new QuaternionCustomMappingLogic()}
+            };
     }
 }

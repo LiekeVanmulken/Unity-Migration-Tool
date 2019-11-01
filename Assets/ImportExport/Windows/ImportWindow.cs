@@ -1,4 +1,5 @@
-﻿#if UNITY_EDITOR
+﻿using importerexporter.controllers;
+#if UNITY_EDITOR
 using importerexporter.models;
 using importerexporter.utility;
 using System.Linq;
@@ -73,9 +74,10 @@ namespace importerexporter.windows
             {
                 ImportClassDataAndScene();
             }
+
             EditorGUI.EndDisabledGroup();
 
-            GUILayout.Label(exportExists ? "IDs found" : "No IDs found, please export the current IDs.");
+            GUILayout.Label(exportExists ? "IDs found, ready to migrate." : "No IDs found, please export the current IDs.");
         }
 
         private void ExportCurrentClassData(string rootPath)
@@ -110,6 +112,9 @@ namespace importerexporter.windows
                 return;
             }
 
+            EditorUtility.DisplayDialog("Please select the Export.json", "Please select the Export.json of the old project in the next file dialog.\n" +
+                                                                         "This can be found in the old_project_folder/ImportExport/Exports/Export.json.", "Select the original IDs");
+            
             string IDPath = EditorUtility.OpenFilePanel(
                 "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
                 "json"); //todo : check if this is in the current project
@@ -118,13 +123,13 @@ namespace importerexporter.windows
                 Debug.LogWarning("No path was selected");
                 return;
             }
-
+            
             List<ClassModel> oldIDs =
                 JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
-            IDPath = Path.GetDirectoryName(IDPath) + "\\..\\..\\";
-            Debug.Log("IDPath : " + IDPath);
-
+            IDPath = Path.GetDirectoryName(IDPath) ;
+            IDPath = Path.GetFullPath(Path.Combine(IDPath , @"..\..\"));
+            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.", "Select the scene");
             string scenePath =
                 EditorUtility.OpenFilePanel("Scene to import", IDPath,
                     "unity"); //todo : check if this is in the current project
@@ -150,7 +155,7 @@ namespace importerexporter.windows
             }
 
             calculationThread =
-                new Thread(() => this.Import(rootPath, oldIDs, newIDs, scenePath, foundScripts));
+                new Thread(() => this.ImportTransformIDs(rootPath, oldIDs, newIDs, scenePath, foundScripts));
             calculationThread.Start();
         }
 
@@ -160,7 +165,7 @@ namespace importerexporter.windows
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void Import(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs, string scenePath,
+        private void ImportTransformIDs(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs, string scenePath,
             List<FoundScript> foundScripts)
         {
             try
@@ -177,12 +182,9 @@ namespace importerexporter.windows
 
                 string[] lastSceneExport =
                     idController.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
-                        ref foundScripts); //todo : don't use a ref for this because that's like super nasty
-
-
-//                fieldMappingUtility.FindFieldsToMigrate(lastSceneExport, oldIDs, currentIDs, ref foundScripts); // todo this might be able to be removed
-
-                Instance().Enqueue(() => { ImportMainThread(rootPath, scenePath, foundScripts, lastSceneExport); });
+                        ref foundScripts);
+                
+                Instance().Enqueue(() => { ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport); });
             }
             catch (Exception e)
             {
@@ -192,13 +194,11 @@ namespace importerexporter.windows
         }
 
         private void
-            ImportMainThread(string rootPath, string scenePath,
+            ImportAfterIDTransformationOnMainThread(string rootPath, string scenePath,
                 List<FoundScript> foundScripts,
-                string[] lastSceneExport) //todo : terrible name, rename! - 10-10-2019 - Wouter
+                string[] lastSceneExport)
         {
-            string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
-            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
-
+            
             ImportWindow.foundScripts = foundScripts;
             ImportWindow.lastSceneExport = lastSceneExport;
 
@@ -229,14 +229,21 @@ namespace importerexporter.windows
 
                 mergingWizard.onComplete = (list) =>
                 {
-                    MergingWizardCompleted(list, rootPath, scenePath, lastSceneExport);
+                    MergingWizardCompleted(foundScripts, list, rootPath, scenePath, lastSceneExport);
                 };
             }
             else
             {
+                SaveFoundScripts(rootPath, foundScripts);
                 SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
                 calculationThread = null;
             }
+        }
+
+        private static void SaveFoundScripts(string rootPath, List<FoundScript> foundScripts)
+        {
+            string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
+            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
         }
 
         /// <summary>
@@ -257,19 +264,34 @@ namespace importerexporter.windows
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
-        /// <param name="mergeNodes"></param>
+        /// <param name="scripts"></param>
+        /// <param name="mergedFoundScripts"></param>
         /// <param name="rootPath"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<FoundScript> mergeNodes, string rootPath,
+        private void MergingWizardCompleted(List<FoundScript> originalFoundScripts,
+            List<FoundScript> mergedFoundScripts, string rootPath,
             string scenePath,
             string[] linesToChange)
         {
+            // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
+            for (var i = 0; i < originalFoundScripts.Count; i++)
+            {
+                FoundScript originalFoundScript = originalFoundScripts[i];
+                FoundScript changedFoundScript = mergedFoundScripts.FirstOrDefault(script =>
+                    script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
+                if (changedFoundScript != null)
+                {
+                    originalFoundScripts[i] = changedFoundScript;
+                }
+            }
+
             string[] newSceneExport =
-                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, mergeNodes);
+                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, originalFoundScripts);
 
             Debug.Log(string.Join("\n", newSceneExport));
 
+            SaveFoundScripts(rootPath, originalFoundScripts);
             SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
             calculationThread = null;
         }
