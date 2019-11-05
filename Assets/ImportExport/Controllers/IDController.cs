@@ -11,7 +11,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using importerexporter.windows;
-using UnityEditor.Experimental.GraphView;
 
 namespace importerexporter.controllers
 {
@@ -55,6 +54,12 @@ namespace importerexporter.controllers
         /// </summary>
         private Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
+        /// <summary>
+        /// Cache of a array of all assembly types with the fullname lowered.
+        /// This is to prevent the types being called often and the name being lowered in the <see cref="getTypeByMetafileFileName"/>
+        /// </summary>
+        private KeyValuePair<string, Type>[] cachedLowerTypeList;
+
         private readonly Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
 
         /// <summary>
@@ -83,7 +88,7 @@ namespace importerexporter.controllers
                 progress++;
                 MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
                     progress / totalFiles);
-                string[] lines = File.ReadAllLines(file);
+                IEnumerable<string> lines = File.ReadLines(file);
 
                 foreach (string line in lines)
                 {
@@ -104,7 +109,6 @@ namespace importerexporter.controllers
                 {
                     GC.Collect();
                 }
-
             }
 
 
@@ -138,9 +142,9 @@ namespace importerexporter.controllers
                         {
                             MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
-                            data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
-                            
-                            
+                            data.Add(new ClassModel(type, match.Value, FileIDUtil.Compute(type).ToString()));
+
+
                             gcCount++;
                             if (gcCount > gcLimit)
                             {
@@ -204,8 +208,8 @@ namespace importerexporter.controllers
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
-            List<YamlDocument> yamlDocuments =
-                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
+            IEnumerable<YamlDocument> yamlDocuments =
+                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour");
             foreach (YamlDocument document in yamlDocuments)
             {
                 YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
@@ -331,9 +335,9 @@ namespace importerexporter.controllers
                     FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
                 }
             }
+
             return existingFoundScript;
         }
-
 
         /// <summary>
         /// Get the Type of a class by the name of the class.
@@ -346,17 +350,24 @@ namespace importerexporter.controllers
             fileName = fileName.Replace(".cs.meta", "");
             string fileNameLower = fileName.ToLower();
 
-            List<Type> types = assemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.Name.ToLower() == fileNameLower).ToList();
 
-            if (types.Count == 0)
+            if (cachedLowerTypeList == null)
+            {
+                cachedLowerTypeList = assemblies.SelectMany(assembly => assembly.GetTypes())
+                    .Select(type => new KeyValuePair<string, Type>(type.Name.ToLower(), type)).ToArray();
+            }
+
+            Type[] types = cachedLowerTypeList.Where(loweredTypeName => loweredTypeName.Key == fileNameLower)
+                .Select(pair => pair.Value).ToArray();
+            
+            if (types.Length == 0)
             {
                 Debug.Log("Checked for type  \"" + fileName +
                           "\" no types were found.");
                 return null;
             }
 
-            if (types.Count == 1)
+            if (types.Length == 1)
             {
                 return types[0].FullName;
             }

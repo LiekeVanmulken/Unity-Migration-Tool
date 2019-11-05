@@ -17,35 +17,35 @@ namespace importerexporter.models
 
         /// <summary>
         /// Class namespace and name
-        /// </summary>
+        /// </summary> 
         [SerializeField] public string FullName;
 
         /// <summary>
         /// ClassName
         /// </summary>
-        [SerializeField] public string Name;
+        [SerializeField]public string Name;
 
         /// <summary>
         /// Cache of the name field without capitalization
         /// </summary>
-        [SerializeField] public string NameLower;
+        [SerializeField]public string NameLower;
 
         /// <summary>
         /// FileID of the class for when the class is a script.
         /// <remark>This can be null when the class is a non-MonoBehaviour</remark>
         /// </summary>
-        [SerializeField] public string FileID;
+        [SerializeField]public string FileID;
 
         /// <summary>
         /// GUID of the class for when the class is a script.
         /// <remark>This can be null when the class is a non-MonoBehaviour</remark>
         /// </summary>
-        [SerializeField] public string Guid;
+        [SerializeField]public string Guid;
 
         /// <summary>
         /// All fields on the class
         /// </summary>
-        [SerializeField] public FieldModel[] Fields;
+        [SerializeField]public FieldModel[] Fields;
 
         public ClassModel(string fullName)
         {
@@ -61,6 +61,14 @@ namespace importerexporter.models
             this.Guid = guid;
             this.FileID = fileID;
             this.Fields = FieldDataGenerationUtility.GenerateFieldData(fullName);
+        }
+        public ClassModel(Type type, string guid, string fileID = "11500000")
+        {
+            initName(type.FullName);
+            this.FullName = type.FullName;
+            this.Guid = guid;
+            this.FileID = fileID;
+            this.Fields = FieldDataGenerationUtility.GenerateFieldData(type,0);
         }
 
         public ClassModel(Type type, int iteration = 0)

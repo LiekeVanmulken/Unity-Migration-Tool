@@ -16,6 +16,8 @@ namespace importerexporter.utility
     {
         private static Constants constants = Constants.Instance;
         private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        private static KeyValuePair<string, Type>[] cachedFullNameTypeList;
+
 
         /// <summary>
         /// Gets all the fields on a class
@@ -24,8 +26,7 @@ namespace importerexporter.utility
         /// <returns></returns>
         public static FieldModel[] GenerateFieldData(string name)
         {
-            Type type = assemblies.SelectMany(x => x.GetTypes())
-                .FirstOrDefault(x => x.FullName == name);
+            Type type = GetTypeByFullName(name);
             if (type == null)
             {
                 Debug.LogError("Could not find class of name to search for members: " + name);
@@ -35,6 +36,7 @@ namespace importerexporter.utility
             return GenerateFieldData(type, 0);
         }
 
+
         /// <summary>
         /// Gets all the fields on a class
         /// </summary>
@@ -43,19 +45,18 @@ namespace importerexporter.utility
         /// <returns></returns>
         public static FieldModel[] GenerateFieldData(Type type, int iteration)
         {
+            iteration++;
+
             Match match = constants.IsListOrArrayRegex.Match(type.FullName);
             if (match.Success)
             {
-                type = assemblies.SelectMany(x => x.GetTypes())
-                    .FirstOrDefault(x => x.FullName == match.Value);
+                string matchedValue = match.Value;
+                type = GetTypeByFullName(matchedValue);
                 if (type == null)
                 {
-                    throw new NullReferenceException("Type of list or array could not be found : " + match.Value);
+                    throw new NullReferenceException("Type of list or array could not be found : " + matchedValue);
                 }
             }
-
-            iteration++;
-            List<FieldModel> values = new List<FieldModel>();
 
             FieldInfo[] publicFields =
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static |
@@ -65,17 +66,54 @@ namespace importerexporter.utility
                            BindingFlags.FlattenHierarchy)
                 .Where(info => Attribute.IsDefined(info, typeof(SerializeField))).ToArray();
 
-            List<FieldInfo> members = new List<FieldInfo>();
-            members.AddRange(publicFields);
-            members.AddRange(privateSerializedFields);
+            List<FieldModel> values = new List<FieldModel>(publicFields.Length + privateSerializedFields.Length);
 
-            for (var i = 0; i < members.Count; i++)
+            AddMembersToFieldModels(ref values, publicFields, iteration);
+            AddMembersToFieldModels(ref values, privateSerializedFields, iteration);
+
+            return values.ToArray();
+        }
+
+        /// <summary>
+        /// Helper method to get the type of a class by the FullName with a cache
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        private static Type GetTypeByFullName(string fullName)
+        {
+            if (cachedFullNameTypeList == null)
+            {
+                cachedFullNameTypeList = assemblies.SelectMany(assembly => assembly.GetTypes())
+                    .Select(type => new KeyValuePair<string, Type>(type.FullName, type)).ToArray();
+            }
+
+            KeyValuePair<string, Type> pair = cachedFullNameTypeList.FirstOrDefault(type => type.Key == fullName);
+
+            // if not null
+            if (!pair.Equals(default(KeyValuePair<string, Type>)))
+            {
+                return pair.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Transform the FieldInfo to a list of fieldModels and add them to the values list
+        /// Check if it's a array or list and transform the name 
+        /// </summary>
+        /// <param name="values">List in which to add the field model</param>
+        /// <param name="members">members to be transformed to the list</param>
+        /// <param name="iteration"></param>
+        private static void AddMembersToFieldModels(ref List<FieldModel> values, FieldInfo[] members, int iteration)
+        {
+            for (var i = 0; i < members.Length; i++)
             {
                 FieldInfo member = members[i];
                 Type currentType = member.FieldType;
-                
+
                 bool isIterable = false;
-                
+
                 if (currentType.IsArray)
                 {
                     isIterable = true;
@@ -90,8 +128,6 @@ namespace importerexporter.utility
 
                 values.Add(new FieldModel(member.Name, currentType, isIterable, iteration));
             }
-
-            return values.ToArray();
         }
     }
 }
