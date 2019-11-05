@@ -43,12 +43,12 @@ namespace importerexporter.models
         {
         }
 
-        public FoundScript(ClassModel oldClassModel, ClassModel newNewClassModel, YamlNode yamlOptions)
+        public FoundScript(ClassModel oldClassModel, ClassModel newClassModel, YamlNode yamlOptions)
         {
-            this.newClassModel = newNewClassModel;
+            this.newClassModel = newClassModel;
             this.oldClassModel = oldClassModel;
             this.YamlOptions = yamlOptions;
-            this.HasBeenMapped = CheckHasBeenMapped(oldClassModel, newNewClassModel);
+            this.HasBeenMapped = CheckHasBeenMapped(oldClassModel, newClassModel);
         }
 
         public MappedState CheckHasBeenMapped()

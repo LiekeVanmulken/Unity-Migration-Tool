@@ -38,8 +38,8 @@
             <e p="MD4.cs" t="Include" />
           </e>
           <e p="Windows" t="Include">
-            <e p="ImportWindow.cs" t="Include" />
             <e p="MergingWizard.cs" t="Include" />
+            <e p="MigrationWindow.cs" t="Include" />
             <e p="OptionsWizard.cs" t="Include" />
           </e>
         </e>

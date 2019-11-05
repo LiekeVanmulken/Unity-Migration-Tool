@@ -23,7 +23,7 @@ namespace importerexporter.windows
     /// For a more detailed explanation read the README.MD
     /// </summary>
     [Serializable]
-    public class ImportWindow : MainThreadDispatcherEditorWindow
+    public class MigrationWindow : MainThreadDispatcherEditorWindow
     {
         private readonly Constants constants = Constants.Instance;
         private readonly IDController idController = IDController.Instance;
@@ -44,10 +44,10 @@ namespace importerexporter.windows
         bool exportExists;
 
 
-        [MenuItem("Window/Scene import window")]
+        [MenuItem("Window/Scene migration window")]
         public static void ShowWindow()
         {
-            EditorWindow.GetWindow(typeof(ImportWindow));
+            EditorWindow.GetWindow(typeof(MigrationWindow));
         }
 
         protected void OnEnable()
@@ -77,7 +77,9 @@ namespace importerexporter.windows
 
             EditorGUI.EndDisabledGroup();
 
-            GUILayout.Label(exportExists ? "IDs found, ready to migrate." : "No IDs found, please export the current IDs.");
+            GUILayout.Label(exportExists
+                ? "IDs found, ready to migrate."
+                : "No IDs found, please export the current IDs.");
         }
 
         private void ExportCurrentClassData(string rootPath)
@@ -112,9 +114,11 @@ namespace importerexporter.windows
                 return;
             }
 
-            EditorUtility.DisplayDialog("Please select the Export.json", "Please select the Export.json of the old project in the next file dialog.\n" +
-                                                                         "This can be found in the old_project_folder/ImportExport/Exports/Export.json.", "Select the original IDs");
-            
+            EditorUtility.DisplayDialog("Please select the Export.json",
+                "Please select the Export.json of the old project in the next file dialog.\n" +
+                "This can be found in the old_project_folder/ImportExport/Exports/Export.json.",
+                "Select the original IDs");
+
             string IDPath = EditorUtility.OpenFilePanel(
                 "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
                 "json"); //todo : check if this is in the current project
@@ -123,13 +127,14 @@ namespace importerexporter.windows
                 Debug.LogWarning("No path was selected");
                 return;
             }
-            
+
             List<ClassModel> oldIDs =
                 JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
-            IDPath = Path.GetDirectoryName(IDPath) ;
-            IDPath = Path.GetFullPath(Path.Combine(IDPath , @"..\..\"));
-            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.", "Select the scene");
+            IDPath = Path.GetDirectoryName(IDPath);
+            IDPath = Path.GetFullPath(Path.Combine(IDPath, @"..\..\"));
+            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
+                "Select the scene");
             string scenePath =
                 EditorUtility.OpenFilePanel("Scene to import", IDPath,
                     "unity"); //todo : check if this is in the current project
@@ -165,7 +170,8 @@ namespace importerexporter.windows
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
         /// <param name="scenePath"></param>
-        private void ImportTransformIDs(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs, string scenePath,
+        private void ImportTransformIDs(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs,
+            string scenePath,
             List<FoundScript> foundScripts)
         {
             try
@@ -183,8 +189,11 @@ namespace importerexporter.windows
                 string[] lastSceneExport =
                     idController.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts);
-                
-                Instance().Enqueue(() => { ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport); });
+
+                Instance().Enqueue(() =>
+                {
+                    ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport);
+                });
             }
             catch (Exception e)
             {
@@ -198,9 +207,8 @@ namespace importerexporter.windows
                 List<FoundScript> foundScripts,
                 string[] lastSceneExport)
         {
-            
-            ImportWindow.foundScripts = foundScripts;
-            ImportWindow.lastSceneExport = lastSceneExport;
+            MigrationWindow.foundScripts = foundScripts;
+            MigrationWindow.lastSceneExport = lastSceneExport;
 
             foreach (FoundScript script in foundScripts)
             {
@@ -227,16 +235,17 @@ namespace importerexporter.windows
 
                 mergingWizard = MergingWizard.CreateWizard(scripts);
 
-                mergingWizard.onComplete = (list) =>
+                mergingWizard.onComplete = (userAuthorizedList) =>
                 {
-                    MergingWizardCompleted(foundScripts, list, rootPath, scenePath, lastSceneExport);
+                    MergingWizardCompleted(foundScripts,  rootPath, scenePath, lastSceneExport, userAuthorizedList);
                 };
             }
             else
             {
-                SaveFoundScripts(rootPath, foundScripts);
-                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
-                calculationThread = null;
+//                SaveFoundScripts(rootPath, foundScripts);
+//                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
+//                calculationThread = null;
+                MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport);
             }
         }
 
@@ -264,25 +273,27 @@ namespace importerexporter.windows
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
-        /// <param name="scripts"></param>
-        /// <param name="mergedFoundScripts"></param>
+        /// <param name="originalFoundScripts"></param>
         /// <param name="rootPath"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        private void MergingWizardCompleted(List<FoundScript> originalFoundScripts,
-            List<FoundScript> mergedFoundScripts, string rootPath,
+        /// <param name="mergedFoundScripts"></param>
+        private void MergingWizardCompleted(List<FoundScript> originalFoundScripts, string rootPath,
             string scenePath,
-            string[] linesToChange)
+            string[] linesToChange, List<FoundScript> mergedFoundScripts = null)
         {
-            // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
-            for (var i = 0; i < originalFoundScripts.Count; i++)
+            if (mergedFoundScripts != null)
             {
-                FoundScript originalFoundScript = originalFoundScripts[i];
-                FoundScript changedFoundScript = mergedFoundScripts.FirstOrDefault(script =>
-                    script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
-                if (changedFoundScript != null)
+                // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
+                for (var i = 0; i < originalFoundScripts.Count; i++)
                 {
-                    originalFoundScripts[i] = changedFoundScript;
+                    FoundScript originalFoundScript = originalFoundScripts[i];
+                    FoundScript changedFoundScript = mergedFoundScripts.FirstOrDefault(script =>
+                        script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
+                    if (changedFoundScript != null)
+                    {
+                        originalFoundScripts[i] = changedFoundScript;
+                    }
                 }
             }
 

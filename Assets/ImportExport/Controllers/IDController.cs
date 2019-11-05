@@ -81,7 +81,7 @@ namespace importerexporter.controllers
             foreach (string file in classMetaFiles)
             {
                 progress++;
-                ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
+                MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
                     progress / totalFiles);
                 string[] lines = File.ReadAllLines(file);
 
@@ -114,7 +114,7 @@ namespace importerexporter.controllers
                 foreach (string metaFile in dllMetaFiles)
                 {
                     progress++;
-                    ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+                    MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
                         progress / totalFiles);
                     string text = File.ReadAllText(metaFile);
                     Match match = regexGuid.Match(text);
@@ -136,7 +136,7 @@ namespace importerexporter.controllers
                         Assembly assembly = Assembly.LoadFile(file);
                         foreach (Type type in assembly.GetTypes())
                         {
-                            ImportWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
+                            MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
                                 progress / totalFiles);
                             data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
                             
@@ -155,7 +155,7 @@ namespace importerexporter.controllers
                 }
             }
 
-            ImportWindow.ClearProgressBar();
+            MigrationWindow.ClearProgressBar();
             return data;
         }
 
@@ -172,7 +172,7 @@ namespace importerexporter.controllers
         public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassModel> oldIDs,
             List<ClassModel> newIDs, ref List<FoundScript> foundScripts)
         {
-            ImportWindow.DisplayProgressBar("Migration started",
+            MigrationWindow.DisplayProgressBar("Migration started",
                 "Start importing current project classData and migrating scene.", 0.5f);
             if (oldIDs == null || newIDs == null || foundScripts == null)
             {
@@ -182,7 +182,7 @@ namespace importerexporter.controllers
             string[] linesToChange = File.ReadAllLines(fileToChange);
 
             linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref foundScripts);
-            ImportWindow.ClearProgressBar();
+            MigrationWindow.ClearProgressBar();
 
             return linesToChange;
         }
@@ -387,7 +387,7 @@ namespace importerexporter.controllers
             }
 
             string[] options = monoBehaviours.Select(type => type.FullName).ToArray();
-            return ImportWindow.OpenOptionsWindow("Class cannot be found, select which one to choose", fileName,
+            return MigrationWindow.OpenOptionsWindow("Class cannot be found, select which one to choose", fileName,
                 options);
         }
 
@@ -428,7 +428,7 @@ namespace importerexporter.controllers
                 .OrderBy(name => Levenshtein.Compute(name, old.FullName)).ToArray();
 
             // Open the options window
-            string result = ImportWindow.OpenOptionsWindow(
+            string result = MigrationWindow.OpenOptionsWindow(
                 "Could not find class, please select which class to use",
                 old.FullName,
                 options
