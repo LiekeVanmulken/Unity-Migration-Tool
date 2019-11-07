@@ -19,7 +19,7 @@ namespace importerexporter.controllers
     public class FieldMappingController : Singleton<FieldMappingController>
     {
         private readonly Constants constants = Constants.Instance;
-
+        private readonly PrefabController prefabController = PrefabController.Instance;
         /// <summary>
         /// Replaces the Fields on the MonoBehaviours according to the mergeNode data
         /// </summary>
@@ -27,7 +27,7 @@ namespace importerexporter.controllers
         /// <param name="foundScripts"></param>
         /// <returns></returns>
         public string[]
-            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts) //todo : this needs a new name!
+            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts, string oldRootPath, string destinationPath) //todo : this needs a new name!
         {
             string sceneContent = string.Join("\n", scene);
 
@@ -61,31 +61,29 @@ namespace importerexporter.controllers
                               document.RootNode.ToString());
                 }
             }
+            
+            // Copy prefabs
+            List<YamlDocument> yamlPrefabs =
+                yamlStream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
+
+            List<PrefabModel> prefabs = prefabController.ExportPrefabs(oldRootPath);
+            foreach (YamlDocument prefabInstance in yamlPrefabs)
+            {
+                //todo : transform the prefab to change all guids and fileIDs on the prefabs
+                //todo : call this recursively on the prefab
+                
+                YamlNode sourcePrefab = prefabInstance.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"];
+                string guid = (string) sourcePrefab["guid"];
+                PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == guid);
+                if (currentPrefab == null)
+                {
+                    Debug.LogError("Could not find prefab for guid : " + guid);
+                }
+                prefabController.CopyPrefab(currentPrefab.Path,destinationPath);
+            }
 
             return scene;
         }
-
-//        private static List<KeyValuePair<Type, CustomMappingLogicAttribute>> getCustomLogics()
-//        {
-//            List<KeyValuePair<Type, CustomMappingLogicAttribute>> pairs =
-//                new List<KeyValuePair<Type, CustomMappingLogicAttribute>>();
-//
-//            // this is making the assumption that all assemblies we need are already loaded.
-//            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-//            {
-//                foreach (Type type in assembly.GetTypes())
-//                {
-//                    object[] attribs = type.GetCustomAttributes(typeof(CustomMappingLogicAttribute), false);
-//                    if (attribs != null && attribs.Length > 0)
-//                    {
-//                        pairs.Add(new KeyValuePair<Type, CustomMappingLogicAttribute>(type,
-//                            (CustomMappingLogicAttribute) attribs.First()));
-//                    }
-//                }
-//            }
-//
-//            return pairs;
-//        }
 
         /// <summary>
         /// Helper method for the<see cref="ReplaceFieldsByMergeNodes"/> to replace the fields in the scripts.

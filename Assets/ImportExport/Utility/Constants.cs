@@ -8,11 +8,23 @@ namespace importerexporter.utility
     {
         public readonly bool DEBUG = false;
 
+        /// <summary>
+        /// Sets how deep the fields of every class will be parsed.
+        /// </summary>
         public readonly int RECURSION_DEPTH = 3;
         
-        public readonly Regex StandardClassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*",RegexOptions.Compiled);
+        /// <summary>
+        /// Checks whether something is a list or array and parses the containing class
+        /// </summary>
         public readonly Regex IsListOrArrayRegex = new Regex("(.*?(?=\\[\\]))|((?<=\\[\\[).*?(?=,))", RegexOptions.Compiled);
-
+        
+        /// <summary>
+        /// Regex to extract the guid from a line of text
+        /// </summary>
+        public readonly Regex RegexGuid = new Regex(@"(?<=guid: )[A-z0-9]*", RegexOptions.Compiled);
+        
+        
+        
         /// <summary>
         /// Fields to exclude in the field mapping of the MonoBehaviour Yaml
         /// </summary>
@@ -30,6 +42,9 @@ namespace importerexporter.utility
             "m_EditorClassIdentifier"
         };
 
+        /// <summary>
+        /// Mapping of the custom logic
+        /// </summary>
         public readonly Dictionary<string, ICustomMappingLogic> CustomLogicMapping =
             new Dictionary<string, ICustomMappingLogic>()
             {

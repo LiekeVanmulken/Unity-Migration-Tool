@@ -19,6 +19,9 @@ namespace importerexporter.controllers
     /// </summary>
     public class IDController : Singleton<IDController>
     {
+        /// <summary>
+        /// Reference to the constants 
+        /// </summary>
         private Constants constants = Constants.Instance;
 
         /// <summary>
@@ -32,7 +35,6 @@ namespace importerexporter.controllers
         /// </summary>
         private KeyValuePair<string, Type>[] cachedLowerTypeList;
 
-        private readonly Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
@@ -42,8 +44,6 @@ namespace importerexporter.controllers
         /// <exception cref="NotImplementedException"></exception>
         public List<ClassModel> ExportClassData(string path)
         {
-            float progress = 0;
-
             //Get all meta files
             string[] classMetaFiles = Directory.GetFiles(path, "*.cs.meta", SearchOption.AllDirectories);
 
@@ -92,7 +92,7 @@ namespace importerexporter.controllers
             MigrationWindow.ClearProgressBar();
             return classes;
         }
-
+    
         private void ParseSourceFile(float progress, string file, ref List<ClassModel> data,
             int gcLimit,
             ref int gcCount)
@@ -103,7 +103,7 @@ namespace importerexporter.controllers
 
             foreach (string line in lines)
             {
-                Match match = regexGuid.Match(line);
+                Match match = constants.RegexGuid.Match(line);
                 if (!match.Success) continue;
 
                 string className = getTypeByMetafileFileName(file);
@@ -131,7 +131,7 @@ namespace importerexporter.controllers
             MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
                 progress);
             string text = File.ReadAllText(metaFile);
-            Match match = regexGuid.Match(text);
+            Match match = constants.RegexGuid.Match(text);
             if (!match.Success)
             {
                 Debug.LogError("Could not parse the guid from the dll meta file. File : " +
@@ -164,39 +164,6 @@ namespace importerexporter.controllers
             catch (Exception e)
             {
                 Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
-            }
-        }
-
-        public List<PrefabModel> ExportPrefabs(string path)
-        {
-            //Get all prefabs
-            string[] prefabMetaFiles = Directory.GetFiles(path, "*.prefab.meta", SearchOption.AllDirectories);
-
-
-            List<PrefabModel> prefabModels = new List<PrefabModel>(prefabMetaFiles.Length);
-            for (var i = 0; i < prefabMetaFiles.Length; i++)
-            {
-                string file = prefabMetaFiles[i];
-                MigrationWindow.DisplayProgressBar("Exporting Prefabs", "Exporting prefab " + Path.GetFileName(file),
-                    prefabMetaFiles.Length / i);
-
-                ParsePrefabFile(file, ref prefabModels);
-            }
-
-            return prefabModels;
-        }
-
-        private void ParsePrefabFile(string file, ref List<PrefabModel> data)
-        {
-            IEnumerable<string> lines = File.ReadLines(file);
-
-            foreach (string line in lines)
-            {
-                Match match = regexGuid.Match(line);
-                if (!match.Success) continue;
-
-                data.Add(new PrefabModel(file, match.Value));
-                break;
             }
         }
 

@@ -11,7 +11,6 @@
         <e p="AssetDatabaseTest" t="Include">
           <e p="AssetDatabaseTestScript.cs" t="Include" />
         </e>
-        <e p="FileIDCalculationScript.cs" t="Include" />
         <e p="ImportExport" t="Include">
           <e p="Controllers" t="Include">
             <e p="CustomLogic" t="Include">
@@ -21,10 +20,10 @@
             </e>
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />
+            <e p="PrefabController.cs" t="Include" />
           </e>
           <e p="Models" t="Include">
             <e p="ClassModel.cs" t="Include" />
-            <e p="FieldGenerationUtility.cs" t="Include" />
             <e p="FieldModel.cs" t="Include" />
             <e p="FoundScript.cs" t="Include" />
             <e p="MergeNode.cs" t="Include" />
@@ -36,6 +35,7 @@
             <e p="ClassModelConverter.cs" t="Include" />
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
+            <e p="FieldGenerationUtility.cs" t="Include" />
             <e p="Levenshtein.cs" t="Include" />
             <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
             <e p="MD4.cs" t="Include" />
@@ -45,12 +45,12 @@
             <e p="MergingWizard.cs" t="Include" />
             <e p="MigrationWindow.cs" t="Include" />
             <e p="OptionsWizard.cs" t="Include" />
+            <e p="PrefabMigrationWindow.cs" t="Include" />
           </e>
         </e>
         <e p="JsonDotNet" t="Include">
           <e p="link.xml" t="Include" />
         </e>
-        <e p="LibraryTestScript.cs" t="Include" />
         <e p="NamespaceGettingTest" t="Include">
           <e p="GetNameSpaceFromGuidTestScript.cs" t="Include" />
         </e>
@@ -296,16 +296,20 @@
             <e p="YamlDotNet.license.txt" t="Include" />
           </e>
         </e>
-        <e p="TestScript1.cs" t="Include" />
-        <e p="TestScript2.cs" t="Include" />
-        <e p="TestScript_Arrays.cs" t="Include" />
-        <e p="TestScriptQuaternion.cs" t="Include" />
-        <e p="ThreadTestWindow.cs" t="Include" />
-        <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
+        <e p="scripts" t="Include">
+          <e p="FileIDCalculationScript.cs" t="Include" />
+          <e p="LibraryTestScript.cs" t="Include" />
+          <e p="TestScript1.cs" t="Include" />
+          <e p="TestScript2.cs" t="Include" />
+          <e p="TestScript_Arrays.cs" t="Include" />
+          <e p="TestScriptQuaternion.cs" t="Include" />
+          <e p="ThreadTestWindow.cs" t="Include" />
+          <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
+          <e p="YamlTestScript.cs" t="Include" />
+        </e>
         <e p="WizardTest" t="Include">
           <e p="MergingWizardEditorWindow.cs" t="Include" />
         </e>
-        <e p="YamlTestScript.cs" t="Include" />
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />

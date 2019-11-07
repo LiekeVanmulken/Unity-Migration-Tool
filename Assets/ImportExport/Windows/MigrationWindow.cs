@@ -1,4 +1,5 @@
-﻿using importerexporter.controllers;
+﻿using System.Text.RegularExpressions;
+using importerexporter.controllers;
 #if UNITY_EDITOR
 using importerexporter.models;
 using importerexporter.utility;
@@ -74,6 +75,7 @@ namespace importerexporter.windows
             GUILayout.Label(exportExists
                 ? "IDs found, ready to migrate."
                 : "No IDs found, please export the current IDs.");
+
         }
 
         private void ExportCurrentClassData(string rootPath)
@@ -113,36 +115,33 @@ namespace importerexporter.windows
 
                 return;
             }
-
-            EditorUtility.DisplayDialog("Please select the Export.json",
-                "Please select the Export.json of the old project in the next file dialog.\n" +
-                "This can be found in the old_project_folder/ImportExport/Exports/Export.json.",
-                "Select the original IDs");
-
-            string IDPath = EditorUtility.OpenFilePanel(
-                "ID export (old project assets/ImportExport/Exports/Export.json)", Application.dataPath,
-                "json"); //todo : check if this is in the current project
-            if (IDPath.Length == 0)
-            {
-                Debug.LogWarning("No path was selected");
-                return;
-            }
-
-            List<ClassModel> oldIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
-
-            IDPath = Path.GetDirectoryName(IDPath);
-            IDPath = Path.GetFullPath(Path.Combine(IDPath, @"..\..\"));
+            
             EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
                 "Select the scene");
             string scenePath =
-                EditorUtility.OpenFilePanel("Scene to import", IDPath,
+                EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
                     "unity"); //todo : check if this is in the current project
             if (scenePath.Length == 0)
             {
                 Debug.LogWarning("No path was selected");
                 return;
             }
+
+            string IDPath = getProjectPathFromSceneLocation(scenePath) + @"\ImportExport\Exports\Export.json";
+
+            if (!File.Exists(IDPath))
+            {
+                EditorUtility.DisplayDialog("Could not find old ID's",
+                    "Could not find the ID's of the original project.  File does not exist : \r\n" + IDPath, "Ok");
+                return;
+            }
+            else
+            {
+                Debug.Log("Used the ID's at : " + IDPath);
+            }
+
+            List<ClassModel> oldIDs =
+                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
             string rootPath = Application.dataPath;
             string newIDsPath = rootPath + "/ImportExport/Exports/Export.json";
@@ -301,13 +300,62 @@ namespace importerexporter.windows
             }
 
             string[] newSceneExport =
-                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, originalFoundScripts);
+                fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, originalFoundScripts,
+                    getProjectPathFromSceneLocation(scenePath), rootPath);
 
             Debug.Log(string.Join("\n", newSceneExport));
 
             SaveFoundScripts(rootPath, originalFoundScripts);
             SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
             calculationThread = null;
+        }
+
+        /// <summary>
+        /// Gets the topmost Unity project folder from a path 
+        /// </summary>
+        /// <param name="sceneLocation"></param>
+        /// <returns></returns>
+        private string getProjectPathFromSceneLocation(string sceneLocation)
+        {
+            int numberOfAssets = Regex.Matches(sceneLocation, "Assets").Count;
+            if (numberOfAssets == 1)
+            {
+                return sceneLocation.Substring(0, sceneLocation.IndexOf("Assets", StringComparison.Ordinal) + 6);
+            }
+
+            if (numberOfAssets > 1)
+            {
+                string previousMatches = "";
+                Regex regex = new Regex(".*?Assets");
+                MatchCollection matches = regex.Matches(sceneLocation);
+
+                string[] matchedStrings = new string[matches.Count];
+
+                for (var i = 0; i < matches.Count; i++)
+                {
+                    Match match = matches[i];
+                    previousMatches += match;
+                    matchedStrings[i] = previousMatches;
+                }
+
+                matchedStrings = matchedStrings.Reverse().ToArray();
+                foreach (string match in matchedStrings)
+                {
+                    string path = Path.GetFullPath(Path.Combine(match, @"..\"));
+                    if (
+                        Directory.Exists(path + @"\Library") &&
+                        Directory.Exists(path + @"\obj") &&
+                        Directory.Exists(path + @"\Packages") &&
+                        Directory.Exists(path + @"\Temp")
+                    )
+                    {
+                        return match;
+                    }
+                }
+            }
+
+            Debug.LogError("Could not parse scene to project location : " + sceneLocation);
+            return null;
         }
 
         #region ThreadedUI
