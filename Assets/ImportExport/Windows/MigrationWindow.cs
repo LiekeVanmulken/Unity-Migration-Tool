@@ -78,7 +78,7 @@ namespace importerexporter.windows
 
         private void ExportCurrentClassData(string rootPath)
         {
-            List<ClassModel> IDs =  idController.ExportClassData(rootPath);
+            List<ClassModel> IDs = idController.ExportClassData(rootPath);
 
             var jsonSerializerSettings = new JsonSerializerSettings
             {
@@ -88,6 +88,11 @@ namespace importerexporter.windows
             };
 
             string jsonField = JsonConvert.SerializeObject(IDs, jsonSerializerSettings);
+
+            if (!Directory.Exists(Path.GetDirectoryName(idExportPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(idExportPath));
+            }
 
             File.WriteAllText(idExportPath, jsonField);
 
@@ -122,7 +127,7 @@ namespace importerexporter.windows
                 Debug.LogWarning("No path was selected");
                 return;
             }
-            
+
             List<ClassModel> oldIDs =
                 JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
@@ -151,7 +156,7 @@ namespace importerexporter.windows
             if (File.Exists(foundScriptsPath))
             {
                 foundScripts =
-                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath)); 
+                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
             }
 
             calculationThread =
@@ -257,6 +262,12 @@ namespace importerexporter.windows
             var now = DateTime.Now;
             string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
                                   now.Second + ".unity";
+
+            if (!Directory.Exists(Path.GetDirectoryName(newScenePath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(newScenePath));
+            }
+
             File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
 //            GUIUtility.systemCopyBuffer = newScenePath;
             EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");

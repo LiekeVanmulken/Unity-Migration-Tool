@@ -57,7 +57,7 @@ namespace importerexporter.utility
                     type = GetTypeByFullName(matchedValue);
                     if (type == null)
                     {
-                        Debug.LogWarning("Type of list or array could not be found : " + type.FullName);
+                        Debug.LogWarning("Type of list or array could not be found : " + match.Value);
                         return null;
                     }
                 }
