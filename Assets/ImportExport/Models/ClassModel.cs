@@ -1,8 +1,8 @@
 using System;
-using System.Text.RegularExpressions;
+using importerexporter.controllers;
 using importerexporter.utility;
+using importerexporter.utility.serialization;
 using Newtonsoft.Json;
-using UnityEngine;
 
 namespace importerexporter.models
 {
@@ -59,7 +59,7 @@ namespace importerexporter.models
             this.FullName = fullName;
             this.Guid = guid;
             this.FileID = fileID;
-            this.Fields = FieldGenerationUtility.GenerateFields(fullName);
+            this.Fields = FieldGenerationController.GenerateFields(fullName);
         }
         public ClassModel(Type type, string guid, string fileID = "11500000")
         {
@@ -67,39 +67,18 @@ namespace importerexporter.models
             this.FullName = type.FullName;
             this.Guid = guid;
             this.FileID = fileID;
-            this.Fields = FieldGenerationUtility.GenerateFields(type,0);
+            this.Fields = FieldGenerationController.GenerateFields(type,0);
         }
 
         public ClassModel(Type type, int iteration = 0)
         {
             string fullName = type.FullName;
-//            fullName = initList(fullName);
             initName(fullName);
 
             this.FullName = fullName;
-            this.Fields = FieldGenerationUtility.GenerateFields(type, iteration);
+            this.Fields = FieldGenerationController.GenerateFields(type, iteration);
         }
-
-//        /// <summary>
-//        /// Check if its an array or list and if it it get the containing class
-//        /// This is so we can get the fields of the containing class as a list or array won't have fields
-//        /// </summary>
-//        /// <param name="fullName"></param>
-//        /// <returns></returns>
-//        private string initList(string fullName)
-//        {
-//            // Check if its a list or array and if so use the name of the class that it holds
-//            Match match = constants.IsListOrArrayRegex.Match(fullName);
-//            
-//
-//            if (match.Success)
-//            {
-//                fullName = match.Value;
-//            }
-//
-//            return fullName;
-//        }
-
+        
         /// <summary>
         /// Sets the name from the fullname
         /// </summary>

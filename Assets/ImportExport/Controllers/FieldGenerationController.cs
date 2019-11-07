@@ -4,14 +4,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using importerexporter.models;
+using importerexporter.utility;
 using UnityEngine;
 
-namespace importerexporter.utility
+namespace importerexporter.controllers
 {
     /// <summary>
     /// Generate all the fields on a class
     /// </summary>
-    public static class FieldGenerationUtility
+    public static class FieldGenerationController
     {
         private static Constants constants = Constants.Instance;
         private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();

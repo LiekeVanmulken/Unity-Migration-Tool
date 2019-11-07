@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Object = System.Object;
 
-namespace importerexporter.utility
+namespace importerexporter.utility.serialization
 {
     public class ClassModelConverter : JsonConverter
     {

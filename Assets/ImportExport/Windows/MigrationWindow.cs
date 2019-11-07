@@ -38,6 +38,9 @@ namespace importerexporter.windows
 
         private string idExportPath;
         bool exportExists;
+        
+        
+        private List<ClassModel> cachedLocalIds;
 
 
         [MenuItem("Window/Scene migration window")]
@@ -135,10 +138,6 @@ namespace importerexporter.windows
                     "Could not find the ID's of the original project.  File does not exist : \r\n" + IDPath, "Ok");
                 return;
             }
-            else
-            {
-                Debug.Log("Used the ID's at : " + IDPath);
-            }
 
             List<ClassModel> oldIDs =
                 JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
@@ -150,6 +149,7 @@ namespace importerexporter.windows
                 ? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(newIDsPath))
                 : idController.ExportClassData(rootPath);
 
+            
             List<FoundScript> foundScripts = new List<FoundScript>();
             string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
             if (File.Exists(foundScriptsPath))
@@ -163,7 +163,6 @@ namespace importerexporter.windows
             calculationThread.Start();
         }
 
-        private List<ClassModel> cachedLocalIds;
 
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
@@ -244,34 +243,7 @@ namespace importerexporter.windows
                 MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport);
             }
         }
-
-        private static void SaveFoundScripts(string rootPath, List<FoundScript> foundScripts)
-        {
-            string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
-            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
-        }
-
-        /// <summary>
-        /// Saves the <param name="linesToWrite"/> to a new file at the <param name="scenePath"/>
-        /// </summary>
-        /// <param name="scenePath"></param>
-        /// <param name="linesToWrite"></param>
-        private void SaveFile(string scenePath, string[] linesToWrite)
-        {
-            var now = DateTime.Now;
-            string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
-                                  now.Second + ".unity";
-
-            if (!Directory.Exists(Path.GetDirectoryName(newScenePath)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(newScenePath));
-            }
-
-            File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
-//            GUIUtility.systemCopyBuffer = newScenePath;
-            EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
-        }
-
+        
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
@@ -309,6 +281,39 @@ namespace importerexporter.windows
             SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
             calculationThread = null;
         }
+        
+        
+        /// <summary>
+        /// Write foundScripts to a file
+        /// </summary>
+        /// <param name="rootPath"></param>
+        /// <param name="foundScripts"></param>
+        private static void SaveFoundScripts(string rootPath, List<FoundScript> foundScripts)
+        {
+            string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
+            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
+        }
+
+        /// <summary>
+        /// Saves the <param name="linesToWrite"/> to a new file at the <param name="scenePath"/>
+        /// </summary>
+        /// <param name="scenePath"></param>
+        /// <param name="linesToWrite"></param>
+        private void SaveFile(string scenePath, string[] linesToWrite)
+        {
+            var now = DateTime.Now;
+            string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
+                                  now.Second + ".unity";
+
+            if (!Directory.Exists(Path.GetDirectoryName(newScenePath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(newScenePath));
+            }
+
+            File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
+            EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+        }
+
 
         /// <summary>
         /// Gets the topmost Unity project folder from a path 
@@ -360,6 +365,13 @@ namespace importerexporter.windows
 
         #region ThreadedUI
 
+        /// <summary>
+        /// Open a options window, to choose between classes from a different thread
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="original"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
         public static string OpenOptionsWindow(string label, string original, string[] options)
         {
             string result = null;
@@ -386,17 +398,31 @@ namespace importerexporter.windows
             return result;
         }
 
-
+        /// <summary>
+        /// Display a dialog from a different thread
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="info"></param>
         public static void DisplayDialog(string title, string info)
         {
             Instance().Enqueue(() => { EditorUtility.DisplayDialog(title, info, "Ok"); });
         }
 
+        /// <summary>
+        /// Display the progressbar from a different thread
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="info"></param>
+        /// <param name="info"></param>
+        /// <param name="progress"></param>
         public static void DisplayProgressBar(string title, string info, float progress)
         {
             Instance().Enqueue(() => { EditorUtility.DisplayProgressBar(title, info, progress); });
         }
 
+        /// <summary>
+        /// Clear the progressbar from a different thread
+        /// </summary>
         public static void ClearProgressBar()
         {
             Instance().Enqueue(EditorUtility.ClearProgressBar);

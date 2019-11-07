@@ -1,9 +1,10 @@
+using importerexporter.controllers.customlogic;
 using importerexporter.models;
 using importerexporter.utility;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
-namespace importerexporter.controllers.customlogic
+namespace importerexporter.examples
 {
     public class QuaternionCustomMappingLogic : ICustomMappingLogic
     {

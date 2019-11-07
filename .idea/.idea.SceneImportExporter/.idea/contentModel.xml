@@ -16,11 +16,17 @@
             <e p="CustomLogic" t="Include">
               <e p="CustomMappingLogicAttribute.cs" t="Include" />
               <e p="ICustomMappingLogic.cs" t="Include" />
-              <e p="QuaternionCustomMappingLogic.cs" t="Include" />
             </e>
+            <e p="FieldGenerationController.cs" t="Include" />
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />
             <e p="PrefabController.cs" t="Include" />
+          </e>
+          <e p="Examples" t="Include">
+            <e p="CustomLogic" t="Include">
+              <e p="QuaternionCustomMappingLogic.cs" t="Include" />
+              <e p="TestScriptQuaternion.cs" t="Include" />
+            </e>
           </e>
           <e p="Models" t="Include">
             <e p="ClassModel.cs" t="Include" />
@@ -28,17 +34,20 @@
             <e p="FoundScript.cs" t="Include" />
             <e p="MergeNode.cs" t="Include" />
             <e p="PrefabModel.cs" t="Include" />
-            <e p="PrefabTestScript.cs" t="Include" />
             <e p="ProjectModel.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
-            <e p="ClassModelConverter.cs" t="Include" />
+            <e p="Computation" t="Include">
+              <e p="FileIDUtil.cs" t="Include" />
+              <e p="Levenshtein.cs" t="Include" />
+              <e p="MD4.cs" t="Include" />
+            </e>
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
-            <e p="FieldGenerationUtility.cs" t="Include" />
-            <e p="Levenshtein.cs" t="Include" />
             <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
-            <e p="MD4.cs" t="Include" />
+            <e p="Serialization" t="Include">
+              <e p="ClassModelConverter.cs" t="Include" />
+            </e>
             <e p="Singleton.cs" t="Include" />
           </e>
           <e p="Windows" t="Include">
@@ -302,7 +311,6 @@
           <e p="TestScript1.cs" t="Include" />
           <e p="TestScript2.cs" t="Include" />
           <e p="TestScript_Arrays.cs" t="Include" />
-          <e p="TestScriptQuaternion.cs" t="Include" />
           <e p="ThreadTestWindow.cs" t="Include" />
           <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
           <e p="YamlTestScript.cs" t="Include" />
