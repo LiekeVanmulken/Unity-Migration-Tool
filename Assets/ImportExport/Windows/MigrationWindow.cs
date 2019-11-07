@@ -31,11 +31,6 @@ namespace importerexporter.windows
 
 
         private static List<ClassModel> oldFileDatas;
-        private static string[] lastSceneExport;
-        private static List<FoundScript> foundScripts;
-
-        private GUIStyle wordWrapStyle;
-
 
         private static MergingWizard mergingWizard;
         private Thread calculationThread;
@@ -47,12 +42,11 @@ namespace importerexporter.windows
         [MenuItem("Window/Scene migration window")]
         public static void ShowWindow()
         {
-            EditorWindow.GetWindow(typeof(MigrationWindow));
+            EditorWindow.GetWindow<MigrationWindow>("Migration Window");
         }
 
         protected void OnEnable()
         {
-            wordWrapStyle = new GUIStyle() {wordWrap = true, padding = new RectOffset(10, 10, 10, 10)};
             idExportPath = Application.dataPath + "/ImportExport/Exports/Export.json";
         }
 
@@ -84,7 +78,8 @@ namespace importerexporter.windows
 
         private void ExportCurrentClassData(string rootPath)
         {
-            List<ClassModel> oldIDs = idController.ExportClassData(rootPath);
+            List<ClassModel> IDs =  idController.ExportClassData(rootPath);
+
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -92,7 +87,7 @@ namespace importerexporter.windows
                 Formatting = Formatting.Indented
             };
 
-            string jsonField = JsonConvert.SerializeObject(oldIDs, jsonSerializerSettings);
+            string jsonField = JsonConvert.SerializeObject(IDs, jsonSerializerSettings);
 
             File.WriteAllText(idExportPath, jsonField);
 
@@ -127,7 +122,7 @@ namespace importerexporter.windows
                 Debug.LogWarning("No path was selected");
                 return;
             }
-
+            
             List<ClassModel> oldIDs =
                 JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
@@ -156,7 +151,7 @@ namespace importerexporter.windows
             if (File.Exists(foundScriptsPath))
             {
                 foundScripts =
-                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
+                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath)); 
             }
 
             calculationThread =
@@ -187,7 +182,7 @@ namespace importerexporter.windows
                 }
 
                 string[] lastSceneExport =
-                    idController.ImportClassDataAndTransformIDs(scenePath, oldIDs, currentIDs,
+                    idController.TransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts);
 
                 Instance().Enqueue(() =>
@@ -207,9 +202,6 @@ namespace importerexporter.windows
                 List<FoundScript> foundScripts,
                 string[] lastSceneExport)
         {
-            MigrationWindow.foundScripts = foundScripts;
-            MigrationWindow.lastSceneExport = lastSceneExport;
-
             foreach (FoundScript script in foundScripts)
             {
                 if (script.HasBeenMapped == FoundScript.MappedState.NotChecked)
@@ -237,7 +229,7 @@ namespace importerexporter.windows
 
                 mergingWizard.onComplete = (userAuthorizedList) =>
                 {
-                    MergingWizardCompleted(foundScripts,  rootPath, scenePath, lastSceneExport, userAuthorizedList);
+                    MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, userAuthorizedList);
                 };
             }
             else

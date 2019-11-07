@@ -16,31 +16,8 @@ namespace importerexporter.controllers
     /// Maps fields to move values.
     /// This should always be run after the transform as it assumes that the IDs have been set to the current IDs!!!
     /// </summary>
-    public class FieldMappingController
+    public class FieldMappingController : Singleton<FieldMappingController>
     {
-        #region Singleton
-
-        private static FieldMappingController _instance;
-
-        private static readonly object PADLOCK = new object();
-
-        private FieldMappingController()
-        {
-        }
-
-        public static FieldMappingController Instance
-        {
-            get
-            {
-                lock (PADLOCK)
-                {
-                    return _instance = _instance ?? new FieldMappingController();
-                }
-            }
-        }
-
-        #endregion
-
         private readonly Constants constants = Constants.Instance;
 
         /// <summary>
@@ -84,6 +61,7 @@ namespace importerexporter.controllers
                               document.RootNode.ToString());
                 }
             }
+
             return scene;
         }
 
@@ -137,7 +115,7 @@ namespace importerexporter.controllers
                 if (currentMergeNode == null)
                 {
                     Debug.Log("[DataLoss] Could not find mergeNode for key : " + yamlNodeKey);
-//                    continue;
+                    continue;
                 }
 
 

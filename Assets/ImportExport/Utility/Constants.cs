@@ -4,43 +4,14 @@ using importerexporter.controllers.customlogic;
 
 namespace importerexporter.utility
 {
-    public class Constants
+    public class Constants:Singleton<Constants>
     {
-        #region Singleton
-
-        private static Constants instance = null;
-
-        private static readonly object padlock = new object();
-
-
-        Constants()
-        {
-        }
-
-        public static Constants Instance
-        {
-            get
-            {
-                lock (padlock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new Constants();
-                    }
-
-                    return instance;
-                }
-            }
-        }
-
-        #endregion
-
         public readonly bool DEBUG = false;
 
         public readonly int RECURSION_DEPTH = 3;
         
-        public readonly Regex StandardClassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*");
-        public readonly Regex IsListOrArrayRegex = new Regex("(.*?(?=\\[\\]))|((?<=\\[\\[).*?(?=,))");
+        public readonly Regex StandardClassesRegex = new Regex("(UnityEngine|System)\\.[A-z0-9]*",RegexOptions.Compiled);
+        public readonly Regex IsListOrArrayRegex = new Regex("(.*?(?=\\[\\]))|((?<=\\[\\[).*?(?=,))", RegexOptions.Compiled);
 
         /// <summary>
         /// Fields to exclude in the field mapping of the MonoBehaviour Yaml
@@ -62,7 +33,7 @@ namespace importerexporter.utility
         public readonly Dictionary<string, ICustomMappingLogic> CustomLogicMapping =
             new Dictionary<string, ICustomMappingLogic>()
             {
-                {typeof(TestScriptQuaternion).FullName, new QuaternionCustomMappingLogic()}
+//                {typeof(TestScriptQuaternion).FullName, new QuaternionCustomMappingLogic()}
             };
     }
 }

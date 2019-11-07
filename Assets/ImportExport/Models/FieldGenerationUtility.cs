@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +11,7 @@ namespace importerexporter.utility
     /// <summary>
     /// Generate all the fields on a class
     /// </summary>
-    public static class FieldDataGenerationUtility
+    public static class FieldGenerationUtility
     {
         private static Constants constants = Constants.Instance;
         private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -24,7 +23,7 @@ namespace importerexporter.utility
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static FieldModel[] GenerateFieldData(string name)
+        public static FieldModel[] GenerateFields(string name)
         {
             Type type = GetTypeByFullName(name);
             if (type == null)
@@ -33,7 +32,7 @@ namespace importerexporter.utility
                 return null;
             }
 
-            return GenerateFieldData(type, 0);
+            return GenerateFields(type, 0);
         }
 
 
@@ -43,18 +42,28 @@ namespace importerexporter.utility
         /// <param name="type"></param>
         /// <param name="iteration">Times it has ran, used to recursively get the children</param>
         /// <returns></returns>
-        public static FieldModel[] GenerateFieldData(Type type, int iteration)
+        public static FieldModel[] GenerateFields(Type type, int iteration)
         {
             iteration++;
 
-            Match match = constants.IsListOrArrayRegex.Match(type.FullName);
-            if (match.Success)
+//            Match match = constants.IsListOrArrayRegex.Match(type.FullName);
+//            if (match.Success)
+            if (type.FullName != null && type.FullName.Contains('['))
             {
-                string matchedValue = match.Value;
-                type = GetTypeByFullName(matchedValue);
-                if (type == null)
+                Match match = constants.IsListOrArrayRegex.Match(type.FullName);
+                if (match.Success)
                 {
-                    throw new NullReferenceException("Type of list or array could not be found : " + matchedValue);
+                    string matchedValue = match.Value;
+                    type = GetTypeByFullName(matchedValue);
+                    if (type == null)
+                    {
+                        Debug.LogWarning("Type of list or array could not be found : " + type.FullName);
+                        return null;
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException("This should never happen, needs to be tested");
                 }
             }
 
