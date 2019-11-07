@@ -11,49 +11,26 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using importerexporter.windows;
-using UnityEditor.Experimental.GraphView;
 
 namespace importerexporter.controllers
 {
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public class IDController
+    public class IDController : Singleton<IDController>
     {
-        #region Singleton
-
-        private static IDController instance = null;
-
-        private static readonly object padlock = new object();
-
-        IDController()
-        {
-        }
-
-        public static IDController Instance
-        {
-            get
-            {
-                lock (padlock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new IDController();
-                    }
-
-                    return instance;
-                }
-            }
-        }
-
-        #endregion
-
         private Constants constants = Constants.Instance;
 
         /// <summary>
         /// Cached field of all assemblies to loop through
         /// </summary>
         private Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        /// <summary>
+        /// Cache of a array of all assembly types with the fullname lowered.
+        /// This is to prevent the types being called often and the name being lowered in the <see cref="getTypeByMetafileFileName"/>
+        /// </summary>
+        private KeyValuePair<string, Type>[] cachedLowerTypeList;
 
         private readonly Regex regexGuid = new Regex(@"(?<=guid: )[A-z0-9]*");
 
@@ -76,87 +53,151 @@ namespace importerexporter.controllers
             int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
 
             int gcCount = 0;
-            int gcLimit = 500;
-            List<ClassModel> data = new List<ClassModel>();
-            foreach (string file in classMetaFiles)
+            int gcLimit = 50000;
+            List<ClassModel> classes = new List<ClassModel>();
+            for (var i = 0; i < classMetaFiles.Length; i++)
             {
-                progress++;
-                MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
-                    progress / totalFiles);
-                string[] lines = File.ReadAllLines(file);
-
-                foreach (string line in lines)
-                {
-                    Match match = regexGuid.Match(line);
-                    if (!match.Success) continue;
-
-                    string className = getTypeByMetafileFileName(file);
-                    if (String.IsNullOrEmpty(className))
-                    {
-                        continue;
-                    }
-
-                    data.Add(new ClassModel(className, match.Value));
-                }
-
-                gcCount++;
-                if (gcCount > gcLimit)
-                {
-                    GC.Collect();
-                }
-
+                string file = classMetaFiles[i];
+                ParseSourceFile((float)i/classMetaFiles.Length, file, ref classes, gcLimit, ref gcCount);
             }
-
 
             // Loop through dlls  
             if (!constants.DEBUG)
             {
-                foreach (string metaFile in dllMetaFiles)
+//                Thread[] dllThreads = new Thread[dllMetaFiles.Length];
+                for (var i = 0; i < dllMetaFiles.Length; i++)
                 {
-                    progress++;
-                    MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
-                        progress / totalFiles);
-                    string text = File.ReadAllText(metaFile);
-                    Match match = regexGuid.Match(text);
-                    if (!match.Success)
-                    {
-                        Debug.LogError("Could not parse the guid from the dll meta file. File : " +
-                                       metaFile);
-                    }
+                    string metaFile = dllMetaFiles[i];
+//                    dllThreads[i] =
+//                        new Thread(() => 
+                     ParseDLLFile((float)i/dllMetaFiles.Length, metaFile, ref classes, gcLimit, ref gcCount)
+//                                )
+                        ;
+//                    dllThreads[i].Start();
+                }
 
-                    string file = metaFile.Replace(".meta", "");
-                    try
-                    {
-                        if (Path.GetFileName(file).Contains("Newtonsoft.Json") ||
-                            Path.GetFileName(file).Contains("YamlDotNet"))
-                        {
-                            continue;
-                        }
+//                bool stillRunning = true;
+//                while (stillRunning)
+//                {
+//                    int threadsRunning = dllThreads.Where(thread => thread.IsAlive).ToArray().Length;
+//                    stillRunning = threadsRunning > 0;
+//
+//                    MigrationWindow.DisplayProgressBar("Exporting IDs from DLLs",
+//                        "Threads running " + threadsRunning + "/" + dllThreads.Length,
+//                        threadsRunning / dllThreads.Length);
+//                    Thread.Sleep(100);
+//                }
+            }
+            
+            MigrationWindow.ClearProgressBar();
+            return classes;
+        }
 
-                        Assembly assembly = Assembly.LoadFile(file);
-                        foreach (Type type in assembly.GetTypes())
-                        {
-                            MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,
-                                progress / totalFiles);
-                            data.Add(new ClassModel(type.FullName, match.Value, FileIDUtil.Compute(type).ToString()));
-                            
-                            
-                            gcCount++;
-                            if (gcCount > gcLimit)
-                            {
-                                GC.Collect();
-                            }
-                        }
-                    }
-                    catch (Exception e)
+        private void ParseSourceFile(float progress, string file, ref List<ClassModel> data,
+            int gcLimit,
+            ref int gcCount)
+        {
+            MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
+                progress );
+            IEnumerable<string> lines = File.ReadLines(file);
+
+            foreach (string line in lines)
+            {
+                Match match = regexGuid.Match(line);
+                if (!match.Success) continue;
+
+                string className = getTypeByMetafileFileName(file);
+                if (String.IsNullOrEmpty(className))
+                {
+                    continue;
+                }
+
+                data.Add(new ClassModel(className, match.Value));
+                break;
+            }
+
+            gcCount++;
+            if (gcCount > gcLimit)
+            {
+                GC.Collect();
+            }
+
+        }
+
+        private void ParseDLLFile(float progress, string metaFile, ref List<ClassModel> data,
+            int gcLimit,
+            ref int gcCount)
+        {
+            MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(metaFile),
+                progress);
+            string text = File.ReadAllText(metaFile);
+            Match match = regexGuid.Match(text);
+            if (!match.Success)
+            {
+                Debug.LogError("Could not parse the guid from the dll meta file. File : " +
+                               metaFile);
+            }
+
+            string file = metaFile.Replace(".meta", "");
+            try
+            {
+                if (Path.GetFileName(file).Contains("Newtonsoft.Json") ||
+                    Path.GetFileName(file).Contains("YamlDotNet"))
+                {
+                    return;
+                }
+
+                Assembly assembly = Assembly.LoadFile(file);
+                foreach (Type type in assembly.GetTypes())
+                {
+                    MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,progress);
+                    data.Add(new ClassModel(type, match.Value, FileIDUtil.Compute(type).ToString()));
+
+
+                    gcCount++;
+                    if (gcCount > gcLimit)
                     {
-                        Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
+                        GC.Collect();
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Could not load assembly : " + file + "\nException : " + e);
+            }
+        }
 
-            MigrationWindow.ClearProgressBar();
-            return data;
+        public List<PrefabModel> ExportPrefabs(string path)
+        {
+            //Get all prefabs
+            string[] prefabMetaFiles = Directory.GetFiles(path, "*.prefab.meta", SearchOption.AllDirectories);
+
+
+            List<PrefabModel> prefabModels = new List<PrefabModel>(prefabMetaFiles.Length);
+            for (var i = 0; i < prefabMetaFiles.Length; i++)
+            {
+                string file = prefabMetaFiles[i];
+                MigrationWindow.DisplayProgressBar("Exporting Prefabs", "Exporting prefab " + Path.GetFileName(file),
+                    prefabMetaFiles.Length / i);
+
+                ParsePrefabFile(file, ref prefabModels);
+            }
+
+            return prefabModels;
+        }
+
+        private void ParsePrefabFile(string file, ref List<PrefabModel> data)
+        {
+            IEnumerable<string> lines = File.ReadLines(file);
+
+            foreach (string line in lines)
+            {
+                Match match = regexGuid.Match(line);
+                if (!match.Success) continue;
+
+                data.Add(new PrefabModel(file, match.Value));
+                break;
+            }
         }
 
         /// <summary>
@@ -169,7 +210,7 @@ namespace importerexporter.controllers
         /// <param name="foundScripts"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public string[] ImportClassDataAndTransformIDs(string fileToChange, List<ClassModel> oldIDs,
+        public string[] TransformIDs(string fileToChange, List<ClassModel> oldIDs,
             List<ClassModel> newIDs, ref List<FoundScript> foundScripts)
         {
             MigrationWindow.DisplayProgressBar("Migration started",
@@ -204,8 +245,8 @@ namespace importerexporter.controllers
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
-            List<YamlDocument> yamlDocuments =
-                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
+            IEnumerable<YamlDocument> yamlDocuments =
+                yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour");
             foreach (YamlDocument document in yamlDocuments)
             {
                 YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
@@ -331,9 +372,9 @@ namespace importerexporter.controllers
                     FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
                 }
             }
+
             return existingFoundScript;
         }
-
 
         /// <summary>
         /// Get the Type of a class by the name of the class.
@@ -346,17 +387,24 @@ namespace importerexporter.controllers
             fileName = fileName.Replace(".cs.meta", "");
             string fileNameLower = fileName.ToLower();
 
-            List<Type> types = assemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.Name.ToLower() == fileNameLower).ToList();
 
-            if (types.Count == 0)
+            if (cachedLowerTypeList == null)
+            {
+                cachedLowerTypeList = assemblies.SelectMany(assembly => assembly.GetTypes())
+                    .Select(type => new KeyValuePair<string, Type>(type.Name.ToLower(), type)).ToArray();
+            }
+
+            Type[] types = cachedLowerTypeList.Where(loweredTypeName => loweredTypeName.Key == fileNameLower)
+                .Select(pair => pair.Value).ToArray();
+
+            if (types.Length == 0)
             {
                 Debug.Log("Checked for type  \"" + fileName +
                           "\" no types were found.");
                 return null;
             }
 
-            if (types.Count == 1)
+            if (types.Length == 1)
             {
                 return types[0].FullName;
             }

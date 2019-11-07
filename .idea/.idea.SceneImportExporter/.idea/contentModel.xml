@@ -24,10 +24,13 @@
           </e>
           <e p="Models" t="Include">
             <e p="ClassModel.cs" t="Include" />
-            <e p="FieldDataGenerationUtility.cs" t="Include" />
+            <e p="FieldGenerationUtility.cs" t="Include" />
             <e p="FieldModel.cs" t="Include" />
             <e p="FoundScript.cs" t="Include" />
             <e p="MergeNode.cs" t="Include" />
+            <e p="PrefabModel.cs" t="Include" />
+            <e p="PrefabTestScript.cs" t="Include" />
+            <e p="ProjectModel.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
             <e p="ClassModelConverter.cs" t="Include" />
@@ -36,6 +39,7 @@
             <e p="Levenshtein.cs" t="Include" />
             <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
             <e p="MD4.cs" t="Include" />
+            <e p="Singleton.cs" t="Include" />
           </e>
           <e p="Windows" t="Include">
             <e p="MergingWizard.cs" t="Include" />
