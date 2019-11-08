@@ -11,6 +11,7 @@ using UnityEditor;
 using System.IO;
 using Newtonsoft.Json;
 using System.Threading;
+using YamlDotNet.RepresentationModel;
 
 namespace importerexporter.windows
 {
@@ -38,8 +39,8 @@ namespace importerexporter.windows
 
         private string idExportPath;
         bool exportExists;
-        
-        
+
+
         private List<ClassModel> cachedLocalIds;
 
 
@@ -73,12 +74,62 @@ namespace importerexporter.windows
                 ImportClassDataAndScene();
             }
 
+            if (GUILayout.Button("Convert prefab"))
+            {
+                CopyPrefabs();
+            }
+
             EditorGUI.EndDisabledGroup();
 
             GUILayout.Label(exportExists
                 ? "IDs found, ready to migrate."
                 : "No IDs found, please export the current IDs.");
+        }
 
+        private void CopyPrefabs()
+        {
+            string sceneFile = @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\Scenes\Prefab scene.unity";
+            string assetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
+
+            string destination = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
+
+
+            YamlStream stream = new YamlStream();
+            stream.Load(new StringReader(File.ReadAllText(sceneFile)));
+            List<YamlDocument> yamlPrefabs =
+                stream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
+
+            List<PrefabModel> prefabs = PrefabController.Instance.ExportPrefabs(assetPath);
+            foreach (YamlDocument prefabInstance in yamlPrefabs)
+            {
+                YamlNode sourcePrefab = prefabInstance.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"];
+                string guid = (string) sourcePrefab["guid"];
+
+
+                PrefabModel currentPrefab = prefabs.First(prefab => prefab.Guid == guid);
+                string[] parsedPrefab = File.ReadAllLines(currentPrefab.Path);
+
+                string originalProjectPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
+                string relativeExportLocation = @"\ImportExport\Exports\Export.json";
+                List<ClassModel> oldIDs = JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(originalProjectPath + relativeExportLocation));
+                List<ClassModel> newIDs = JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(destination + relativeExportLocation));
+                List<FoundScript> foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(destination + @"ImportExport\Exports\Found.json"));
+
+                new Thread(() =>
+                {
+                    parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref foundScripts);
+                    test(parsedPrefab, currentPrefab, destination);
+                }).Start();
+
+            }
+        }
+
+        private void test(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
+        {        
+            File.Copy(currentPrefab.MetaPath, destination + Path.GetFileName(currentPrefab.MetaPath));
+            File.WriteAllText(destination + Path.GetFileName(currentPrefab.Path),
+                string.Join("\r\n", parsedPrefab));
+            Debug.Log("Wrote the prefab");
         }
 
         private void ExportCurrentClassData(string rootPath)
@@ -118,7 +169,7 @@ namespace importerexporter.windows
 
                 return;
             }
-            
+
             EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
                 "Select the scene");
             string scenePath =
@@ -130,7 +181,7 @@ namespace importerexporter.windows
                 return;
             }
 
-            string IDPath = getProjectPathFromSceneLocation(scenePath) + @"\ImportExport\Exports\Export.json";
+            string IDPath = ProjectPathUtility.getProjectPathFromFile(scenePath) + @"\ImportExport\Exports\Export.json";
 
             if (!File.Exists(IDPath))
             {
@@ -149,7 +200,7 @@ namespace importerexporter.windows
                 ? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(newIDsPath))
                 : idController.ExportClassData(rootPath);
 
-            
+
             List<FoundScript> foundScripts = new List<FoundScript>();
             string foundScriptsPath = rootPath + "/ImportExport/Exports/Found.json";
             if (File.Exists(foundScriptsPath))
@@ -167,8 +218,12 @@ namespace importerexporter.windows
         /// <summary>
         /// Make a copy of the scene file and change the GUIDs, fileIDs and if necessary the fields 
         /// </summary>
+        /// <param name="rootPath"></param>
+        /// <param name="oldIDs"></param>
+        /// <param name="currentIDs"></param>
         /// <param name="scenePath"></param>
-        private void ImportTransformIDs(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs,
+        /// <param name="foundScripts"></param>
+        public void ImportTransformIDs(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs,
             string scenePath,
             List<FoundScript> foundScripts)
         {
@@ -190,7 +245,9 @@ namespace importerexporter.windows
 
                 Instance().Enqueue(() =>
                 {
-                    ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport);
+                    ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport, oldIDs,
+                            currentIDs)
+                        ;
                 });
             }
             catch (Exception e)
@@ -203,7 +260,7 @@ namespace importerexporter.windows
         private void
             ImportAfterIDTransformationOnMainThread(string rootPath, string scenePath,
                 List<FoundScript> foundScripts,
-                string[] lastSceneExport)
+                string[] lastSceneExport, List<ClassModel> oldIDs, List<ClassModel> currentIDs)
         {
             foreach (FoundScript script in foundScripts)
             {
@@ -232,7 +289,8 @@ namespace importerexporter.windows
 
                 mergingWizard.onComplete = (userAuthorizedList) =>
                 {
-                    MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, userAuthorizedList);
+                    MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, oldIDs, currentIDs,
+                        userAuthorizedList);
                 };
             }
             else
@@ -240,10 +298,10 @@ namespace importerexporter.windows
 //                SaveFoundScripts(rootPath, foundScripts);
 //                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
 //                calculationThread = null;
-                MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport);
+                MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, oldIDs, currentIDs);
             }
         }
-        
+
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
@@ -254,7 +312,8 @@ namespace importerexporter.windows
         /// <param name="mergedFoundScripts"></param>
         private void MergingWizardCompleted(List<FoundScript> originalFoundScripts, string rootPath,
             string scenePath,
-            string[] linesToChange, List<FoundScript> mergedFoundScripts = null)
+            string[] linesToChange, List<ClassModel> oldIDs, List<ClassModel> currentIDs,
+            List<FoundScript> mergedFoundScripts = null)
         {
             if (mergedFoundScripts != null)
             {
@@ -273,16 +332,19 @@ namespace importerexporter.windows
 
             string[] newSceneExport =
                 fieldMappingController.ReplaceFieldsByMergeNodes(linesToChange, originalFoundScripts,
-                    getProjectPathFromSceneLocation(scenePath), rootPath);
+                    ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath, oldIDs, currentIDs);
 
             Debug.Log(string.Join("\n", newSceneExport));
 
             SaveFoundScripts(rootPath, originalFoundScripts);
             SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
             calculationThread = null;
+
+
+            AssetDatabase.Refresh();
         }
-        
-        
+
+
         /// <summary>
         /// Write foundScripts to a file
         /// </summary>
@@ -314,54 +376,6 @@ namespace importerexporter.windows
             EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
         }
 
-
-        /// <summary>
-        /// Gets the topmost Unity project folder from a path 
-        /// </summary>
-        /// <param name="sceneLocation"></param>
-        /// <returns></returns>
-        private string getProjectPathFromSceneLocation(string sceneLocation)
-        {
-            int numberOfAssets = Regex.Matches(sceneLocation, "Assets").Count;
-            if (numberOfAssets == 1)
-            {
-                return sceneLocation.Substring(0, sceneLocation.IndexOf("Assets", StringComparison.Ordinal) + 6);
-            }
-
-            if (numberOfAssets > 1)
-            {
-                string previousMatches = "";
-                Regex regex = new Regex(".*?Assets");
-                MatchCollection matches = regex.Matches(sceneLocation);
-
-                string[] matchedStrings = new string[matches.Count];
-
-                for (var i = 0; i < matches.Count; i++)
-                {
-                    Match match = matches[i];
-                    previousMatches += match;
-                    matchedStrings[i] = previousMatches;
-                }
-
-                matchedStrings = matchedStrings.Reverse().ToArray();
-                foreach (string match in matchedStrings)
-                {
-                    string path = Path.GetFullPath(Path.Combine(match, @"..\"));
-                    if (
-                        Directory.Exists(path + @"\Library") &&
-                        Directory.Exists(path + @"\obj") &&
-                        Directory.Exists(path + @"\Packages") &&
-                        Directory.Exists(path + @"\Temp")
-                    )
-                    {
-                        return match;
-                    }
-                }
-            }
-
-            Debug.LogError("Could not parse scene to project location : " + sceneLocation);
-            return null;
-        }
 
         #region ThreadedUI
 

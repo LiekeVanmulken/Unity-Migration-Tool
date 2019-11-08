@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.IO;
 
 namespace importerexporter.models
@@ -9,13 +10,7 @@ namespace importerexporter.models
         /// Class namespace and name
         /// </summary> 
         public string Path;
-
-        /// <summary>
-        /// Name of the file
-        /// </summary>
-        public string Name {
-            get { return System.IO.Path.GetFileName(Path); }
-        }
+        public string MetaPath;
 
         /// <summary>
         /// The guid of the prefab
@@ -24,7 +19,20 @@ namespace importerexporter.models
 
         public PrefabModel(string path, string guid)
         {
-            this.Path = path;
+            if (path.EndsWith(".meta"))
+            {
+                Path = path.Replace(".meta", "");
+                MetaPath = path;
+            }
+            else if(path.EndsWith(".prefab"))
+            {
+                Path = path;
+                MetaPath = path + ".meta";
+            }
+            else
+            {
+                throw new FormatException("Cannot parse extension of prefab");
+            }
             this.Guid = guid;
         }
     }

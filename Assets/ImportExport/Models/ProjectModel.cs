@@ -7,14 +7,14 @@ using importerexporter.models;
 /// </summary>
 public class ProjectModel
 {
-    public List<ClassModel> classes;
-    public List<PrefabModel> prefabs;
+    public List<ClassModel> oldIDs;
+    public List<ClassModel> newIDs;
     public List<FoundScript> foundScripts;
 
-    public ProjectModel(List<ClassModel> classes, List<PrefabModel> prefabs, List<FoundScript> foundScripts = null)
+    public ProjectModel(List<ClassModel> oldIDs, List<ClassModel> newIDs, List<FoundScript> foundScripts = null)
     {
-        this.classes = classes;
-        this.prefabs = prefabs;
+        this.oldIDs = oldIDs;
+        this.newIDs = newIDs;
         this.foundScripts = foundScripts;
     }
 }

@@ -8,9 +8,6 @@
       <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="AssetDatabaseTest" t="Include">
-          <e p="AssetDatabaseTestScript.cs" t="Include" />
-        </e>
         <e p="ImportExport" t="Include">
           <e p="Controllers" t="Include">
             <e p="CustomLogic" t="Include">
@@ -44,6 +41,7 @@
             </e>
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
+            <e p="FileUtility.cs" t="Include" />
             <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
             <e p="Serialization" t="Include">
               <e p="ClassModelConverter.cs" t="Include" />
@@ -59,9 +57,6 @@
         </e>
         <e p="JsonDotNet" t="Include">
           <e p="link.xml" t="Include" />
-        </e>
-        <e p="NamespaceGettingTest" t="Include">
-          <e p="GetNameSpaceFromGuidTestScript.cs" t="Include" />
         </e>
         <e p="Plugins" t="Include">
           <e p="Editor" t="Include">
@@ -315,8 +310,16 @@
           <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
           <e p="YamlTestScript.cs" t="Include" />
         </e>
-        <e p="WizardTest" t="Include">
-          <e p="MergingWizardEditorWindow.cs" t="Include" />
+        <e p="Testing" t="Include">
+          <e p="AssetDatabaseTest" t="Include">
+            <e p="AssetDatabaseTestScript.cs" t="Include" />
+          </e>
+          <e p="NamespaceGettingTest" t="Include">
+            <e p="GetNameSpaceFromGuidTestScript.cs" t="Include" />
+          </e>
+          <e p="WizardTest" t="Include">
+            <e p="MergingWizardEditorWindow.cs" t="Include" />
+          </e>
         </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />

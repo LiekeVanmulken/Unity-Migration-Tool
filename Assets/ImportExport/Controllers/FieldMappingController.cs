@@ -20,14 +20,17 @@ namespace importerexporter.controllers
     {
         private readonly Constants constants = Constants.Instance;
         private readonly PrefabController prefabController = PrefabController.Instance;
+
         /// <summary>
         /// Replaces the Fields on the MonoBehaviours according to the mergeNode data
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="foundScripts"></param>
+        /// <param name="oldRootPath"></param>
+        /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts, string oldRootPath, string destinationPath) //todo : this needs a new name!
+            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts, string oldRootPath, string destinationPath, List<ClassModel> oldIDs, List<ClassModel> newIDs) //todo : this needs a new name!
         {
             string sceneContent = string.Join("\n", scene);
 
@@ -62,25 +65,28 @@ namespace importerexporter.controllers
                 }
             }
             
-            // Copy prefabs
-            List<YamlDocument> yamlPrefabs =
-                yamlStream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
-
-            List<PrefabModel> prefabs = prefabController.ExportPrefabs(oldRootPath);
-            foreach (YamlDocument prefabInstance in yamlPrefabs)
-            {
-                //todo : transform the prefab to change all guids and fileIDs on the prefabs
-                //todo : call this recursively on the prefab
-                
-                YamlNode sourcePrefab = prefabInstance.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"];
-                string guid = (string) sourcePrefab["guid"];
-                PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == guid);
-                if (currentPrefab == null)
-                {
-                    Debug.LogError("Could not find prefab for guid : " + guid);
-                }
-                prefabController.CopyPrefab(currentPrefab.Path,destinationPath);
-            }
+//            // Copy prefabs
+//            List<YamlDocument> yamlPrefabs =
+//                yamlStream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
+//
+//            List<PrefabModel> prefabs = prefabController.ExportPrefabs(oldRootPath);
+//            foreach (YamlDocument prefabInstance in yamlPrefabs)
+//            {
+//                //todo : transform the prefab to change all guids and fileIDs on the prefabs
+//                //todo : call this recursively on the prefab
+//                
+//                YamlNode sourcePrefab = prefabInstance.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"];
+//                string guid = (string) sourcePrefab["guid"];
+//                PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == guid);
+//                if (currentPrefab == null)
+//                {
+//                    Debug.LogError("Could not find prefab for guid : " + guid);
+//                }
+//                prefabController.CopyPrefab(currentPrefab.Path,destinationPath);
+//                
+//                
+////                ((MigrationWindow) MigrationWindow.Instance()).ImportTransformIDs(oldRootPath,oldIDs,newIDs,currentPrefab.Path,foundScripts);
+//            }
 
             return scene;
         }
@@ -107,7 +113,6 @@ namespace importerexporter.controllers
 
                 int line = yamlNode.Key.Start.Line - 1;
 
-
                 MergeNode currentMergeNode =
                     currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
                 if (currentMergeNode == null)
@@ -115,7 +120,6 @@ namespace importerexporter.controllers
                     Debug.Log("[DataLoss] Could not find mergeNode for key : " + yamlNodeKey);
                     continue;
                 }
-
 
                 if (yamlNode.Value is YamlMappingNode)
                 {
