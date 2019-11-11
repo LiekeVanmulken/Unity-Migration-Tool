@@ -12,7 +12,7 @@ namespace importerexporter.controllers
     /// <summary>
     /// Generate all the fields on a class
     /// </summary>
-    public static class FieldGenerationController
+    public class FieldGenerationController
     {
         private static Constants constants = Constants.Instance;
         private static Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();

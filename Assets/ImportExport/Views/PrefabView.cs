@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,7 +12,6 @@ using UnityEditor;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
-#if UNITY_EDITOR
 namespace importerexporter.views
 {
     /// <summary>
@@ -19,8 +19,11 @@ namespace importerexporter.views
     /// </summary>
     public class PrefabView
     {
-        private readonly IDController idController = IDController.Instance;
         private readonly MainThreadDispatcherEditorWindow mainThreadWindow = MigrationWindow.Instance();
+
+        private readonly IDController idController = new IDController();
+        private readonly PrefabController prefabController = new PrefabController();
+        private readonly FieldMappingController fieldMappingController = new FieldMappingController();
 
         public void ParsePrefab(string sceneFile, string originalAssetPath, string destinationAssetPath)
         {
@@ -29,7 +32,7 @@ namespace importerexporter.views
             List<YamlDocument> yamlPrefabs =
                 stream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
 
-            List<PrefabModel> prefabs = PrefabController.Instance.ExportPrefabs(originalAssetPath);
+            List<PrefabModel> prefabs = prefabController.ExportPrefabs(originalAssetPath);
             List<string> prefabGuids = yamlPrefabs.Select(document =>
                     (string) document.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"]["guid"]).Distinct()
                 .ToList();
@@ -59,7 +62,7 @@ namespace importerexporter.views
                 new Thread(() =>
                 {
                     parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref foundScripts);
-                    mainThreadWindow.Enqueue(() =>
+                    MigrationWindow.Instance().Enqueue(() =>
                     {
                         MergingWizard wizard = MergingWizard.CreateWizard(foundScripts
                             .Where(script => script.HasBeenMapped == FoundScript.MappedState.NotMapped).ToList());
@@ -67,7 +70,7 @@ namespace importerexporter.views
                         {
                             List<FoundScript> latestFoundScripts = foundScripts.Merge(mergedFoundScripts);
 
-                            parsedPrefab = FieldMappingController.Instance.ReplaceFieldsByMergeNodes(ref parsedPrefab,
+                            parsedPrefab = fieldMappingController.ReplaceFieldsByMergeNodes(ref parsedPrefab,
                                 latestFoundScripts,
                                 originalAssetPath, destinationAssetPath, oldIDs, newIDs);
                             WritePrefab(parsedPrefab, currentPrefab, destinationAssetPath);
@@ -79,23 +82,25 @@ namespace importerexporter.views
 
         private void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
         {
-            string newPrefabPath = destination + Path.GetFileName(currentPrefab.MetaPath);
-            if (File.Exists(newPrefabPath))
+            string newPrefabMetaPath = destination + Path.GetFileName(currentPrefab.MetaPath);
+            if (File.Exists(newPrefabMetaPath))
             {
                 if (!EditorUtility.DisplayDialog("Prefab already exists",
-                    "Prefab file already exists, overwrite? \r\n File : " + newPrefabPath, "Overwrite"))
+                    "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite"))
                 {
                     Debug.LogWarning(
-                        "Could not write the prefab as the file already exists.\r\n File: " + newPrefabPath
+                        "Could not write the prefab as the file already exists.\r\n File: " + newPrefabMetaPath
                     );
                     return;
                 }
             }
+            File.Copy(currentPrefab.MetaPath, newPrefabMetaPath, true);
 
-            File.Copy(currentPrefab.MetaPath, newPrefabPath, true);
-            File.WriteAllText(destination + Path.GetFileName(currentPrefab.Path),
+            string newPrefabPath = destination + Path.GetFileName(currentPrefab.Path);
+            
+            File.WriteAllText(newPrefabPath,
                 string.Join("\r\n", parsedPrefab));
-            Debug.Log("Wrote the prefab");
+            Debug.Log("Written the prefab to : " + newPrefabPath);
         }
     }
 }

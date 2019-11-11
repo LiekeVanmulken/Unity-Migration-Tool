@@ -17,12 +17,12 @@ namespace importerexporter.views
 {
     public class SceneView
     {
-        private readonly Constants constants = Constants.Instance;
-        private readonly IDController idController = IDController.Instance;
-        private readonly FieldMappingController fieldMappingController = FieldMappingController.Instance;
-        private readonly MigrationWindow mainThread= (MigrationWindow)MigrationWindow.Instance();
-        
-        private static MergingWizard mergingWizard;
+        private Constants constants = Constants.Instance;
+
+        private IDController idController = new IDController();
+        private FieldMappingController fieldMappingController = new FieldMappingController();
+
+        private MergingWizard mergingWizard;
         private Thread calculationThread;
 
         private static List<ClassModel> oldFileDatas;
@@ -41,8 +41,8 @@ namespace importerexporter.views
                 return;
             }
 
-            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
-                "Select the scene");
+//            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
+//                "Select the scene");
             string scenePath =
                 EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
                     "unity"); //todo : check if this is in the current project
@@ -114,7 +114,7 @@ namespace importerexporter.views
                     idController.TransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts);
 
-                mainThread.Enqueue(() =>
+                MigrationWindow.Instance().Enqueue(() =>
                 {
                     ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport, oldIDs,
                             currentIDs);

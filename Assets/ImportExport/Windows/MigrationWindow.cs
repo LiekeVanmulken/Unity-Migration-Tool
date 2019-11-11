@@ -25,15 +25,15 @@ namespace importerexporter.windows
     [Serializable]
     public class MigrationWindow : MainThreadDispatcherEditorWindow
     {
-        private readonly IDExportView idExportView = new IDExportView();
-        private readonly SceneView sceneView = new SceneView();
-        private readonly PrefabView prefabView = new PrefabView();
+        private IDExportView idExportView = new IDExportView();
+        private SceneView sceneView = new SceneView();
+        private PrefabView prefabView = new PrefabView();
 
         /// <summary>
         /// Location of the Export.json in the current project
         /// </summary>
         private string idExportPath;
-        
+
         /// <summary>
         /// Cache of if the Export.json exists
         /// </summary>
@@ -52,6 +52,7 @@ namespace importerexporter.windows
         protected void OnEnable()
         {
             idExportPath = Application.dataPath + "/ImportExport/Exports/Export.json";
+            
         }
 
         void OnGUI()
@@ -119,7 +120,7 @@ namespace importerexporter.windows
                 Action onIgnore = () => { completed = true; };
 
 //                OptionsWizard optionsWizard =
-                    OptionsWizard.CreateWizard(label, original, options, onComplete, onIgnore);
+                OptionsWizard.CreateWizard(label, original, options, onComplete, onIgnore);
             });
 
             while (!completed)
@@ -145,7 +146,6 @@ namespace importerexporter.windows
         /// Display the progressbar from a different thread
         /// </summary>
         /// <param name="title"></param>
-        /// <param name="info"></param>
         /// <param name="info"></param>
         /// <param name="progress"></param>
         public static void DisplayProgressBar(string title, string info, float progress)

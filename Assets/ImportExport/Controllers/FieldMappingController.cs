@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 
-
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,10 +15,10 @@ namespace importerexporter.controllers
     /// Maps fields to move values.
     /// This should always be run after the transform as it assumes that the IDs have been set to the current IDs!!!
     /// </summary>
-    public class FieldMappingController : Singleton<FieldMappingController>
+    public class FieldMappingController
     {
         private readonly Constants constants = Constants.Instance;
-        private readonly PrefabController prefabController = PrefabController.Instance;
+        private readonly PrefabController prefabController = new PrefabController();
 
         /// <summary>
         /// Replaces the Fields on the MonoBehaviours according to the mergeNode data
@@ -149,7 +148,7 @@ namespace importerexporter.controllers
         /// <param name="yamlNodeKey"></param>
         /// <param name="line"></param>
         /// <returns>True when it handles logic, else false and it still needs to be handled</returns>
-        private static bool CheckCustomLogic(ref string[] scene,
+        private bool CheckCustomLogic(ref string[] scene,
             YamlDocument document, FoundScript foundScript)
         {
             if (!Constants.Instance.CustomLogicMapping.ContainsKey(foundScript.newClassModel.FullName))
@@ -162,7 +161,7 @@ namespace importerexporter.controllers
             return true;
         }
 
-        private static string[] handleValueNode(ref string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
+        private string[] handleValueNode(ref string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
             int line,
             KeyValuePair<YamlNode, YamlNode> yamlNode)
         {

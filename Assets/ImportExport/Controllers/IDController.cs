@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+
 using static importerexporter.models.FoundScript;
 using YamlDotNet.RepresentationModel;
 using importerexporter.models;
@@ -17,7 +18,7 @@ namespace importerexporter.controllers
     /// <summary>
     /// Imports and exports the guids and fileIDS from projects
     /// </summary>
-    public class IDController : Singleton<IDController>
+    public class IDController
     {
         /// <summary>
         /// Reference to the constants 

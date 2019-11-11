@@ -1,113 +1,57 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using importerexporter.controllers;
 using importerexporter.models;
 using importerexporter.utility;
-using UnityEditor;
-using UnityEngine;
-public class PrefabController : Singleton<PrefabController>
+
+namespace importerexporter.controllers
 {
-    private readonly Constants constants = Constants.Instance;
-//
-//    public bool CopyAllPrefabs(string originalPath, string destinationPath)
-//    {
-//        try
-//        {
-//            string[] prefabMetaFiles = Directory.GetFiles(originalPath, "*.prefab.meta", SearchOption.AllDirectories);
-//            foreach (string file in prefabMetaFiles)
-//            {
-//                CopyPrefab(file, destinationPath);
-//            }
-//        }
-//        catch (Exception e)
-//        {
-//            Debug.LogError("Could not copy the prefab files, Error : \r\n" + e);
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
-    public void CopyPrefab(string originalPath, string destinationPath, List<ClassModel> oldIDs,
-        List<ClassModel> newIDs, ref List<FoundScript> foundScripts)
+    public class PrefabController
     {
-        if (!originalPath.EndsWith(".prefab.meta"))
+        private readonly Constants constants = Constants.Instance;
+
+        /// <summary>
+        /// Get all prefabs in the projects and parses them to prefab models
+        /// </summary>
+        /// <param name="path">AssetPath of the project</param>
+        /// <returns></returns>
+        public List<PrefabModel> ExportPrefabs(string path)
         {
-            Debug.LogError("Can not move file that does not have a meta file. Given path : " + originalPath);
-            return;
-        }
+            //Get all prefabs
+            string[] prefabMetaFiles = Directory.GetFiles(path, "*.prefab.meta", SearchOption.AllDirectories);
 
-        string metaPrefabName = originalPath;
-        string prefabName = originalPath.Replace(".meta", "");
-
-        string[] newPrefab = IDController.Instance.TransformIDs(prefabName, oldIDs, newIDs, ref foundScripts); // todo : will this hang because it has a wait on the main thread in it?
-//        FieldMappingController.Instance.ReplaceFieldsByMergeNodes()
-//        FieldMappingController.Instance.ReplaceFieldsByMergeNodes(newPrefab,foundScripts,)
-
-        CopyFile(metaPrefabName, destinationPath);
-        CopyFile(prefabName, destinationPath);
-    }
-
-    private static void CopyFile(string originalFile, string destinationPath)
-    {
-        string fileDestination = Path.Combine(destinationPath, Path.GetFileName(originalFile));
-        if (File.Exists(fileDestination))
-        {
-            if (EditorUtility.DisplayDialog("Prefab already exists",
-                "Prefab file already exists, Do you want to overwrite the file : \r\n" + fileDestination +
-                " \r\r Original location : " + originalFile, "Overwrite", "Ignore"))
+            //Parse all guids
+            List<PrefabModel> prefabModels = new List<PrefabModel>(prefabMetaFiles.Length);
+            for (var i = 0; i < prefabMetaFiles.Length; i++)
             {
-                File.Copy(originalFile, fileDestination, true);
+                prefabModels.Add(ParsePrefabFile(prefabMetaFiles[i]));
             }
-            else
+
+            return prefabModels;
+        }
+
+        /// <summary>
+        /// Generates a PrefabModel from a .prefab.meta file
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        /// <exception cref="NullReferenceException"></exception>
+        private PrefabModel ParsePrefabFile(string file)
+        {
+            IEnumerable<string> lines = File.ReadLines(file);
+            foreach (string line in lines)
             {
-                Debug.Log("Skipped prefab : " + originalFile);
+                Match match = constants.RegexGuid.Match(line);
+                if (!match.Success) continue;
+
+                return new PrefabModel(file, match.Value);
             }
-        }
-        else
-        {
-            File.Copy(originalFile, fileDestination);
-        }
-    }
 
-    /// <summary>
-    /// Get all prefabs in the projects and parses them to prefab models
-    /// </summary>
-    /// <param name="path">AssetPath of the project</param>
-    /// <returns></returns>
-    public List<PrefabModel> ExportPrefabs(string path)
-    {
-        //Get all prefabs
-        string[] prefabMetaFiles = Directory.GetFiles(path, "*.prefab.meta", SearchOption.AllDirectories);
-        
-        //Parse all guids
-        List<PrefabModel> prefabModels = new List<PrefabModel>(prefabMetaFiles.Length);
-        for (var i = 0; i < prefabMetaFiles.Length; i++)
-        {  
-            prefabModels.Add(ParsePrefabFile( prefabMetaFiles[i]));
+            throw new NullReferenceException("Could not find GUID in prefab meta file : " + file);
         }
-
-        return prefabModels;
-    }
-
-    /// <summary>
-    /// Generates a PrefabModel from a .prefab.meta file
-    /// </summary>
-    /// <param name="file"></param>
-    /// <returns></returns>
-    /// <exception cref="NullReferenceException"></exception>
-    private PrefabModel ParsePrefabFile(string file)
-    {
-        IEnumerable<string> lines = File.ReadLines(file);
-        foreach (string line in lines)
-        {
-            Match match = constants.RegexGuid.Match(line);
-            if (!match.Success) continue;
-
-            return new PrefabModel(file, match.Value);
-        }
-        throw new NullReferenceException("Could not find GUID in prefab meta file : " + file);
     }
 }
+#endif

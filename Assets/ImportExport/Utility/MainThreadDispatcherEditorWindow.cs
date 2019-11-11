@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 /// <summary>
 /// EditorWindow that can run actions on the MainThread for user input 

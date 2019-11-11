@@ -11,7 +11,7 @@ namespace importerexporter.views
 {
     public class IDExportView
     {
-        private readonly IDController idController = IDController.Instance;
+        private readonly IDController idController = new IDController();
 
         public void ExportCurrentClassData(string rootPath)
         {
