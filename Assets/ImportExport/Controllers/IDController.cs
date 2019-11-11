@@ -209,7 +209,7 @@ namespace importerexporter.controllers
             List<ClassModel> newIDs,
             ref List<FoundScript> foundScripts)
         {
-            string sceneContent = string.Join("\r\n", linesToChange);
+            string sceneContent = string.Join("\r\n", linesToChange.PrepareSceneForYaml());
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));

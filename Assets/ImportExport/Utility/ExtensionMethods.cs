@@ -72,9 +72,32 @@ namespace importerexporter.utility
                 }
             }
 
+            foreach (FoundScript foundScript in foundScriptsToMerge)
+            {
+                if (!originalFoundScripts.Exists(script =>
+                    script.oldClassModel.FullName == foundScript.oldClassModel.FullName))
+                {
+                    originalFoundScripts.Add(foundScript);
+                }
+            }
+
             return originalFoundScripts;
         }
 
-        
+        public static string[] PrepareSceneForYaml(this string[] scene)
+        {
+            for (var i = 0; i < scene.Length; i++)
+            {
+                string line = scene[i];
+                if (line.StartsWith("---") && line.EndsWith("stripped"))
+                {
+                    scene[i] = line.Replace(" stripped","");
+                }
+            }
+
+            return scene;
+        }
+
+
     }
 }

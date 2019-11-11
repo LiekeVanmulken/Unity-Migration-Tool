@@ -26,11 +26,11 @@ namespace importerexporter.views
         private Thread calculationThread;
 
         private static List<ClassModel> oldFileDatas;
-        
+
         public void ImportClassDataAndScene()
         {
             // todo : parse scene file that have prefabs in prefabs and have the "skipped" in it, causing the yaml lib to brake
-            
+
             if (calculationThread != null)
             {
                 if (!EditorUtility.DisplayDialog("Already running import",
@@ -118,8 +118,7 @@ namespace importerexporter.views
 
                 MigrationWindow.Instance().Enqueue(() =>
                 {
-                    ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport, oldIDs,
-                            currentIDs);
+                    ImportAfterIDTransformationOnMainThread(rootPath, scenePath, foundScripts, lastSceneExport);
                 });
             }
             catch (Exception e)
@@ -132,7 +131,7 @@ namespace importerexporter.views
         private void
             ImportAfterIDTransformationOnMainThread(string rootPath, string scenePath,
                 List<FoundScript> foundScripts,
-                string[] lastSceneExport, List<ClassModel> oldIDs, List<ClassModel> currentIDs)
+                string[] lastSceneExport)
         {
             foreach (FoundScript script in foundScripts)
             {
@@ -161,8 +160,7 @@ namespace importerexporter.views
 
                 mergingWizard.onComplete = (userAuthorizedList) =>
                 {
-                    MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, oldIDs, currentIDs,
-                        userAuthorizedList);
+                    MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, userAuthorizedList);
                 };
             }
             else
@@ -170,7 +168,7 @@ namespace importerexporter.views
 //                SaveFoundScripts(rootPath, foundScripts);
 //                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), lastSceneExport);
 //                calculationThread = null;
-                MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, oldIDs, currentIDs);
+                MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport);
             }
         }
 
@@ -184,7 +182,7 @@ namespace importerexporter.views
         /// <param name="mergedFoundScripts"></param>
         private void MergingWizardCompleted(List<FoundScript> originalFoundScripts, string rootPath,
             string scenePath,
-            string[] linesToChange, List<ClassModel> oldIDs, List<ClassModel> currentIDs,
+            string[] linesToChange,
             List<FoundScript> mergedFoundScripts = null)
         {
             if (mergedFoundScripts != null)
@@ -192,8 +190,8 @@ namespace importerexporter.views
                 originalFoundScripts = originalFoundScripts.Merge(mergedFoundScripts);
             }
 
-            fieldMappingController.MigrateFields(ref linesToChange, originalFoundScripts,
-                ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath, oldIDs, currentIDs);
+            fieldMappingController.MigrateFields(scenePath, ref linesToChange, originalFoundScripts,
+                ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath);
 
 
             Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " + rootPath +

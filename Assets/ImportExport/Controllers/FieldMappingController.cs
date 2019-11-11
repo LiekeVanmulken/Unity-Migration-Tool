@@ -6,6 +6,7 @@ using System.Linq;
 using importerexporter.controllers.customlogic;
 using importerexporter.models;
 using importerexporter.utility;
+using importerexporter.views;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -29,14 +30,23 @@ namespace importerexporter.controllers
         /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            MigrateFields(ref string[] scene, List<FoundScript> foundScripts, string oldRootPath,
-                string destinationPath, List<ClassModel> oldIDs,
-                List<ClassModel> newIDs)
+            MigrateFields(string scenePath, ref string[] scene, List<FoundScript> foundScripts, string oldRootPath,
+                string destinationPath)
         {
-            string sceneContent = string.Join("\n", scene);
+            string sceneContent = string.Join("\n", scene.PrepareSceneForYaml());
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
+            
+            int amountOfPrefabs =
+                yamlStream.Documents.Count(document => document.GetName() == "PrefabInstance");
+            if (amountOfPrefabs > 0)
+            {
+                new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath);
+                HandlePrefabs(ref scene, oldRootPath, yamlStream, foundScripts);
+            }
+            
+            
             List<YamlDocument> yamlDocuments =
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
             foreach (YamlDocument document in yamlDocuments)
@@ -65,9 +75,6 @@ namespace importerexporter.controllers
                               document.RootNode.ToString());
                 }
             }
-
-            HandlePrefabs(ref scene, oldRootPath, yamlStream, foundScripts);
-
             return scene;
         }
 
@@ -87,7 +94,8 @@ namespace importerexporter.controllers
 
                 //Load in the prefab file
                 YamlStream prefabStream = new YamlStream();
-                prefabStream.Load(new StringReader(File.ReadAllText(prefabModel.Path)));
+                string[] lines = File.ReadAllLines(prefabModel.Path).PrepareSceneForYaml();
+                prefabStream.Load(new StringReader(string.Join("\r\n",lines)));
 
 
                 //Get the modifications that have been done
@@ -99,16 +107,14 @@ namespace importerexporter.controllers
                 {
                     YamlNode target = modification["target"];
                     string fileID = (string) target["fileID"];
-//                    string guid = (string) target["guid"];
 
                     string propertyPath = (string) modification["propertyPath"];
 
                     YamlDocument scriptReference =
                         prefabStream.Documents.First(document =>
-                            document.RootNode.Anchor == fileID); // todo : first or default?
+                            document.RootNode.Anchor == fileID);
                     if (scriptReference.GetName() != "MonoBehaviour")
                     {
-                        Debug.Log("Could not change value for : " + propertyPath);
                         continue;
                     }
 
@@ -122,7 +128,7 @@ namespace importerexporter.controllers
                             node.oldClassModel.Guid == scriptGuid && node.oldClassModel.FileID == scriptFileID);
                     if (scriptType == null)
                     {
-                        Debug.Log("Could not find mapping for guid: " + scriptGuid + " fileID: " + scriptFileID);
+//                        Debug.Log("Could not find mapping for guid: " + scriptGuid + " fileID: " + scriptFileID);
                         continue;
                     }
 
@@ -132,7 +138,7 @@ namespace importerexporter.controllers
                     for (var i = 0; i < properties.Length; i++)
                     {
                         string property = properties[i];
-                        if (property == "Array" && properties.Length > i + 1 && properties[i+1].StartsWith("data["))
+                        if (property == "Array" && properties.Length > i + 1 && properties[i + 1].StartsWith("data["))
                         {
                             // this is a list or array and can be skipped;
                             i++;
@@ -141,7 +147,7 @@ namespace importerexporter.controllers
 
 
                         MergeNode currentMergeNode =
-                                currentMergeNodes.FirstOrDefault(node => node.OriginalValue == property);
+                            currentMergeNodes.FirstOrDefault(node => node.OriginalValue == property);
                         if (currentMergeNode == null)
                         {
                             Debug.Log("Could not find mergeNode for property: " + property);
@@ -149,15 +155,15 @@ namespace importerexporter.controllers
                         }
 
                         properties[i] = currentMergeNode.NameToExportTo;
-                        
+
                         currentMergeNodes =
                             foundScripts
                                 .FirstOrDefault(script => script.oldClassModel.FullName == currentMergeNode.Type)
                                 ?.MergeNodes;
                     }
 
-                    int line = modification["propertyPath"].Start.Line -1;
-                    scene[line] = scene[line].ReplaceFirst(propertyPath, string.Join(".",properties)); 
+                    int line = modification["propertyPath"].Start.Line - 1;
+                    scene[line] = scene[line].ReplaceFirst(propertyPath, string.Join(".", properties));
                 }
             }
         }

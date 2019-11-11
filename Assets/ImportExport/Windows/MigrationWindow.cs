@@ -74,10 +74,10 @@ namespace importerexporter.windows
                 sceneView.ImportClassDataAndScene();
             }
 
-            if (GUILayout.Button("Convert prefab"))
-            {
-                CopyPrefabs();
-            }
+//            if (GUILayout.Button("Convert prefab"))
+//            {
+//                CopyPrefabs();
+//            }
 
             EditorGUI.EndDisabledGroup();
 
@@ -94,7 +94,7 @@ namespace importerexporter.windows
             string originalAssetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
             const string destinationAssetPath = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
 
-            prefabView.ParsePrefab(sceneFile, originalAssetPath, destinationAssetPath);
+            prefabView.ParsePrefabsInAScene(sceneFile, originalAssetPath, destinationAssetPath);
         }
 
         #region ThreadedUI
