@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿#if UNITY_EDITOR
+
 using importerexporter.controllers;
-#if UNITY_EDITOR
 using importerexporter.models;
 using importerexporter.utility;
 using System.Linq;
@@ -88,18 +88,23 @@ namespace importerexporter.windows
 
         private void CopyPrefabs()
         {
-            string sceneFile = @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\Scenes\Prefab scene.unity";
-            string assetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
+            const string sceneFile =
+                @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\Scenes\Prefab scene.unity";
 
-            string destination = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
+            string originalAssetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
+            const string destinationAssetPath = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
 
+            ParsePrefab(sceneFile, originalAssetPath, destinationAssetPath);
+        }
 
+        private void ParsePrefab(string sceneFile, string originalAssetPath, string destinationAssetPath)
+        {
             YamlStream stream = new YamlStream();
             stream.Load(new StringReader(File.ReadAllText(sceneFile)));
             List<YamlDocument> yamlPrefabs =
                 stream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
 
-            List<PrefabModel> prefabs = PrefabController.Instance.ExportPrefabs(assetPath);
+            List<PrefabModel> prefabs = PrefabController.Instance.ExportPrefabs(originalAssetPath);
             foreach (YamlDocument prefabInstance in yamlPrefabs)
             {
                 YamlNode sourcePrefab = prefabInstance.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"];
@@ -111,22 +116,53 @@ namespace importerexporter.windows
 
                 string originalProjectPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
                 string relativeExportLocation = @"\ImportExport\Exports\Export.json";
-                List<ClassModel> oldIDs = JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(originalProjectPath + relativeExportLocation));
-                List<ClassModel> newIDs = JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(destination + relativeExportLocation));
-                List<FoundScript> foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(destination + @"ImportExport\Exports\Found.json"));
+                List<ClassModel> oldIDs =
+                    JsonConvert.DeserializeObject<List<ClassModel>>(
+                        File.ReadAllText(originalProjectPath + relativeExportLocation));
+                List<ClassModel> newIDs =
+                    JsonConvert.DeserializeObject<List<ClassModel>>(
+                        File.ReadAllText(destinationAssetPath + relativeExportLocation));
+                List<FoundScript> foundScripts =
+                    JsonConvert.DeserializeObject<List<FoundScript>>(
+                        File.ReadAllText(destinationAssetPath + @"ImportExport\Exports\Found.json"));
 
                 new Thread(() =>
                 {
                     parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref foundScripts);
-                    test(parsedPrefab, currentPrefab, destination);
-                }).Start();
+                    this.Enqueue(() =>
+                    {
+                        MergingWizard wizard = MergingWizard.CreateWizard(foundScripts
+                            .Where(script => script.HasBeenMapped == FoundScript.MappedState.NotMapped).ToList());
+                        wizard.onComplete = mergedFoundScripts =>
+                        {
+                            List<FoundScript> latestFoundScripts = MergeFoundScripts(foundScripts, mergedFoundScripts);
 
+                            parsedPrefab = FieldMappingController.Instance.ReplaceFieldsByMergeNodes(parsedPrefab,
+                                latestFoundScripts,
+                                originalAssetPath, destinationAssetPath, oldIDs, newIDs);
+                            WritePrefab(parsedPrefab, currentPrefab, destinationAssetPath);
+                        };
+                    });
+                }).Start();
             }
         }
 
-        private void test(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
-        {        
-            File.Copy(currentPrefab.MetaPath, destination + Path.GetFileName(currentPrefab.MetaPath));
+        private void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
+        {
+            string newPrefabPath = destination + Path.GetFileName(currentPrefab.MetaPath);
+            if (File.Exists(newPrefabPath))
+            {
+                if (!EditorUtility.DisplayDialog("Prefab already exists",
+                    "Prefab file already exists, overwrite? \r\n File : " + newPrefabPath, "Overwrite"))
+                {
+                    Debug.LogWarning(
+                        "Could not write the prefab as the file already exists.\r\n File: " + newPrefabPath
+                        );
+                    return;
+                }
+            }
+
+            File.Copy(currentPrefab.MetaPath, newPrefabPath, true);
             File.WriteAllText(destination + Path.GetFileName(currentPrefab.Path),
                 string.Join("\r\n", parsedPrefab));
             Debug.Log("Wrote the prefab");
@@ -317,17 +353,7 @@ namespace importerexporter.windows
         {
             if (mergedFoundScripts != null)
             {
-                // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
-                for (var i = 0; i < originalFoundScripts.Count; i++)
-                {
-                    FoundScript originalFoundScript = originalFoundScripts[i];
-                    FoundScript changedFoundScript = mergedFoundScripts.FirstOrDefault(script =>
-                        script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
-                    if (changedFoundScript != null)
-                    {
-                        originalFoundScripts[i] = changedFoundScript;
-                    }
-                }
+                originalFoundScripts = MergeFoundScripts(originalFoundScripts, mergedFoundScripts);
             }
 
             string[] newSceneExport =
@@ -342,6 +368,29 @@ namespace importerexporter.windows
 
 
             AssetDatabase.Refresh();
+        }
+
+        private static List<FoundScript> MergeFoundScripts(List<FoundScript> originalFoundScripts,
+            List<FoundScript> mergedFoundScripts)
+        {
+            if (originalFoundScripts == null || mergedFoundScripts == null)
+            {
+                throw new NullReferenceException("Could not merge foundScripts for null foundScript list");
+            }
+
+            // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
+            for (var i = 0; i < originalFoundScripts.Count; i++)
+            {
+                FoundScript originalFoundScript = originalFoundScripts[i];
+                FoundScript changedFoundScript = mergedFoundScripts.FirstOrDefault(script =>
+                    script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
+                if (changedFoundScript != null)
+                {
+                    originalFoundScripts[i] = changedFoundScript;
+                }
+            }
+
+            return originalFoundScripts;
         }
 
 
