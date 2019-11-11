@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using importerexporter.models;
+using UnityEditor;
 using YamlDotNet.RepresentationModel;
 
 namespace importerexporter.utility
@@ -42,5 +44,37 @@ namespace importerexporter.utility
         {
             return (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>)));
         }
+
+        /// <summary>
+        /// Merge two lists of foundScripts to one using the oldClassModel.Name
+        /// </summary>
+        /// <param name="originalFoundScripts"></param>
+        /// <param name="foundScriptsToMerge"></param>
+        /// <returns></returns>
+        /// <exception cref="NullReferenceException"></exception>
+        public static List<FoundScript> Merge(this List<FoundScript> originalFoundScripts,
+            List<FoundScript> foundScriptsToMerge)
+        {
+            if (originalFoundScripts == null || foundScriptsToMerge == null)
+            {
+                throw new NullReferenceException("Could not merge foundScripts for null foundScript list");
+            }
+
+            // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
+            for (var i = 0; i < originalFoundScripts.Count; i++)
+            {
+                FoundScript originalFoundScript = originalFoundScripts[i];
+                FoundScript changedFoundScript = foundScriptsToMerge.FirstOrDefault(script =>
+                    script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
+                if (changedFoundScript != null)
+                {
+                    originalFoundScripts[i] = changedFoundScript;
+                }
+            }
+
+            return originalFoundScripts;
+        }
+
+        
     }
 }

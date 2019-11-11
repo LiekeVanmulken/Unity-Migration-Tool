@@ -48,6 +48,11 @@
             </e>
             <e p="Singleton.cs" t="Include" />
           </e>
+          <e p="Views" t="Include">
+            <e p="IDExportView.cs" t="Include" />
+            <e p="PrefabView.cs" t="Include" />
+            <e p="SceneView.cs" t="Include" />
+          </e>
           <e p="Windows" t="Include">
             <e p="MergingWizard.cs" t="Include" />
             <e p="MigrationWindow.cs" t="Include" />

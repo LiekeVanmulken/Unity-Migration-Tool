@@ -30,7 +30,7 @@ namespace importerexporter.controllers
         /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            ReplaceFieldsByMergeNodes(string[] scene, List<FoundScript> foundScripts, string oldRootPath, string destinationPath, List<ClassModel> oldIDs, List<ClassModel> newIDs) //todo : this needs a new name!
+            ReplaceFieldsByMergeNodes(ref string[] scene, List<FoundScript> foundScripts, string oldRootPath, string destinationPath, List<ClassModel> oldIDs, List<ClassModel> newIDs) //todo : this needs a new name!
         {
             string sceneContent = string.Join("\n", scene);
 
@@ -53,7 +53,7 @@ namespace importerexporter.controllers
                 {
                     if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped)
                     {
-                        scene = recursiveReplaceField(scene, scriptType.MergeNodes, script, foundScripts);
+                        scene = recursiveReplaceField(ref scene, scriptType.MergeNodes, script, foundScripts);
                     }
 
                     CheckCustomLogic(ref scene, document, scriptType);
@@ -64,7 +64,7 @@ namespace importerexporter.controllers
                               document.RootNode.ToString());
                 }
             }
-            
+
 //            // Copy prefabs
 //            List<YamlDocument> yamlPrefabs =
 //                yamlStream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
@@ -98,7 +98,7 @@ namespace importerexporter.controllers
         /// <param name="currentMergeNodes"></param>
         /// <param name="rootYamlNode"></param>
         /// <returns></returns>
-        private string[] recursiveReplaceField(string[] scene, List<MergeNode> currentMergeNodes,
+        private string[] recursiveReplaceField(ref string[] scene, List<MergeNode> currentMergeNodes,
             YamlNode rootYamlNode, // todo : refactor to multiple methods
             List<FoundScript> foundScripts)
         {
@@ -123,15 +123,15 @@ namespace importerexporter.controllers
 
                 if (yamlNode.Value is YamlMappingNode)
                 {
-                    scene = handleMappingNode(scene, currentMergeNode, foundScripts, yamlNode);
+                    scene = handleMappingNode(ref scene, currentMergeNode, foundScripts, yamlNode);
                 }
                 else if (yamlNode.Value is YamlSequenceNode)
                 {
-                    scene = handleSequenceNode(scene, currentMergeNode, foundScripts, yamlNode);
+                    scene = handleSequenceNode(ref scene, currentMergeNode, foundScripts, yamlNode);
                 }
                 else
                 {
-                    scene = handleValueNode(scene, currentMergeNode, yamlNodeKey, line, yamlNode);
+                    scene = handleValueNode(ref scene, currentMergeNode, yamlNodeKey, line, yamlNode);
                 }
             }
 
@@ -162,7 +162,7 @@ namespace importerexporter.controllers
             return true;
         }
 
-        private static string[] handleValueNode(string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
+        private static string[] handleValueNode(ref string[] scene, MergeNode currentMergeNode, string yamlNodeKey,
             int line,
             KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
@@ -179,7 +179,7 @@ namespace importerexporter.controllers
             return scene;
         }
 
-        private string[] handleMappingNode(string[] scene, MergeNode currentMergeNode,
+        private string[] handleMappingNode(ref string[] scene, MergeNode currentMergeNode,
             List<FoundScript> foundScripts
             , KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
@@ -203,7 +203,7 @@ namespace importerexporter.controllers
                 foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
             if (typeNodes != null)
             {
-                scene = recursiveReplaceField(scene, typeNodes, yamlNode.Value, foundScripts);
+                scene = recursiveReplaceField(ref scene, typeNodes, yamlNode.Value, foundScripts);
             }
             else
             {
@@ -213,7 +213,7 @@ namespace importerexporter.controllers
             return scene;
         }
 
-        private string[] handleSequenceNode(string[] scene, MergeNode currentMergeNode, List<FoundScript>
+        private string[] handleSequenceNode(ref string[] scene, MergeNode currentMergeNode, List<FoundScript>
             foundScripts, KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
             int line = yamlNode.Key.Start.Line - 1;
@@ -238,7 +238,7 @@ namespace importerexporter.controllers
 
             foreach (YamlNode item in items)
             {
-                scene = recursiveReplaceField(scene, foundScript.MergeNodes, item, foundScripts);
+                scene = recursiveReplaceField(ref scene, foundScript.MergeNodes, item, foundScripts);
             }
 
             return scene;
