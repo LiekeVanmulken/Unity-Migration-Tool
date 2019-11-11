@@ -19,8 +19,6 @@ namespace importerexporter.views
     /// </summary>
     public class PrefabView
     {
-        private readonly MainThreadDispatcherEditorWindow mainThreadWindow = MigrationWindow.Instance();
-
         private readonly IDController idController = new IDController();
         private readonly PrefabController prefabController = new PrefabController();
         private readonly FieldMappingController fieldMappingController = new FieldMappingController();
@@ -70,7 +68,7 @@ namespace importerexporter.views
                         {
                             List<FoundScript> latestFoundScripts = foundScripts.Merge(mergedFoundScripts);
 
-                            parsedPrefab = fieldMappingController.ReplaceFieldsByMergeNodes(ref parsedPrefab,
+                            parsedPrefab = fieldMappingController.MigrateFields(ref parsedPrefab,
                                 latestFoundScripts,
                                 originalAssetPath, destinationAssetPath, oldIDs, newIDs);
                             WritePrefab(parsedPrefab, currentPrefab, destinationAssetPath);

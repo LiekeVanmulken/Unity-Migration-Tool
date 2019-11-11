@@ -29,6 +29,8 @@ namespace importerexporter.views
         
         public void ImportClassDataAndScene()
         {
+            // todo : parse scene file that have prefabs in prefabs and have the "skipped" in it, causing the yaml lib to brake
+            
             if (calculationThread != null)
             {
                 if (!EditorUtility.DisplayDialog("Already running import",
@@ -190,7 +192,7 @@ namespace importerexporter.views
                 originalFoundScripts = originalFoundScripts.Merge(mergedFoundScripts);
             }
 
-            fieldMappingController.ReplaceFieldsByMergeNodes(ref linesToChange, originalFoundScripts,
+            fieldMappingController.MigrateFields(ref linesToChange, originalFoundScripts,
                 ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath, oldIDs, currentIDs);
 
 

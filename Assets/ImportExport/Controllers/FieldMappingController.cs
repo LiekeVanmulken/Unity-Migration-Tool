@@ -29,7 +29,9 @@ namespace importerexporter.controllers
         /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            ReplaceFieldsByMergeNodes(ref string[] scene, List<FoundScript> foundScripts, string oldRootPath, string destinationPath, List<ClassModel> oldIDs, List<ClassModel> newIDs) //todo : this needs a new name!
+            MigrateFields(ref string[] scene, List<FoundScript> foundScripts, string oldRootPath,
+                string destinationPath, List<ClassModel> oldIDs,
+                List<ClassModel> newIDs)
         {
             string sceneContent = string.Join("\n", scene);
 
@@ -64,34 +66,105 @@ namespace importerexporter.controllers
                 }
             }
 
-//            // Copy prefabs
-//            List<YamlDocument> yamlPrefabs =
-//                yamlStream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
-//
-//            List<PrefabModel> prefabs = prefabController.ExportPrefabs(oldRootPath);
-//            foreach (YamlDocument prefabInstance in yamlPrefabs)
-//            {
-//                //todo : transform the prefab to change all guids and fileIDs on the prefabs
-//                //todo : call this recursively on the prefab
-//                
-//                YamlNode sourcePrefab = prefabInstance.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"];
-//                string guid = (string) sourcePrefab["guid"];
-//                PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == guid);
-//                if (currentPrefab == null)
-//                {
-//                    Debug.LogError("Could not find prefab for guid : " + guid);
-//                }
-//                prefabController.CopyPrefab(currentPrefab.Path,destinationPath);
-//                
-//                
-////                ((MigrationWindow) MigrationWindow.Instance()).ImportTransformIDs(oldRootPath,oldIDs,newIDs,currentPrefab.Path,foundScripts);
-//            }
+            HandlePrefabs(ref scene, oldRootPath, yamlStream, foundScripts);
 
             return scene;
         }
 
+        private void HandlePrefabs(ref string[] scene, string oldRootPath, YamlStream yamlStream,
+            List<FoundScript> foundScripts)
+        {
+            // Copy prefabs
+            List<YamlDocument> yamlPrefabs =
+                yamlStream.Documents.Where(document => document.GetName() == "PrefabInstance").ToList();
+
+            List<PrefabModel> oldPrefabs = prefabController.ExportPrefabs(oldRootPath);
+            foreach (YamlDocument prefabInstance in yamlPrefabs)
+            {
+                //Get the prefab file we're working with
+                string prefabGuid = (string) prefabInstance.RootNode["PrefabInstance"]["m_SourcePrefab"]["guid"];
+                PrefabModel prefabModel = oldPrefabs.First(prefabFile => prefabFile.Guid == prefabGuid);
+
+                //Load in the prefab file
+                YamlStream prefabStream = new YamlStream();
+                prefabStream.Load(new StringReader(File.ReadAllText(prefabModel.Path)));
+
+
+                //Get the modifications that have been done
+                YamlSequenceNode modifications =
+                    (YamlSequenceNode) prefabInstance.RootNode["PrefabInstance"]["m_Modification"]["m_Modifications"];
+
+                //change the modifications
+                foreach (YamlNode modification in modifications)
+                {
+                    YamlNode target = modification["target"];
+                    string fileID = (string) target["fileID"];
+//                    string guid = (string) target["guid"];
+
+                    string propertyPath = (string) modification["propertyPath"];
+
+                    YamlDocument scriptReference =
+                        prefabStream.Documents.First(document =>
+                            document.RootNode.Anchor == fileID); // todo : first or default?
+                    if (scriptReference.GetName() != "MonoBehaviour")
+                    {
+                        Debug.Log("Could not change value for : " + propertyPath);
+                        continue;
+                    }
+
+                    YamlNode IDs = scriptReference.RootNode["MonoBehaviour"]["m_Script"];
+
+                    string scriptGuid = (string) IDs["guid"];
+                    string scriptFileID = (string) IDs["fileID"];
+
+                    FoundScript scriptType =
+                        foundScripts.FirstOrDefault(node =>
+                            node.oldClassModel.Guid == scriptGuid && node.oldClassModel.FileID == scriptFileID);
+                    if (scriptType == null)
+                    {
+                        Debug.Log("Could not find mapping for guid: " + scriptGuid + " fileID: " + scriptFileID);
+                        continue;
+                    }
+
+                    string[] properties = propertyPath.Split('.');
+                    List<MergeNode> currentMergeNodes = scriptType.MergeNodes;
+
+                    for (var i = 0; i < properties.Length; i++)
+                    {
+                        string property = properties[i];
+                        if (property == "Array" && properties.Length > i + 1 && properties[i+1].StartsWith("data["))
+                        {
+                            // this is a list or array and can be skipped;
+                            i++;
+                            continue;
+                        }
+
+
+                        MergeNode currentMergeNode =
+                                currentMergeNodes.FirstOrDefault(node => node.OriginalValue == property);
+                        if (currentMergeNode == null)
+                        {
+                            Debug.Log("Could not find mergeNode for property: " + property);
+                            continue;
+                        }
+
+                        properties[i] = currentMergeNode.NameToExportTo;
+                        
+                        currentMergeNodes =
+                            foundScripts
+                                .FirstOrDefault(script => script.oldClassModel.FullName == currentMergeNode.Type)
+                                ?.MergeNodes;
+                    }
+
+                    int line = modification["propertyPath"].Start.Line -1;
+                    scene[line] = scene[line].ReplaceFirst(propertyPath, string.Join(".",properties)); 
+                }
+            }
+        }
+
+
         /// <summary>
-        /// Helper method for the<see cref="ReplaceFieldsByMergeNodes"/> to replace the fields in the scripts.
+        /// Helper method for the<see cref="MigrateFields"/> to replace the fields in the scripts.
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="currentMergeNodes"></param>
