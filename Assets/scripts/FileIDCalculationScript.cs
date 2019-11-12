@@ -1,5 +1,4 @@
-﻿using importerexporter;
-using importerexporter.utility;
+﻿using migrationtool.utility;
 using UnityEngine;
 
 public class FileIDCalculationScript : MonoBehaviour

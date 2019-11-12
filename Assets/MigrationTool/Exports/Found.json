@@ -1,0 +1,32 @@
+[
+  {
+    "newClassModel": {
+      "FullName": "TestScriptQuaternion",
+      "Name": "TestScriptQuaternion",
+      "Guid": "146bef973f633e2489d759752ee7403d",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "testQuaternion",
+          "Type": "UnityEngine.Vector3",
+          "IsIterable": false
+        }
+      ]
+    },
+    "oldClassModel": {
+      "FullName": "TestScriptQuaternion",
+      "Name": "TestScriptQuaternion",
+      "Guid": "6ba2f5e7f7478954e92f9d176461fa93",
+      "FileID": "11500000",
+      "Fields": [
+        {
+          "Name": "testQuaternion",
+          "Type": "UnityEngine.Quaternion",
+          "IsIterable": false
+        }
+      ]
+    },
+    "FieldsToMerge": [],
+    "HasBeenMapped": "Mapped"
+  }
+]

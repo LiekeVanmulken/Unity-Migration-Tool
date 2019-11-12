@@ -1,27 +1,24 @@
-﻿
+﻿#if UNITY_EDITOR
 
 using System.Linq;
-using Object = UnityEngine.Object;
-#if UNITY_EDITOR
 using System;
 using System.Reflection;
 using System.Threading;
-using importerexporter.windows;
-using UnityEditor;
+using migrationtool.windows;
 using UnityEngine;
 
-namespace importerexporter.utility
+namespace migrationtool.utility
 {
     public class ThreadTestWindow : MainThreadDispatcherEditorWindow
     {
         // Add menu named "My Window" to the Window menu
-        [MenuItem("Window/ThreadTestWindow")]
-        static void Init()
-        {
-            // Get existing open window or if none, make a new one:
-            ThreadTestWindow window = (ThreadTestWindow) EditorWindow.GetWindow(typeof(ThreadTestWindow));
-            window.Show();
-        }
+//        [MenuItem("Window/ThreadTestWindow")]
+//        static void Init()
+//        {
+//            // Get existing open window or if none, make a new one:
+//            ThreadTestWindow window = (ThreadTestWindow) EditorWindow.GetWindow(typeof(ThreadTestWindow));
+//            window.Show();
+//        }
 
         private bool isRunning;
 
