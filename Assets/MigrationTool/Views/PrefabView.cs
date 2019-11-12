@@ -1,5 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿
 
+using UnityEditor;
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,21 +118,32 @@ namespace migrationtool.views
         private void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
         {
             string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
-//            if (File.Exists(newPrefabMetaPath))
-//            {
-//                if (!EditorUtility.DisplayDialog("Prefab already exists",
-//                    "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite"))
-//                {
-//                    Debug.LogWarning(
-//                        "Could not write the prefab as the file already exists.\r\n File: " +
-//                        newPrefabMetaPath.Replace(".meta", "")
-//                    );
-//                    return;
-//                }
-//            }
+            if (File.Exists(newPrefabMetaPath))
+            {
+                bool completed = false;
+                bool shouldOverwrite = false;
+                MigrationWindow.Instance().Enqueue(() =>
+                {
+                    shouldOverwrite = EditorUtility.DisplayDialog("Prefab already exists",
+                        "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite","Ignore");
+                    completed = true;
+                });
+                while (!completed) //todo : this could cause a dead thread
+                {
+                    Thread.Sleep(500);
+                }
+                if (!shouldOverwrite)
+                {
+                    Debug.LogWarning(
+                        "User chose not to overwrite the prefab as the file already exists.\r\n File: " +
+                        newPrefabMetaPath.Replace(".meta", "")
+                    );
+                    return;
+                }
+            }
 
             File.Copy(currentPrefab.MetaPath, newPrefabMetaPath, true);
-
+            
             string newPrefabPath = destination + @"\" + Path.GetFileName(currentPrefab.Path);
 
             File.WriteAllText(newPrefabPath,

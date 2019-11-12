@@ -47,7 +47,6 @@ namespace migrationtool.controllers
             {
                 new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath);
                 
-                
                 //Deserialize the foundScripts
                 if (File.Exists(destinationPath + constants.RelativeFoundScriptPath))
                 {
