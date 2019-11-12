@@ -169,6 +169,10 @@ namespace migrationtool.windows
 
         void OnWizardCreate()
         {
+            foreach (FoundScript foundScript in foundScripts)
+            {
+                foundScript.HasBeenMapped = FoundScript.MappedState.Approved;
+            }
             onComplete(foundScripts);
             Debug.Log("Create button clicked");
         }

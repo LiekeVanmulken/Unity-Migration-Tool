@@ -20,7 +20,7 @@ namespace migrationtool.utility
                     result <<= 8;
                     result |= hashed[i];
                 }
-
+                
                 return result;
             }
         }

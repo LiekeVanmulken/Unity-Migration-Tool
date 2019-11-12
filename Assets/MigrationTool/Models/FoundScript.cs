@@ -36,7 +36,8 @@ namespace migrationtool.models
         {
             NotChecked = 0,
             NotMapped,
-            Mapped
+            Mapped,
+            Approved,
         }
 
         public FoundScript()

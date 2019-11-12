@@ -35,7 +35,7 @@ namespace migrationtool.controllers
         public string[]
             MigrateFields(string scenePath, ref string[] scene, List<FoundScript> foundScripts, string oldRootPath,
                 string destinationPath)
-        {
+        {   
             string sceneContent = string.Join("\n", scene.PrepareSceneForYaml());
 
             YamlStream yamlStream = new YamlStream();
@@ -78,7 +78,7 @@ namespace migrationtool.controllers
 
                 if (scriptType != null)
                 {
-                    if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped)
+                    if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped || scriptType.HasBeenMapped == FoundScript.MappedState.Approved)
                     {
                         scene = recursiveReplaceField(ref scene, scriptType.MergeNodes, script, foundScripts);
                     }
@@ -122,12 +122,17 @@ namespace migrationtool.controllers
                 {
                     YamlNode target = modification["target"];
                     string fileID = (string) target["fileID"];
-
                     string propertyPath = (string) modification["propertyPath"];
 
                     YamlDocument scriptReference =
-                        prefabStream.Documents.First(document =>
+                        prefabStream.Documents.FirstOrDefault(document =>
                             document.RootNode.Anchor == fileID);
+                    if (scriptReference == null)                                // todo : this should never happen
+                    {
+                        Debug.LogError("Could not find reference to script in file! This is a sign of a nested prefab. Which we currently do not support.  fileID : " + fileID);
+                        continue;
+                    }
+
                     if (scriptReference.GetName() != "MonoBehaviour")
                     {
                         continue;
