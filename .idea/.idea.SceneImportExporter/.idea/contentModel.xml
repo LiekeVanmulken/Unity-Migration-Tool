@@ -5,12 +5,8 @@
     <e p="C:\Users\ArtPC-009\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_SceneImportExporter.1836620790.00" t="ExcludeRecursive" />
     <e p="D:\UnityProjects\GITHUB\SceneImportExporter" t="IncludeRecursive">
       <e p="Assembly-CSharp-Editor-firstpass.csproj" t="IncludeRecursive" />
-      <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="JsonDotNet" t="Include">
-          <e p="link.xml" t="Include" />
-        </e>
         <e p="MigrationTool" t="Include">
           <e p="Controllers" t="Include">
             <e p="CustomLogic" t="Include">
@@ -27,6 +23,9 @@
               <e p="QuaternionCustomMappingLogic.cs" t="Include" />
               <e p="TestScriptQuaternion.cs" t="Include" />
             </e>
+          </e>
+          <e p="JsonDotNet" t="Include">
+            <e p="link.xml" t="Include" />
           </e>
           <e p="Models" t="Include">
             <e p="ClassModel.cs" t="Include" />
@@ -61,13 +60,6 @@
             <e p="MigrationWindow.cs" t="Include" />
             <e p="OptionsWizard.cs" t="Include" />
             <e p="PrefabMigrationWindow.cs" t="Include" />
-          </e>
-        </e>
-        <e p="Plugins" t="Include">
-          <e p="Editor" t="Include">
-            <e p="JetBrains" t="Include">
-              <e p="Unity3DRider.cs" t="Include" />
-            </e>
           </e>
           <e p="YamlDotNet" t="Include">
             <e p="Core" t="Include">
@@ -303,6 +295,13 @@
               <e p="YamlMember.cs" t="Include" />
             </e>
             <e p="YamlDotNet.license.txt" t="Include" />
+          </e>
+        </e>
+        <e p="Plugins" t="Include">
+          <e p="Editor" t="Include">
+            <e p="JetBrains" t="Include">
+              <e p="Unity3DRider.cs" t="Include" />
+            </e>
           </e>
         </e>
         <e p="scripts" t="Include">
