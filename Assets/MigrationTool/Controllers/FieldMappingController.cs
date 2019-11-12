@@ -1,5 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿
 
+using Newtonsoft.Json;
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,9 +46,17 @@ namespace migrationtool.controllers
             if (amountOfPrefabs > 0)
             {
                 new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath);
+                
+                
+                //Deserialize the foundScripts
+                if (File.Exists(destinationPath + constants.RelativeFoundScriptPath))
+                {
+                    foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(
+                        File.ReadAllText(destinationPath + constants.RelativeFoundScriptPath));
+                }
+                    
                 ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, foundScripts);
             }
-            
             
             ConvertScene(ref scene, foundScripts, yamlStream);
             return scene;

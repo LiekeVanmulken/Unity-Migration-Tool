@@ -26,7 +26,7 @@ namespace migrationtool.windows
     public class MigrationWindow : MainThreadDispatcherEditorWindow
     {
         private readonly Constants constants = Constants.Instance;
-        
+
         private readonly IDExportView idExportView = new IDExportView();
         private readonly SceneView sceneView = new SceneView();
         private readonly PrefabView prefabView = new PrefabView();
@@ -87,16 +87,21 @@ namespace migrationtool.windows
                 : "No IDs found, please export the current IDs.");
         }
 
-        private void CopyPrefabs()
-        {
-            const string sceneFile =
-                @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\Scenes\Prefab scene.unity";
-
-            string originalAssetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
-            const string destinationAssetPath = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
-
-            prefabView.ParsePrefabsInAScene(sceneFile, originalAssetPath, destinationAssetPath);
-        }
+//        private void CopyPrefabs()
+//        {
+//            const string sceneFile =
+//                @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\Scenes\Prefab scene.unity";
+//
+//            string originalAssetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
+//            const string destinationAssetPath = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
+//
+//            new Thread(
+//                () =>
+//                {
+//                    prefabView.ParsePrefabsInAScene(sceneFile, originalAssetPath, destinationAssetPath);
+//                }
+//            ).Start();
+//        }
 
         #region ThreadedUI
 

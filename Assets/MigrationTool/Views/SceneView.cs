@@ -190,19 +190,20 @@ namespace migrationtool.views
                 originalFoundScripts = originalFoundScripts.Merge(mergedFoundScripts);
             }
 
-            fieldMappingController.MigrateFields(scenePath, ref linesToChange, originalFoundScripts,
-                ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath);
+            new Thread(() =>
+            {
+                fieldMappingController.MigrateFields(scenePath, ref linesToChange, originalFoundScripts,
+                    ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath);
 
 
-            Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " + rootPath +
-                      "/" + Path.GetFileName(scenePath) + "");
+                Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " +
+                          rootPath +
+                          "/" + Path.GetFileName(scenePath) + "");
 
-            SaveFoundScripts(rootPath, originalFoundScripts);
-            SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
-            calculationThread = null;
-
-
-            AssetDatabase.Refresh();
+                SaveFoundScripts(rootPath, originalFoundScripts);
+                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
+                calculationThread = null;
+            }).Start();
         }
 
         /// <summary>
@@ -233,7 +234,11 @@ namespace migrationtool.views
             }
 
             File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
-            EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+            MigrationWindow.Instance().Enqueue(() =>
+            {
+                AssetDatabase.Refresh();
+                EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+            });
         }
     }
 }

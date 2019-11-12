@@ -46,9 +46,7 @@ namespace migrationtool.controllers
         public static FieldModel[] GenerateFields(Type type, int iteration)
         {
             iteration++;
-
-//            Match match = constants.IsListOrArrayRegex.Match(type.FullName);
-//            if (match.Success)
+            
             if (type.FullName != null && type.FullName.Contains('['))
             {
                 Match match = constants.IsListOrArrayRegex.Match(type.FullName);
