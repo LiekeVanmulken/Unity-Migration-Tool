@@ -65,9 +65,9 @@ namespace migrationtool.windows
             exportExists = File.Exists(idExportPath);
 
             EditorGUI.BeginDisabledGroup(!exportExists);
-            if (GUILayout.Button("Migrate scene"))
+            if (GUILayout.Button("Migrate  scene  to current project"))
             {
-                sceneView.ImportClassDataAndScene();
+                sceneView.MigrateScene();
             }
 
             EditorGUI.EndDisabledGroup();
@@ -79,19 +79,19 @@ namespace migrationtool.windows
             GUILayout.Space(20);
 
             EditorGUILayout.Separator();
-            batchProcessingEnabled = GUILayout.Toggle(batchProcessingEnabled, "Batch processing tools");
+            batchProcessingEnabled = EditorGUILayout.Foldout(batchProcessingEnabled, "Batch processing tools");
             if (!batchProcessingEnabled)
             {
                 return;
             }
 
-            if (GUILayout.Button("Convert all prefabs"))
+            if (GUILayout.Button("Migrate all  prefabs  from project folder"))
             {
                 string rootPath = Application.dataPath;
                 ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(rootPath); });
             }
 
-            if (GUILayout.Button("Convert all scenes"))
+            if (GUILayout.Button("Migrate all  scenes  from project folder"))
             {
                 sceneView.MigrateAllScenes();
             }

@@ -16,7 +16,7 @@ namespace migrationtool.models
     /// The reason this is returns is because this needs to be filled in by the user and as such
     /// cannot be done in the importExportUtility as this needs user input.
     ///
-    /// Used in the <see cref="ImportExportUtility.GenerateFieldMapping"/> and the <seealso cref="MergingWizard"/>
+    /// Used in the <see cref="ImportExportUtility.GenerateFieldMapping"/> and the <seealso cref="MergeWizard"/>
     /// </summary>
     [Serializable]
     public class FoundScript

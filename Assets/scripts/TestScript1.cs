@@ -4,7 +4,7 @@ using UnityEngine;
 [Serializable]
 public class TestScript1 : MonoBehaviour
 {
-    public string test2;
+    public string test;
     
     [SerializeField]
     private TestScriptSubClass testScriptSubClass = new TestScriptSubClass("a", "b");

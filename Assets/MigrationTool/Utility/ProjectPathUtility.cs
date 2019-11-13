@@ -55,5 +55,30 @@ namespace migrationtool.utility
             Debug.LogError("Could not parse scene to project location : " + sceneLocation);
             return null;
         }
+
+        public static string AddTimestamp(string file)
+        {
+            DateTime now = DateTime.Now;
+
+            string extension = null;
+            //get the extension
+            string[] fileParts = file.Split('.');
+            if (file.EndsWith(".meta"))
+            {
+                extension = "." + fileParts[fileParts.Length - 2] + "."+  fileParts[fileParts.Length - 1];
+            }
+            else
+            {
+                extension = "." + fileParts[fileParts.Length - 1];
+            }
+
+            //remove the extension
+            file = file.Substring(0, file.Length - extension.Length);
+
+            //Added the timestamp and re-added the extension
+            file += "_imported_" + now.Hour + "_" + now.Minute + "_" +
+                    now.Second +  extension;
+            return file;
+        }
     }
 }

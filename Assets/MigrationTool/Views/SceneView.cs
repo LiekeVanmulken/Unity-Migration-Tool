@@ -22,7 +22,7 @@ namespace migrationtool.views
         private IDController idController = new IDController();
         private FieldMappingController fieldMappingController = new FieldMappingController();
 
-        private MergingWizard mergingWizard;
+        private MergeWizard mergeWizard;
 //        private Thread calculationThread;
 
         private static List<ClassModel> oldFileDatas;
@@ -44,29 +44,13 @@ namespace migrationtool.views
 
             foreach (string scene in sceneFiles)
             {
-                ImportClassDataAndScene(scene);
+                MigrateScene(scene);
             }
             Debug.Log("Migrated all scenes");
         }
 
-        public void ImportClassDataAndScene(string scenePath = null)
+        public void MigrateScene(string scenePath = null)
         {
-            // todo : parse scene file that have prefabs in prefabs and have the "skipped" in it, causing the yaml lib to brake
-//
-//            if (calculationThread != null)
-//            {
-//                if (!EditorUtility.DisplayDialog("Already running import",
-//                    "Can't Start new import while import is running", "Resume", "Stop"))
-//                {
-//                    calculationThread.Abort();
-//                    calculationThread = null;
-//                }
-//
-//                return;
-//            }
-
-//            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
-//                "Select the scene");
             if (scenePath == null)
             {
                 scenePath =
@@ -174,9 +158,9 @@ namespace migrationtool.views
                     "Could not merge all the fields to the class in the new project. You'll have to manually match old fields with the new fields",
                     "Open merge window");
 
-                mergingWizard = MergingWizard.CreateWizard(scripts);
+                mergeWizard = MergeWizard.CreateWizard(scripts);
 
-                mergingWizard.onComplete = (userAuthorizedList) =>
+                mergeWizard.onComplete = (userAuthorizedList) =>
                 {
                     MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, userAuthorizedList);
                 };
@@ -212,15 +196,24 @@ namespace migrationtool.views
             {
                 fieldMappingController.MigrateFields(scenePath, ref linesToChange, originalFoundScripts,
                     ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath);
+
+                string newScenePath = rootPath + scenePath.GetRelativeAssetPath();
+
+                newScenePath = ProjectPathUtility.AddTimestamp(newScenePath);
                 
                 Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " +
-                          rootPath +
-                          "/" + Path.GetFileName(scenePath) + "");
+                          newScenePath + "");
 
                 SaveFoundScripts(rootPath, originalFoundScripts);
-                SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
+                SaveFile(newScenePath, linesToChange);
             });
         }
+
+        private string GetRelativePath(string rootPath, string scene)
+        {
+            return scene.Substring(ProjectPathUtility.getProjectPathFromFile(scene).Length);
+        }
+
 
         /// <summary>
         /// Write foundScripts to a file
@@ -240,20 +233,17 @@ namespace migrationtool.views
         /// <param name="linesToWrite"></param>
         private void SaveFile(string scenePath, string[] linesToWrite)
         {
-            var now = DateTime.Now;
-            string newScenePath = scenePath + "_imported_" + now.Hour + "_" + now.Minute + "_" +
-                                  now.Second + ".unity";
 
-            if (!Directory.Exists(Path.GetDirectoryName(newScenePath)))
+            if (!Directory.Exists(Path.GetDirectoryName(scenePath)))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(newScenePath));
+                Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
             }
 
-            File.WriteAllText(newScenePath, string.Join("\n", linesToWrite));
+            File.WriteAllText(scenePath, string.Join("\n", linesToWrite));
             MigrationWindow.Instance().Enqueue(() =>
             {
                 AssetDatabase.Refresh();
-                EditorUtility.DisplayDialog("Imported data", "The scene was exported to " + newScenePath, "Ok");
+                EditorUtility.DisplayDialog("Imported data", "The scene was migrated to " + scenePath.GetRelativeAssetPath(), "Ok");
             });
         }
     }

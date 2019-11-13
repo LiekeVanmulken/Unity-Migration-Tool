@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace migrationtool.windows
 {
-    public class MergingWizard : ScriptableWizard
+    public class MergeWizard : ScriptableWizard
     {
         public Action<List<FoundScript>> onComplete;
 
@@ -25,9 +25,9 @@ namespace migrationtool.windows
 
         Vector2 scrollPosition = Vector2.zero;
 
-        public static MergingWizard CreateWizard(List<FoundScript> scriptsToMerge)
+        public static MergeWizard CreateWizard(List<FoundScript> scriptsToMerge)
         {
-            var wizard = DisplayWizard<MergingWizard>("Merge fieldNames", "Merge");
+            var wizard = DisplayWizard<MergeWizard>("Merge fieldNames", "Merge");
             wizard.foundScripts = scriptsToMerge;
             wizard.foundScriptWrappers = new FoundScriptWrapper[scriptsToMerge.Count];
 
@@ -60,9 +60,11 @@ namespace migrationtool.windows
             {
                 FoundScript = _foundScript;
                 FieldSelectionStates = new bool[_foundScript.MergeNodes.Count];
-                for (int i = 0; i < FieldSelectionStates.Length; i++)
+
+                for (var i = 0; i < _foundScript.MergeNodes.Count; i++)
                 {
-                    FieldSelectionStates[i] = true;
+                    MergeNode mergeNode = _foundScript.MergeNodes[i];
+                    FieldSelectionStates[i] = mergeNode.OriginalValue != mergeNode.NameToExportTo;
                 }
 
                 OptionSelections = new int[_foundScript.MergeNodes.Count];
@@ -75,7 +77,7 @@ namespace migrationtool.windows
 
         private GUILayoutOption GetColumnWidth(int _columns)
         {
-            float singleColumn = (Screen.width - 50) / 12;
+            float singleColumn = (Screen.width - 50) / 12f;
             return GUILayout.Width(singleColumn * _columns);
         }
 
@@ -100,7 +102,7 @@ namespace migrationtool.windows
 
                 GUILayout.BeginHorizontal();
 
-                EditorGUILayout.LabelField("<b>Use</b>", richtextStyle, GetColumnWidth(1));
+                EditorGUILayout.LabelField("<b>Migrate</b>", richtextStyle, GetColumnWidth(1));
                 EditorGUILayout.LabelField("<b>Fields</b>", richtextStyle, GetColumnWidth(5));
                 EditorGUILayout.LabelField("<b>Type</b>", richtextStyle, GetColumnWidth(6));
 

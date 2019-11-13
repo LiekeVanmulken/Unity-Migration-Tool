@@ -44,7 +44,8 @@ namespace migrationtool.views
 
             List<PrefabModel> prefabs = prefabController.ExportPrefabs(originalAssetPath);
             List<string> prefabGuids = yamlPrefabs.Select(document =>
-                    (string) document.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"]["guid"]).Distinct()
+                    (string) document.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"]["guid"])
+                .Distinct()
                 .ToList();
 
             foreach (string prefabGuid in prefabGuids)
@@ -153,7 +154,7 @@ namespace migrationtool.views
                 bool completed = false;
                 MigrationWindow.Instance().Enqueue(() =>
                 {
-                    MergingWizard wizard = MergingWizard.CreateWizard(unmappedFoundScripts);
+                    MergeWizard wizard = MergeWizard.CreateWizard(unmappedFoundScripts);
                     wizard.onComplete = mergedFoundScripts =>
                     {
                         foundScripts = foundScripts.Merge(mergedFoundScripts);
@@ -186,33 +187,35 @@ namespace migrationtool.views
         /// <param name="destination"></param>
         private void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
         {
-            string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
-            if (File.Exists(newPrefabMetaPath))
-            {
-                bool completed = false;
-                bool shouldOverwrite = false;
-                ThreadUtil.RunWaitMainThread(() =>
-                    {
-                        shouldOverwrite = EditorUtility.DisplayDialog("Prefab already exists",
-                            "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite",
-                            "Ignore");
-                        completed = true;
-                    }
-                );
+//            string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
+            string newPrefabMetaPath = destination + currentPrefab.MetaPath.GetRelativeAssetPath();
+            newPrefabMetaPath = ProjectPathUtility.AddTimestamp(newPrefabMetaPath);
 
-                if (!shouldOverwrite)
-                {
-                    Debug.LogWarning(
-                        "User chose not to overwrite the prefab as the file already exists.\r\n File: " +
-                        newPrefabMetaPath.Replace(".meta", "")
-                    );
-                    return;
-                }
-            }
+//            if (File.Exists(newPrefabMetaPath))
+//            {
+//                bool shouldOverwrite = false;
+//                ThreadUtil.RunWaitMainThread(() =>
+//                    {
+//                        shouldOverwrite = EditorUtility.DisplayDialog("Prefab already exists",
+//                            "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite",
+//                            "Ignore");
+//                    }
+//                );
+//
+//                if (!shouldOverwrite)
+//                {
+//                    Debug.LogWarning(
+//                        "User chose not to overwrite the prefab as the file already exists.\r\n File: " +
+//                        newPrefabMetaPath.Replace(".meta", "")
+//                    );
+//                    return;
+//                }
+//            }
 
             File.Copy(currentPrefab.MetaPath, newPrefabMetaPath, true);
 
-            string newPrefabPath = destination + @"\" + Path.GetFileName(currentPrefab.Path);
+//            string newPrefabPath = destination + @"\" + Path.GetFileName(currentPrefab.Path);
+            string newPrefabPath = newPrefabMetaPath.Substring(0, newPrefabMetaPath.Length - 5);
 
             File.WriteAllText(newPrefabPath,
                 string.Join("\r\n", parsedPrefab));
