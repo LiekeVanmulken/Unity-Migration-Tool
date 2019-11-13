@@ -44,7 +44,8 @@ namespace migrationtool.views
 
             List<PrefabModel> prefabs = prefabController.ExportPrefabs(originalAssetPath);
             List<string> prefabGuids = yamlPrefabs.Select(document =>
-                    (string) document.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"]["guid"]).Distinct()
+                    (string) document.RootNode.GetChildren()["PrefabInstance"]["m_SourcePrefab"]["guid"])
+                .Distinct()
                 .ToList();
 
             foreach (string prefabGuid in prefabGuids)
@@ -52,6 +53,36 @@ namespace migrationtool.views
                 PrefabModel currentPrefab = prefabs.First(model => model.Guid == prefabGuid);
                 ParsePrefab(currentPrefab.Path, originalAssetPath, destinationAssetPath, prefabs, currentPrefab.Guid);
             }
+        }
+
+        public void MigrateAllPrefabs(string rootPath)
+        {
+            string selectedAssetPath = null;
+            ThreadUtil.RunWaitMainThread(() =>
+                {
+                    selectedAssetPath = EditorUtility.OpenFolderPanel("Export all prefabs in folder", rootPath, "");
+                }
+            );
+
+            if (string.IsNullOrEmpty(selectedAssetPath))
+            {
+                Debug.Log("Copy prefabs aborted, no path given.");
+                return;
+            }
+
+            List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(selectedAssetPath);
+            foreach (PrefabModel prefab in prefabs)
+            {
+                ThreadUtil.RunWaitThread(() =>
+                    {
+                        ParsePrefab(prefab.Path, selectedAssetPath, rootPath, prefabs,
+                            prefab.Guid);
+                    }
+                );
+            }
+
+            ThreadUtil.RunMainThread(() => { AssetDatabase.Refresh(); });
+            Debug.Log("Migrated all prefabs");
         }
 
         /// <summary>
@@ -65,7 +96,7 @@ namespace migrationtool.views
         /// <param name="prefabGuid"></param>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="NullReferenceException"></exception>
-        private void ParsePrefab(string prefabFile, string originalAssetPath, string destinationAssetPath,
+        public void ParsePrefab(string prefabFile, string originalAssetPath, string destinationAssetPath,
             List<PrefabModel> prefabs,
             string prefabGuid)
         {
@@ -106,7 +137,6 @@ namespace migrationtool.views
                     File.ReadAllText(destinationAssetPath + constants.RelativeFoundScriptPath));
             }
 
-            bool completed = false;
 
             parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref foundScripts);
 
@@ -121,29 +151,29 @@ namespace migrationtool.views
             }
             else
             {
+                bool completed = false;
                 MigrationWindow.Instance().Enqueue(() =>
                 {
-                    MergingWizard wizard = MergingWizard.CreateWizard(unmappedFoundScripts);
+                    MergeWizard wizard = MergeWizard.CreateWizard(unmappedFoundScripts);
                     wizard.onComplete = mergedFoundScripts =>
                     {
                         foundScripts = foundScripts.Merge(mergedFoundScripts);
                         File.WriteAllText(destinationAssetPath + constants.RelativeFoundScriptPath,
                             JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
 
-                        new Thread(() =>
+                        ThreadUtil.RunThread(() =>
                         {
                             parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
-                                foundScripts,
-                                originalAssetPath, destinationAssetPath);
+                                foundScripts, originalAssetPath, destinationAssetPath);
                             WritePrefab(parsedPrefab, currentPrefab, destinationAssetPath);
-                            completed = true;
-                        }).Start();
+                        });
+                        completed = true;
                     };
                 });
 
                 while (!completed)
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(constants.THREAD_WAIT_TIME);
                 }
             }
         }
@@ -157,36 +187,35 @@ namespace migrationtool.views
         /// <param name="destination"></param>
         private void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
         {
-            string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
-            if (File.Exists(newPrefabMetaPath))
-            {
-                bool completed = false;
-                bool shouldOverwrite = false;
-                MigrationWindow.Instance().Enqueue(() =>
-                {
-                    shouldOverwrite = EditorUtility.DisplayDialog("Prefab already exists",
-                        "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite",
-                        "Ignore");
-                    completed = true;
-                });
-                while (!completed)
-                {
-                    Thread.Sleep(500);
-                }
+//            string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
+            string newPrefabMetaPath = destination + currentPrefab.MetaPath.GetRelativeAssetPath();
+            newPrefabMetaPath = ProjectPathUtility.AddTimestamp(newPrefabMetaPath);
 
-                if (!shouldOverwrite)
-                {
-                    Debug.LogWarning(
-                        "User chose not to overwrite the prefab as the file already exists.\r\n File: " +
-                        newPrefabMetaPath.Replace(".meta", "")
-                    );
-                    return;
-                }
-            }
+//            if (File.Exists(newPrefabMetaPath))
+//            {
+//                bool shouldOverwrite = false;
+//                ThreadUtil.RunWaitMainThread(() =>
+//                    {
+//                        shouldOverwrite = EditorUtility.DisplayDialog("Prefab already exists",
+//                            "Prefab file already exists, overwrite? \r\n File : " + newPrefabMetaPath, "Overwrite",
+//                            "Ignore");
+//                    }
+//                );
+//
+//                if (!shouldOverwrite)
+//                {
+//                    Debug.LogWarning(
+//                        "User chose not to overwrite the prefab as the file already exists.\r\n File: " +
+//                        newPrefabMetaPath.Replace(".meta", "")
+//                    );
+//                    return;
+//                }
+//            }
 
             File.Copy(currentPrefab.MetaPath, newPrefabMetaPath, true);
 
-            string newPrefabPath = destination + @"\" + Path.GetFileName(currentPrefab.Path);
+//            string newPrefabPath = destination + @"\" + Path.GetFileName(currentPrefab.Path);
+            string newPrefabPath = newPrefabMetaPath.Substring(0, newPrefabMetaPath.Length - 5);
 
             File.WriteAllText(newPrefabPath,
                 string.Join("\r\n", parsedPrefab));

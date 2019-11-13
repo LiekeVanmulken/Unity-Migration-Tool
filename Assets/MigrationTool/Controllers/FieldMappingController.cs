@@ -127,9 +127,9 @@ namespace migrationtool.controllers
                     YamlDocument scriptReference =
                         prefabStream.Documents.FirstOrDefault(document =>
                             document.RootNode.Anchor == fileID);
-                    if (scriptReference == null)                                // todo : this should never happen
+                    if (scriptReference == null)
                     {
-                        Debug.LogError("Could not find reference to script in file! This is a sign of a nested prefab. Which we currently do not support.  fileID : " + fileID);
+                        Debug.LogError("Nested prefab detected! Can not migrate fields in the scene. Could not find reference to script in file! Which we currently do not support.  fileID : " + fileID);
                         continue;
                     }
 

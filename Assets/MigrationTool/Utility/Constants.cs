@@ -6,8 +6,11 @@ namespace migrationtool.utility
 {
     public class Constants : Singleton<Constants>
     {
-        public readonly bool DEBUG = false;
-
+        /// <summary>
+        /// How long the while loop that is waiting for a thread should sleep before checking the isComplete again.
+        /// </summary>
+        public readonly int THREAD_WAIT_TIME = 300;
+        
         /// <summary>
         /// Sets how deep the fields of every class will be parsed.
         /// </summary>

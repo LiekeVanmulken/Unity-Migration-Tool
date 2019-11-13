@@ -118,7 +118,7 @@ Note: The project includes both JsonDotNet and YamlDotNet. If you already use th
 4. In the new project open `Window/Migration Tool` on the menubar and open the window.
 5. Click the `Export Class Data of the current project` button and the project will start to export the IDs (these will be saved to `<project_path>/MigrationTool/Export/Export.json`).
 6. When the IDs have been exported in the old and new project, go to the new project and open the `Window/Migration Tool` window again.
-7. Click the `Migrate Scene` button. The tool will open a window to select which scene to use.
+7. Click the `Migrate Scene to current project` button. The tool will open a window to select which scene to use.
 8. Select the scenefile to migrate.
 9. The tool will start converting the scene.
 10. The tool will show popups to map classes for which it can't find the new class. Please select the right class, it has a filter field to make it easier.

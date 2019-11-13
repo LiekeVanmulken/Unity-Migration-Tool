@@ -1,9 +1,6 @@
 ﻿#if UNITY_EDITOR
-
-using migrationtool.models;
 using migrationtool.utility;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
@@ -19,7 +16,7 @@ namespace migrationtool.windows
     /// Set the old project path.
     /// Click the import button and select the scene that you wish to replace the fileID's and GUIDs
     /// It will now generate a copy with changed GUIDs and fileIDs causing unity to load the scene without missing references.
-    ///
+    /// 
     /// For a more detailed explanation read the README.MD
     /// </summary>
     [Serializable]
@@ -41,9 +38,10 @@ namespace migrationtool.windows
         /// </summary>
         private bool exportExists;
 
-
-        private List<ClassModel> cachedLocalIds;
-
+        /// <summary>
+        /// UI toggle to show batch processing buttons 
+        /// </summary>
+        private bool batchProcessingEnabled;
 
         [MenuItem("Window/Migration Tool")]
         public static void ShowWindow()
@@ -61,47 +59,44 @@ namespace migrationtool.windows
             if (GUILayout.Button("Export Classes of the current project"))
             {
                 string rootPath = Application.dataPath;
-
-                new Thread(
-                    () => { idExportView.ExportCurrentClassData(rootPath); }
-                ).Start();
+                ThreadUtil.RunThread(() => { idExportView.ExportCurrentClassData(rootPath); });
             }
 
             exportExists = File.Exists(idExportPath);
 
             EditorGUI.BeginDisabledGroup(!exportExists);
-            if (GUILayout.Button("Migrate scene"))
+            if (GUILayout.Button("Migrate  scene  to current project"))
             {
-                sceneView.ImportClassDataAndScene();
+                sceneView.MigrateScene();
             }
 
-//            if (GUILayout.Button("Convert prefab"))
-//            {
-//                CopyPrefabs();
-//            }
-
             EditorGUI.EndDisabledGroup();
-
             GUILayout.Label(exportExists
                 ? "IDs found, ready to migrate."
                 : "No IDs found, please export the current IDs.");
-        }
 
-//        private void CopyPrefabs()
-//        {
-//            const string sceneFile =
-//                @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\Scenes\Prefab scene.unity";
-//
-//            string originalAssetPath = ProjectPathUtility.getProjectPathFromFile(sceneFile);
-//            const string destinationAssetPath = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\";
-//
-//            new Thread(
-//                () =>
-//                {
-//                    prefabView.ParsePrefabsInAScene(sceneFile, originalAssetPath, destinationAssetPath);
-//                }
-//            ).Start();
-//        }
+            EditorGUI.BeginDisabledGroup(!exportExists);
+            GUILayout.Space(20);
+
+            EditorGUILayout.Separator();
+            batchProcessingEnabled = EditorGUILayout.Foldout(batchProcessingEnabled, "Batch processing tools");
+            if (!batchProcessingEnabled)
+            {
+                return;
+            }
+
+            if (GUILayout.Button("Migrate all  prefabs  from project folder"))
+            {
+                string rootPath = Application.dataPath;
+                ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(rootPath); });
+            }
+
+            if (GUILayout.Button("Migrate all  scenes  from project folder"))
+            {
+                sceneView.MigrateAllScenes();
+            }
+            EditorGUI.EndDisabledGroup();
+        }
 
         #region ThreadedUI
 
@@ -131,7 +126,7 @@ namespace migrationtool.windows
 
             while (!completed)
             {
-                Thread.Sleep(100);
+                Thread.Sleep(Constants.Instance.THREAD_WAIT_TIME);
             }
 
             Debug.Log("OptionsWindow result : " + result);

@@ -140,6 +140,16 @@ namespace migrationtool.utility
             return parsedScene;
         }
 
+        /// <summary>
+        /// Gets the path relative to the project folder
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string GetRelativeAssetPath(this string filePath)
+        {
+            return filePath.Substring(ProjectPathUtility.getProjectPathFromFile(filePath).Length);
+        }
+
 
     }
 }
