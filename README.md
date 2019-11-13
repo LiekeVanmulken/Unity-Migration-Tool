@@ -10,16 +10,15 @@ The most helpful information about this issue can be found on the unity forum [h
 
 ## Main usecase
 
-This is currently used to port Source code demo projects to DLL projects. It started of as a hobby project that quickly became a work project. So i'd also like to thank [unit040](https://www.unit040.com) for keeping this open source.
+This is currently used to port Source code demo projects to DLL projects. It started of as a hobby project that quickly became a work project. So i'd also like to thank [Unit040](https://www.unit040.com) for keeping this open source.
 
 ## How to use
 
 ### Installation
 
-1. Have two projects, the old project and the new project. (The old project will have the scene we would like to export)
-2. Copy the `Assets/ImportExport/` folder to both projects.
-3. Import [json.net](https://assetstore.unity.com/packages/tools/input-management/json-net-for-unity-11347) from the unity assetstore in both projects.
-4. Import [YamlDotNet](https://assetstore.unity.com/packages/tools/integration/yamldotnet-for-unity-36292) from the unity assetstore in both projects.
+1. Have two projects, the old project and the new project. (The old project will have the scene we would like to export).One way to accomplish this would be to literally copy the project in the file explorer, this way you immediately have access to all your resources. 
+2. Download the latest unity package from the [github releases page](https://github.com/WouterVanmulken/Unity-Scene-Exporter/releases/).
+3. Import the package in both projects.
 
 Note
 
@@ -28,20 +27,20 @@ Note
 | WARNING: ALWAYS BACK UP YOUR PROJECT. Although this tool is non-destructive, we're working with the source files of the project so make sure you ALWAYS have a backup. |
 | --- |
 
-1. In the old project open `Window/Scene import window` on the menubar and open the window.
-2. Click the `Export Class Data of the current project` button and the project will start to export the IDs (these will be saved to `<project_path>/ImportExport/Export/Export.json`).
+1. In the old project open `Window/Migration Tool` on the menubar and open the window.
+2. Click the `Export Class Data of the current project` button and the project will start to export the IDs (these will be saved to `<project_path>/MigrationTool/Export/Export.json`).
 3. Now do the same for the new project.
-4. In the new project open `Window/Scene import window` on the menubar and open the window.
-5. Click the `Export Class Data of the current project` button and the project will start to export the IDs (these will be saved to `<project_path>/ImportExport/Export/Export.json`).
-6. For larger projects this can last quite a while. The progressbar should keep updating.
-7. When the IDs have been exported in the old and new project, go to the new project and open the `Window/Scene import window` window.
-8. Click the `Import IDs` button, the tool will then open a window. This window selects which  export to use. Go to your old project and select the `<project_path>/ImportExport/Export/Export.json` file.
-9. The tool will then open a window to select which scene to use.
-10. Select the scenefile you wish to update.
-11. The tool will now start converting the scene.
-12. The tool will then show popups to map classes for which it can't find the new class.
-13. After it can mapp all classes it wil check whether or not data needs to be migrated. If it doesn't it's exported the scene. But if the fields of the classes that have been changed the mergewindow will appear where you can select where to map the fields to.
-14. When you're done mapping the fields (make sure to do this as best as possible as mismatched fields will result in dataloss) press the `Merge` button.
-15. The tool will now  change all fields of the scripts to the new fields.
+4. In the new project open `Window/Migration Tool` on the menubar and open the window.
+5. Click the `Export Class Data of the current project` button and the project will start to export the IDs (these will be saved to `<project_path>/MigrationTool/Export/Export.json`).
+6. When the IDs have been exported in the old and new project, go to the new project and open the `Window/Migration Tool` window.
+7. Click the `Migrate Scene` button. The tool will open a window to select which scene to use.
+8. Select the scenefile you wish to migrate.
+9. The tool will now start converting the scene.
+10. The tool will show popups to map classes for which it can't find the new class. Please select the right class, it has a filter field to make it easier.
+11. After it can mapp all classes it wil check whether or not data needs to be migrated. If it doesn't it's exported the scene. But if the fields of the classes that have been changed the mergewindow will appear where you can select where to map the fields to.
+12. When you're done mapping the fields (make sure to do this as best as possible as mismatched fields will result in dataloss) press the `Merge` button.
 
-The Tool will make a copy of the file and write it to the Assets folder of the project.
+Note: If you have prefabs in the scene, this might popup multiple times as prefabs get proccessed separately (nested prefabs fieldMappings are currently not yet supported).
+14. The tool will now  change all fields of the scripts to the new fields.
+
+The Tool will migrate the scene and write it to the Assets folder of the project. All referenced prefabs will be migrated to the Assets folder as well.
