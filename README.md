@@ -3,17 +3,17 @@
 The tool enables you to export scenes from one project to another without breaking script references.
 Migrate data to new field- and new class names and directly migrate prefabs.
 
-The tool started of as a hobby project that quickly became a work project. So i'd also like to thank [Unit040](https://www.unit040.com) for keeping this open source.
-
 ## The Problem
 
 When moving a scene file from one project to another, unity will lose all idea of what scripts are attached to what gameobjects. This is because it uses a filedID and GUID to reference scripts which are project specific. To fix these references the tool will search the old project for the old GUIDs and generate the corresponding fileID and map these to the class name between projects. Causing unity to find the reference to the script and solving all script references in the scene.
 
 The most helpful information about this issue can be found on the unity forum [here](https://forum.unity.com/threads/yaml-fileid-hash-function-for-dll-scripts.252075/).
 
+We also needed a way to migrate between field names and class names as we found that these often changed between versions. Namespace or capitalization changes can now be ported with this tool.
+
 ## Main usecase
 
-This is currently used to port Source code demo projects to DLL projects.
+This is currently used to port Source code demo projects to DLL projects. It started of as a hobby project that quickly became a work project. So i'd also like to thank [Unit040](https://www.unit040.com) for keeping this open source.
 
 We also use the tool to migrate data from one version of the dll to the next without losing scene data. Therefore it can also map changed class names and changed field names. The following scripts can be mapped to migrate the data to the new version of the script.
 

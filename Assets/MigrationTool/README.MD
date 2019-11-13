@@ -9,6 +9,8 @@ When moving a scene file from one project to another, unity will lose all idea o
 
 The most helpful information about this issue can be found on the unity forum [here](https://forum.unity.com/threads/yaml-fileid-hash-function-for-dll-scripts.252075/).
 
+We also needed a way to migrate between field names and class names as we found that these often changed between versions. Namespace or capitalization changes can now be ported with this tool.
+
 ## Main usecase
 
 This is currently used to port Source code demo projects to DLL projects. It started of as a hobby project that quickly became a work project. So i'd also like to thank [Unit040](https://www.unit040.com) for keeping this open source.
