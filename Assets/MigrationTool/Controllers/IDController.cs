@@ -51,55 +51,31 @@ namespace migrationtool.controllers
             //Get all dlls
             string[] dllMetaFiles = Directory.GetFiles(path, "*.dll.meta", SearchOption.AllDirectories);
 
-            int totalFiles = classMetaFiles.Length + dllMetaFiles.Length;
-
             int gcCount = 0;
             int gcLimit = 50000;
             List<ClassModel> classes = new List<ClassModel>();
             for (var i = 0; i < classMetaFiles.Length; i++)
             {
                 string file = classMetaFiles[i];
-                ParseSourceFile((float)i/classMetaFiles.Length, file, ref classes, gcLimit, ref gcCount);
+                ParseSourceFile((float) i / classMetaFiles.Length, file, ref classes, gcLimit, ref gcCount);
             }
 
-            // Loop through dlls  
-            if (!constants.DEBUG)
+            for (var i = 0; i < dllMetaFiles.Length; i++)
             {
-//                Thread[] dllThreads = new Thread[dllMetaFiles.Length];
-                for (var i = 0; i < dllMetaFiles.Length; i++)
-                {
-                    string metaFile = dllMetaFiles[i];
-//                    dllThreads[i] =
-//                        new Thread(() => 
-                     ParseDLLFile((float)i/dllMetaFiles.Length, metaFile, ref classes, gcLimit, ref gcCount)
-//                                )
-                        ;
-//                    dllThreads[i].Start();
-                }
-
-//                bool stillRunning = true;
-//                while (stillRunning)
-//                {
-//                    int threadsRunning = dllThreads.Where(thread => thread.IsAlive).ToArray().Length;
-//                    stillRunning = threadsRunning > 0;
-//
-//                    MigrationWindow.DisplayProgressBar("Exporting IDs from DLLs",
-//                        "Threads running " + threadsRunning + "/" + dllThreads.Length,
-//                        threadsRunning / dllThreads.Length);
-//                    Thread.Sleep(100);
-//                }
+                string metaFile = dllMetaFiles[i];
+                ParseDLLFile((float) i / dllMetaFiles.Length, metaFile, ref classes, gcLimit, ref gcCount);
             }
-            
+
             MigrationWindow.ClearProgressBar();
             return classes;
         }
-    
+
         private void ParseSourceFile(float progress, string file, ref List<ClassModel> data,
             int gcLimit,
             ref int gcCount)
         {
             MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
-                progress );
+                progress);
             IEnumerable<string> lines = File.ReadLines(file);
 
             foreach (string line in lines)
@@ -122,7 +98,6 @@ namespace migrationtool.controllers
             {
                 GC.Collect();
             }
-
         }
 
         private void ParseDLLFile(float progress, string metaFile, ref List<ClassModel> data,
@@ -151,7 +126,7 @@ namespace migrationtool.controllers
                 Assembly assembly = Assembly.LoadFile(file);
                 foreach (Type type in assembly.GetTypes())
                 {
-                    MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type,progress);
+                    MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type, progress);
                     data.Add(new ClassModel(type, match.Value, FileIDUtil.Compute(type).ToString()));
 
 

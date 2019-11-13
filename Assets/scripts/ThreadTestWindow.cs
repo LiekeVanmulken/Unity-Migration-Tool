@@ -29,11 +29,12 @@ namespace migrationtool.utility
                 Assembly executingAssembly = Assembly.GetExecutingAssembly();
                 Type[] types = executingAssembly.GetTypes();
 
-                
-                string[] typeStringArray = types.Select(type => type.FullName + " : " + type.Namespace +"." +type.Name ).ToArray();
+
+                string[] typeStringArray =
+                    types.Select(type => type.FullName + " : " + type.Namespace + "." + type.Name).ToArray();
                 string joinedTypeString = string.Join("\n", typeStringArray);
                 Debug.Log(joinedTypeString);
-                
+
 
 //                string dllGuid = null;
 //                string[] assets = AssetDatabase.FindAssets("");
@@ -58,7 +59,17 @@ namespace migrationtool.utility
             if (GUILayout.Button("Start Thread"))
             {
                 isRunning = true;
-                var thread = new Thread(() => test(() => OnComplete()));
+                var thread = new Thread(() =>
+                {
+                    try
+                    {
+                        test(() => OnComplete());
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError(e);
+                    }
+                });
                 thread.Start();
             }
 

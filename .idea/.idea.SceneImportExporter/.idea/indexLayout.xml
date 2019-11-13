@@ -16,6 +16,7 @@
       <Path>.git</Path>
       <Path>.idea</Path>
       <Path>.vs</Path>
+      <Path>Images</Path>
       <Path>Library</Path>
       <Path>Temp</Path>
       <Path>obj</Path>

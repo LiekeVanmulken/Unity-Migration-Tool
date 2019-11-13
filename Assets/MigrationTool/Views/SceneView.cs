@@ -23,35 +23,60 @@ namespace migrationtool.views
         private FieldMappingController fieldMappingController = new FieldMappingController();
 
         private MergingWizard mergingWizard;
-        private Thread calculationThread;
+//        private Thread calculationThread;
 
         private static List<ClassModel> oldFileDatas;
 
-        public void ImportClassDataAndScene()
+
+        public void MigrateAllScenes()
         {
-            // todo : parse scene file that have prefabs in prefabs and have the "skipped" in it, causing the yaml lib to brake
+            string rootPath = Application.dataPath;
+            string selectedAssetPath =
+                EditorUtility.OpenFolderPanel("Export all scenes in folder", rootPath, "");
 
-            if (calculationThread != null)
+            if (string.IsNullOrEmpty(selectedAssetPath))
             {
-                if (!EditorUtility.DisplayDialog("Already running import",
-                    "Can't Start new import while import is running", "Resume", "Stop"))
-                {
-                    calculationThread.Abort();
-                    calculationThread = null;
-                }
-
+                Debug.Log("Copy prefabs aborted, no path given.");
                 return;
             }
 
+            string[] sceneFiles = Directory.GetFiles(selectedAssetPath, "*.unity", SearchOption.AllDirectories);
+
+            foreach (string scene in sceneFiles)
+            {
+                ImportClassDataAndScene(scene);
+            }
+            Debug.Log("Migrated all scenes");
+        }
+
+        public void ImportClassDataAndScene(string scenePath = null)
+        {
+            // todo : parse scene file that have prefabs in prefabs and have the "skipped" in it, causing the yaml lib to brake
+//
+//            if (calculationThread != null)
+//            {
+//                if (!EditorUtility.DisplayDialog("Already running import",
+//                    "Can't Start new import while import is running", "Resume", "Stop"))
+//                {
+//                    calculationThread.Abort();
+//                    calculationThread = null;
+//                }
+//
+//                return;
+//            }
+
 //            EditorUtility.DisplayDialog("Please select the scene", "Please select the scene to migrate.",
 //                "Select the scene");
-            string scenePath =
-                EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
-                    "unity"); //todo : check if this is in the current project
-            if (scenePath.Length == 0)
+            if (scenePath == null)
             {
-                Debug.LogWarning("No path was selected");
-                return;
+                scenePath =
+                    EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
+                        "unity"); //todo : check if this is in the current project
+                if (scenePath.Length == 0)
+                {
+                    Debug.LogWarning("No path was selected");
+                    return;
+                }
             }
 
             string IDPath = ProjectPathUtility.getProjectPathFromFile(scenePath) + constants.RelativeExportPath;
@@ -82,9 +107,7 @@ namespace migrationtool.views
                     JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
             }
 
-            calculationThread =
-                new Thread(() => this.ImportTransformIDs(rootPath, oldIDs, newIDs, scenePath, foundScripts));
-            calculationThread.Start();
+            ThreadUtil.RunThread(() => { this.ImportTransformIDs(rootPath, oldIDs, newIDs, scenePath, foundScripts); });
         }
 
 
@@ -102,11 +125,6 @@ namespace migrationtool.views
         {
             try
             {
-                if (constants.DEBUG)
-                {
-                    Debug.LogWarning("[DEBUG ACTIVE] Using old ids for the import");
-                }
-
                 if (oldIDs == null || currentIDs == null)
                 {
                     throw new NullReferenceException("One of the ids is null");
@@ -190,20 +208,18 @@ namespace migrationtool.views
                 originalFoundScripts = originalFoundScripts.Merge(mergedFoundScripts);
             }
 
-            new Thread(() =>
+            ThreadUtil.RunThread(() =>
             {
                 fieldMappingController.MigrateFields(scenePath, ref linesToChange, originalFoundScripts,
                     ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath);
-
-
+                
                 Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " +
                           rootPath +
                           "/" + Path.GetFileName(scenePath) + "");
 
                 SaveFoundScripts(rootPath, originalFoundScripts);
                 SaveFile(rootPath + "/" + Path.GetFileName(scenePath), linesToChange);
-                calculationThread = null;
-            }).Start();
+            });
         }
 
         /// <summary>

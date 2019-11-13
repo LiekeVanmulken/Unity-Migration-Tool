@@ -36,6 +36,7 @@
             <e p="ProjectModel.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
+            <e p="BuildUtility.cs" t="Include" />
             <e p="Computation" t="Include">
               <e p="FileIDUtil.cs" t="Include" />
               <e p="Levenshtein.cs" t="Include" />
@@ -49,6 +50,7 @@
               <e p="ClassModelConverter.cs" t="Include" />
             </e>
             <e p="Singleton.cs" t="Include" />
+            <e p="ThreadUtil.cs" t="Include" />
           </e>
           <e p="Views" t="Include">
             <e p="IDExportView.cs" t="Include" />

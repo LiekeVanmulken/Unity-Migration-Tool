@@ -37,8 +37,8 @@ namespace migrationtool.views
 
             File.WriteAllText(idExportPath, jsonField);
 
-            MigrationWindow.DisplayDialog("Export complete",
-                "All classes were exported to " + idExportPath + " . Open up the new project and import the scene.");
+            MigrationWindow.DisplayDialog("Export completed successfully",
+                "All classes were exported to " + idExportPath + ".");
         }
     }
 }
