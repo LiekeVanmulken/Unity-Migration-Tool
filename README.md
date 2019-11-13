@@ -1,4 +1,4 @@
-# Unity-Scene-Exporter
+# Unity Migration Tool
 
 The tool enables you to export scenes from one project to another without breaking script references.
 Migrate data to new field- and new class names and directly migrate prefabs.
