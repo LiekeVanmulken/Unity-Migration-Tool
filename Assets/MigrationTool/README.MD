@@ -16,9 +16,11 @@ This is currently used to port Source code demo projects to DLL projects. It sta
 
 ### Installation
 
-1. Have two projects, the old project and the new project. (The old project will have the scene we would like to export).One way to accomplish this would be to literally copy the project in the file explorer, this way you immediately have access to all your resources. 
+1. Have two projects, the old project and the new project. (The old project will have the scene we would like to export). One way to accomplish this would be to literally copy the project in the file explorer, this way you immediately have access to all your resources. 
 2. Download the latest unity package from the [github releases page](https://github.com/WouterVanmulken/Unity-Scene-Exporter/releases/).
-3. Import the package in both projects.
+3. Import the package in both projects or copy the `MigrationTool` folder from the source to both projects.
+
+Note: The project includes both JsonDotNet and YamlDotNet. If you already use these libraries there might be errors that it has double code. Just delete one of the versions.
 
 Note
 
