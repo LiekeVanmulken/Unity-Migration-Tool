@@ -5,60 +5,61 @@
     <e p="C:\Users\ArtPC-009\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_SceneImportExporter.1836620790.00" t="ExcludeRecursive" />
     <e p="D:\UnityProjects\GITHUB\SceneImportExporter" t="IncludeRecursive">
       <e p="Assembly-CSharp-Editor-firstpass.csproj" t="IncludeRecursive" />
-      <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="AssetDatabaseTest" t="Include">
-          <e p="AssetDatabaseTestScript.cs" t="Include" />
-        </e>
-        <e p="FileIDCalculationScript.cs" t="Include" />
-        <e p="ImportExport" t="Include">
+        <e p="MigrationTool" t="Include">
           <e p="Controllers" t="Include">
             <e p="CustomLogic" t="Include">
               <e p="CustomMappingLogicAttribute.cs" t="Include" />
               <e p="ICustomMappingLogic.cs" t="Include" />
-              <e p="QuaternionCustomMappingLogic.cs" t="Include" />
             </e>
+            <e p="FieldGenerationController.cs" t="Include" />
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />
+            <e p="PrefabController.cs" t="Include" />
+          </e>
+          <e p="Examples" t="Include">
+            <e p="CustomLogic" t="Include">
+              <e p="QuaternionCustomMappingLogic.cs" t="Include" />
+              <e p="TestScriptQuaternion.cs" t="Include" />
+            </e>
+          </e>
+          <e p="JsonDotNet" t="Include">
+            <e p="link.xml" t="Include" />
           </e>
           <e p="Models" t="Include">
             <e p="ClassModel.cs" t="Include" />
-            <e p="FieldGenerationUtility.cs" t="Include" />
             <e p="FieldModel.cs" t="Include" />
             <e p="FoundScript.cs" t="Include" />
             <e p="MergeNode.cs" t="Include" />
             <e p="PrefabModel.cs" t="Include" />
-            <e p="PrefabTestScript.cs" t="Include" />
             <e p="ProjectModel.cs" t="Include" />
           </e>
           <e p="Utility" t="Include">
-            <e p="ClassModelConverter.cs" t="Include" />
+            <e p="Computation" t="Include">
+              <e p="FileIDUtil.cs" t="Include" />
+              <e p="Levenshtein.cs" t="Include" />
+              <e p="MD4.cs" t="Include" />
+            </e>
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
-            <e p="Levenshtein.cs" t="Include" />
             <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
-            <e p="MD4.cs" t="Include" />
+            <e p="ProjectPathUtility.cs" t="Include" />
+            <e p="Serialization" t="Include">
+              <e p="ClassModelConverter.cs" t="Include" />
+            </e>
             <e p="Singleton.cs" t="Include" />
+          </e>
+          <e p="Views" t="Include">
+            <e p="IDExportView.cs" t="Include" />
+            <e p="PrefabView.cs" t="Include" />
+            <e p="SceneView.cs" t="Include" />
           </e>
           <e p="Windows" t="Include">
             <e p="MergingWizard.cs" t="Include" />
             <e p="MigrationWindow.cs" t="Include" />
             <e p="OptionsWizard.cs" t="Include" />
-          </e>
-        </e>
-        <e p="JsonDotNet" t="Include">
-          <e p="link.xml" t="Include" />
-        </e>
-        <e p="LibraryTestScript.cs" t="Include" />
-        <e p="NamespaceGettingTest" t="Include">
-          <e p="GetNameSpaceFromGuidTestScript.cs" t="Include" />
-        </e>
-        <e p="Plugins" t="Include">
-          <e p="Editor" t="Include">
-            <e p="JetBrains" t="Include">
-              <e p="Unity3DRider.cs" t="Include" />
-            </e>
+            <e p="PrefabMigrationWindow.cs" t="Include" />
           </e>
           <e p="YamlDotNet" t="Include">
             <e p="Core" t="Include">
@@ -296,16 +297,34 @@
             <e p="YamlDotNet.license.txt" t="Include" />
           </e>
         </e>
-        <e p="TestScript1.cs" t="Include" />
-        <e p="TestScript2.cs" t="Include" />
-        <e p="TestScript_Arrays.cs" t="Include" />
-        <e p="TestScriptQuaternion.cs" t="Include" />
-        <e p="ThreadTestWindow.cs" t="Include" />
-        <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
-        <e p="WizardTest" t="Include">
-          <e p="MergingWizardEditorWindow.cs" t="Include" />
+        <e p="Plugins" t="Include">
+          <e p="Editor" t="Include">
+            <e p="JetBrains" t="Include">
+              <e p="Unity3DRider.cs" t="Include" />
+            </e>
+          </e>
         </e>
-        <e p="YamlTestScript.cs" t="Include" />
+        <e p="scripts" t="Include">
+          <e p="FileIDCalculationScript.cs" t="Include" />
+          <e p="LibraryTestScript.cs" t="Include" />
+          <e p="TestScript1.cs" t="Include" />
+          <e p="TestScript2.cs" t="Include" />
+          <e p="TestScript_Arrays.cs" t="Include" />
+          <e p="ThreadTestWindow.cs" t="Include" />
+          <e p="UnityGuidRegeneratorMenu.cs" t="Include" />
+          <e p="YamlTestScript.cs" t="Include" />
+        </e>
+        <e p="Testing" t="Include">
+          <e p="AssetDatabaseTest" t="Include">
+            <e p="AssetDatabaseTestScript.cs" t="Include" />
+          </e>
+          <e p="NamespaceGettingTest" t="Include">
+            <e p="GetNameSpaceFromGuidTestScript.cs" t="Include" />
+          </e>
+          <e p="WizardTest" t="Include">
+            <e p="MergingWizardEditorWindow.cs" t="Include" />
+          </e>
+        </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />
