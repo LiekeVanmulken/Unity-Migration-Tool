@@ -1,16 +1,98 @@
 # Unity-Scene-Exporter
 
 The tool enables you to export scenes from one project to another without breaking script references.
+Migrate data to new field- and new class names and directly migrate prefabs.
+
+The tool started of as a hobby project that quickly became a work project. So i'd also like to thank [Unit040](https://www.unit040.com) for keeping this open source.
 
 ## The Problem
 
-When moving a scene file from one project to another, unity will lose all idea of what scripts are attached to what gameobjects. This is because it uses a filedID and GUID to reference scripts which are project specific. To fix these references the tool will search the old project for the old GUIDs and generate the corresponding fileID. Causing unity to find the reference to the script and solving all script references in the scene.
+When moving a scene file from one project to another, unity will lose all idea of what scripts are attached to what gameobjects. This is because it uses a filedID and GUID to reference scripts which are project specific. To fix these references the tool will search the old project for the old GUIDs and generate the corresponding fileID and map these to the class name between projects. Causing unity to find the reference to the script and solving all script references in the scene.
 
 The most helpful information about this issue can be found on the unity forum [here](https://forum.unity.com/threads/yaml-fileid-hash-function-for-dll-scripts.252075/).
 
 ## Main usecase
 
-This is currently used to port Source code demo projects to DLL projects. It started of as a hobby project that quickly became a work project. So i'd also like to thank [Unit040](https://www.unit040.com) for keeping this open source.
+This is currently used to port Source code demo projects to DLL projects.
+
+We also use the tool to migrate data from one version of the dll to the next without losing scene data. Therefore it can also map changed class names and changed field names. The following scripts can be mapped to migrate the data to the new version of the script.
+
+Example:
+
+Original script:
+
+```
+using System;
+using UnityEngine;
+
+[Serializable]
+public class TestScript_test : MonoBehaviour
+{
+    public string test;
+    
+    [SerializeField]
+    private TestScriptSubClass testScriptSubClass_ = new TestScriptSubClass("a", "b");
+    
+    [Serializable]
+    public class TestScriptSubClass
+    {
+        [SerializeField] private string privateString_;
+        public string publicString_;
+
+        public TestScriptSubClass(string privateString, string publicString)
+        {
+            this.privateString_ = privateString;
+            this.publicString_ = publicString;
+        }
+    }
+}
+```
+
+There are three fields that will be migrated.
+
+![Original Values](https://raw.githubusercontent.com/WouterVanmulken/Unity-Scene-Exporter/master/Images/originalValues.png)
+
+Migrated script:
+
+```
+using System;
+using UnityEngine;
+
+[Serializable]
+public class TestScript1 : MonoBehaviour
+{
+    public string test2;
+    
+    [SerializeField]
+    private TestScriptSubClass testScriptSubClass = new TestScriptSubClass("a", "b");
+
+    public class testingSubClass
+    {
+        [SerializeField]
+        private string test2;
+
+        public string publicTest;
+
+    }
+    [Serializable]
+    public class TestScriptSubClass
+    {
+        [SerializeField] private string privateString;
+        public string publicString;
+
+        public TestScriptSubClass(string privateString, string publicString)
+        {
+            this.privateString = privateString;
+            this.publicString = publicString;
+        }
+    }
+}
+```
+
+All values are migrated to the new values in the new project.
+
+![Migrated Values](https://raw.githubusercontent.com/WouterVanmulken/Unity-Scene-Exporter/master/Images/migratedValues.png)
+
 
 ## How to use
 
