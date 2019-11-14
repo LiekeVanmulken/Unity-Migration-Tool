@@ -46,6 +46,7 @@ namespace migrationtool.views
             {
                 MigrateScene(scene);
             }
+
             Debug.Log("Migrated all scenes");
         }
 
@@ -73,7 +74,7 @@ namespace migrationtool.views
             }
 
             List<ClassModel> oldIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
+                Administration.Instance.oldIDsOverride ?? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
 
             string rootPath = Application.dataPath;
             string newIDsPath = rootPath + constants.RelativeExportPath;
@@ -200,7 +201,7 @@ namespace migrationtool.views
                 string newScenePath = rootPath + scenePath.GetRelativeAssetPath();
 
                 newScenePath = ProjectPathUtility.AddTimestamp(newScenePath);
-                
+
                 Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " +
                           newScenePath + "");
 
@@ -233,7 +234,6 @@ namespace migrationtool.views
         /// <param name="linesToWrite"></param>
         private void SaveFile(string scenePath, string[] linesToWrite)
         {
-
             if (!Directory.Exists(Path.GetDirectoryName(scenePath)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
@@ -243,7 +243,8 @@ namespace migrationtool.views
             MigrationWindow.Instance().Enqueue(() =>
             {
                 AssetDatabase.Refresh();
-                EditorUtility.DisplayDialog("Imported data", "The scene was migrated to " + scenePath.GetRelativeAssetPath(), "Ok");
+                EditorUtility.DisplayDialog("Imported data",
+                    "The scene was migrated to " + scenePath.GetRelativeAssetPath(), "Ok");
             });
         }
     }

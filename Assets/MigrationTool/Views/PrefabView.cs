@@ -34,7 +34,9 @@ namespace migrationtool.views
         /// <param name="sceneFile"></param>
         /// <param name="originalAssetPath"></param>
         /// <param name="destinationAssetPath"></param>
-        public void ParsePrefabsInAScene(string sceneFile, string originalAssetPath, string destinationAssetPath)
+        /// <param name="oldIDs">Needs to be added because the oldIDs can be overriden</param>
+        public void ParsePrefabsInAScene(string sceneFile, string originalAssetPath,
+            string destinationAssetPath) // todo : this will not use the classModel!!
         {
             YamlStream stream = new YamlStream();
             string[] lines = File.ReadAllLines(sceneFile).PrepareSceneForYaml();
@@ -55,27 +57,31 @@ namespace migrationtool.views
             }
         }
 
-        public void MigrateAllPrefabs(string rootPath)
+        public void MigrateAllPrefabs(string destinationAssetPath, string originalAssetPath = null)
         {
-            string selectedAssetPath = null;
-            ThreadUtil.RunWaitMainThread(() =>
-                {
-                    selectedAssetPath = EditorUtility.OpenFolderPanel("Export all prefabs in folder", rootPath, "");
-                }
-            );
-
-            if (string.IsNullOrEmpty(selectedAssetPath))
+            
+            if (originalAssetPath == null)
+            {
+                ThreadUtil.RunWaitMainThread(() =>
+                    {
+                        originalAssetPath =
+                            EditorUtility.OpenFolderPanel("Export all prefabs in folder", destinationAssetPath, "");
+                    }
+                );
+            }
+            
+            if (string.IsNullOrEmpty(originalAssetPath))
             {
                 Debug.Log("Copy prefabs aborted, no path given.");
                 return;
             }
 
-            List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(selectedAssetPath);
+            List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(originalAssetPath);
             foreach (PrefabModel prefab in prefabs)
             {
                 ThreadUtil.RunWaitThread(() =>
                     {
-                        ParsePrefab(prefab.Path, selectedAssetPath, rootPath, prefabs,
+                        ParsePrefab(prefab.Path, originalAssetPath, destinationAssetPath, prefabs,
                             prefab.Guid);
                     }
                 );
@@ -120,7 +126,7 @@ namespace migrationtool.views
 
             //Deserialize the old ID's
             List<ClassModel> oldIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(
+                Administration.Instance.oldIDsOverride ?? JsonConvert.DeserializeObject<List<ClassModel>>(
                     File.ReadAllText(originalProjectPath + constants.RelativeExportPath));
 
             //Deserialize the new ID's
@@ -185,12 +191,12 @@ namespace migrationtool.views
         /// <param name="parsedPrefab"></param>
         /// <param name="currentPrefab"></param>
         /// <param name="destination"></param>
-        private void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
+        public void WritePrefab(string[] parsedPrefab, PrefabModel currentPrefab, string destination)
         {
 //            string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
             string newPrefabMetaPath = destination + currentPrefab.MetaPath.GetRelativeAssetPath();
             newPrefabMetaPath = ProjectPathUtility.AddTimestamp(newPrefabMetaPath);
-
+    
 //            if (File.Exists(newPrefabMetaPath))
 //            {
 //                bool shouldOverwrite = false;
@@ -212,10 +218,19 @@ namespace migrationtool.views
 //                }
 //            }
 
+            if (!Directory.Exists(Path.GetDirectoryName(newPrefabMetaPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(newPrefabMetaPath));
+            }
+
             File.Copy(currentPrefab.MetaPath, newPrefabMetaPath, true);
 
-//            string newPrefabPath = destination + @"\" + Path.GetFileName(currentPrefab.Path);
+
             string newPrefabPath = newPrefabMetaPath.Substring(0, newPrefabMetaPath.Length - 5);
+            if (!Directory.Exists(Path.GetDirectoryName(newPrefabPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(newPrefabPath));
+            }
 
             File.WriteAllText(newPrefabPath,
                 string.Join("\r\n", parsedPrefab));
