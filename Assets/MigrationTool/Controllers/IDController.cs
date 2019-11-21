@@ -311,9 +311,13 @@ namespace migrationtool.controllers
             };
 
             MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-            if (hasBeenMapped == MappedState.NotMapped)
+            switch (hasBeenMapped)
             {
-                existingFoundScript.GenerateMappingNode(foundScripts);
+                case MappedState.NotMapped:
+                    existingFoundScript.GenerateMappingNode();
+                    break;
+                case MappedState.Ignored:
+                    return null;
             }
 
             foundScripts.Add(existingFoundScript);
@@ -419,9 +423,9 @@ namespace migrationtool.controllers
 
             //Get all classes including all subclasses and check if it might be a subclass
             Dictionary<string, ClassModel> allClassData = generateOptions(newIDs);
-            if (allClassData.ContainsKey(old.Name))
+            if (allClassData.ContainsKey(old.FullName))
             {
-                return allClassData[old.Name];
+                return allClassData[old.FullName];
             }
 
             // Check if there is an exact match with only the classname

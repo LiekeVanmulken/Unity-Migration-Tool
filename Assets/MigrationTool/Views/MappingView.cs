@@ -19,8 +19,8 @@ public class MappingView
     {
         
         
-        string oldIDs = EditorUtility.OpenFilePanel("Old ID", Application.dataPath, "json");
-        string newIDs = EditorUtility.OpenFilePanel("New ID", Application.dataPath, "json");
+        string oldIDs = EditorUtility.OpenFilePanel("Old IDs", Application.dataPath, "json");
+        string newIDs = EditorUtility.OpenFilePanel("New IDs", Application.dataPath, "json");
 //        string oldIDs = @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\MigrationTool\Exports\Export.json";
 //        string newIDs = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\MigrationTool\Exports\Export.json";
         MapAllClasses(oldIDs, newIDs);
@@ -58,6 +58,11 @@ public class MappingView
             {
                 SaveFoundScripts(rootPath, mergedFoundScripts);
                 MigrationWindow.ClearProgressBar();
+                ThreadUtil.RunMainThread(() =>
+                    {
+                        EditorUtility.DisplayDialog("Completed mapping",
+                            "Completed the mapping. Saved the mapping to :" + constants.RelativeFoundScriptPath, "Ok");
+                    });
             });
         });
     }

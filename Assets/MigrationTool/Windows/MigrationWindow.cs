@@ -295,7 +295,7 @@ namespace migrationtool.windows
                 Thread.Sleep(Constants.Instance.THREAD_WAIT_TIME);
             }
 
-            Debug.Log("OptionsWindow result : " + result);
+//            Debug.Log("OptionsWindow result : " + result);
             return result;
         }
 

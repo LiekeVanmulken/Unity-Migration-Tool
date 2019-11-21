@@ -38,6 +38,7 @@ namespace migrationtool.models
             NotMapped,
             Mapped,
             Approved,
+            Ignored
         }
 
         public FoundScript()
@@ -63,7 +64,7 @@ namespace migrationtool.models
             return CheckHasBeenMapped(oldClassModel, newClassModel);
         }
 
-        public void GenerateMappingNode(List<FoundScript> existingFoundScripts)
+        public void GenerateMappingNode()
         {
             if (oldClassModel == null || newClassModel == null)
             {

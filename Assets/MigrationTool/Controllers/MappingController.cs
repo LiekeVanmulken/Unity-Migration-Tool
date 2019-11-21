@@ -73,6 +73,7 @@ public class MappingController
 
         Debug.Log(string.Join("\r\n", classesToMap.Select(model => model.FullName).ToArray()));
         Debug.Log("Mapped classes. Total: " + oldIDs.Count + " classesThatNeedToBeMapped: " + classesToMap.Count);
+        
 
         return foundScripts;
     }
