@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using migrationtool.models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -56,8 +57,8 @@ namespace migrationtool.utility.serialization
                     writer.WriteEndObject();
                 }
             }
-
             writer.WriteEndArray();
+
             writer.WriteEndObject();
         }
 
@@ -74,9 +75,9 @@ namespace migrationtool.utility.serialization
             {
                 throw new NotImplementedException("Not a ClassData object");
             }
+
             JObject classData = JObject.Load(reader);
             return Parse(classData);
-
         }
 
         private static ClassModel Parse(JObject classData)
@@ -92,7 +93,7 @@ namespace migrationtool.utility.serialization
                 FieldModel currentField = new FieldModel();
                 currentField.Name = (string) field["Name"];
                 currentField.Type = new ClassModel((string) field["Type"]);
-                currentField.IsIterable= (bool) field["IsIterable"];
+                currentField.IsIterable = (bool) field["IsIterable"];
 
                 JToken classDataChild;
                 if (field.TryGetValue("ClassFields", out classDataChild))
@@ -103,11 +104,11 @@ namespace migrationtool.utility.serialization
 
                 currentFields.Add(currentField);
             }
-
             current.Fields = currentFields.ToArray();
-
+            
             return current;
         }
+
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(ClassModel);

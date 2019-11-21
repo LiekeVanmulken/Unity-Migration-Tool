@@ -7,6 +7,8 @@ namespace migrationtool.windows
     public class Administration : Singleton<Administration>
     {
         public List<ClassModel> oldIDsOverride;
+        public bool OverwriteFiles;
+        public bool showPopups;
     }
 }
 #endif

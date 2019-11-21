@@ -35,7 +35,10 @@ public class MainThreadDispatcherEditorWindow : EditorWindow
 
     public void Enqueue(Action action)
     {
-        _executionQueue.Enqueue(action);
+        lock (_executionQueue)
+        {
+            _executionQueue.Enqueue(action);
+        }
     }
 
     public static MainThreadDispatcherEditorWindow Instance()

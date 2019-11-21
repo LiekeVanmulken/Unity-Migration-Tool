@@ -43,7 +43,18 @@ namespace migrationtool.windows
         private void OnEnable()
         {
             richtextStyle = new GUIStyle() {richText = true, wordWrap = true};
+            
+            if (EditorPrefs.GetInt("UserSkin") == 1)
+            {
+                richtextStyle.normal.textColor = new Color(120, 120, 120);
+            }
+
             classNameStyle = new GUIStyle() {fontSize = 14};
+            if (EditorPrefs.GetInt("UserSkin") == 1)
+            {
+                classNameStyle.normal.textColor = new Color(150, 150, 150);
+            }
+            
             paddingStyle = new GUIStyle() {padding = new RectOffset(15, 15, 15, 15)};
             horizontalLineStyle = new GUIStyle() {margin = new RectOffset(0, 0, 10, 8), fixedHeight = 1};
             horizontalLineStyle.normal.background = EditorGUIUtility.whiteTexture;
@@ -176,7 +187,6 @@ namespace migrationtool.windows
                 foundScript.HasBeenMapped = FoundScript.MappedState.Approved;
             }
             onComplete(foundScripts);
-            Debug.Log("Create button clicked");
         }
     }
 }

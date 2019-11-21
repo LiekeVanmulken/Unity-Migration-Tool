@@ -41,7 +41,7 @@ namespace migrationtool.windows
         {
 
             var wizard = DisplayWizard<OptionsWizard>("Choose", "Choose"
-//                ,"Ignore"   // todo : needs to be implemented in the foundscript so it doesn't keep making popups
+                ,"Ignore"   // todo : needs to be implemented in the foundscript so it doesn't keep making popups
                 );
             wizard.label = label;
             wizard.comparison = comparison;
@@ -55,6 +55,11 @@ namespace migrationtool.windows
         private void OnEnable()
         {
             richtextStyle = new GUIStyle() { richText = true, wordWrap = true };
+              
+            if (EditorPrefs.GetInt("UserSkin") == 1)
+            {
+                richtextStyle.normal.textColor = new Color(20, 20, 20);
+            }
             paddingStyle = new GUIStyle() { padding = new RectOffset(15, 15, 15, 15) };
             horizontalLineStyle = new GUIStyle() { margin = new RectOffset(0, 0, 10, 8), fixedHeight = 1 };
             horizontalLineStyle.normal.background = EditorGUIUtility.whiteTexture;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using migrationtool.controllers.customlogic;
+using Newtonsoft.Json;
 
 namespace migrationtool.utility
 {
@@ -10,11 +11,11 @@ namespace migrationtool.utility
         /// How long the while loop that is waiting for a thread should sleep before checking the isComplete again.
         /// </summary>
         public readonly int THREAD_WAIT_TIME = 300;
-        
+
         /// <summary>
         /// Sets how deep the fields of every class will be parsed.
         /// </summary>
-        public readonly int RECURSION_DEPTH = 3;
+        public readonly int RECURSION_DEPTH = 6;
 
         /// <summary>
         /// Checks whether something is a list or array and parses the containing class
@@ -28,14 +29,20 @@ namespace migrationtool.utility
         public readonly Regex RegexGuid = new Regex(@"(?<=guid: )[A-z0-9]*", RegexOptions.Compiled);
 
         /// <summary>
-        /// Path to the export.json from the Asset path
+        /// Path to the ProjectIDs.json from the Asset path
         /// </summary>
-        public readonly string RelativeExportPath = "/MigrationTool/Exports/Export.json";
+        public readonly string RelativeExportPath = "/MigrationTool/Exports/ProjectIDs.json";
 
         /// <summary>
-        /// Path to the Found.json from the Asset path
+        /// Path to the GeneratedMappings.json from the Asset path
         /// </summary>
-        public readonly string RelativeFoundScriptPath = "/MigrationTool/Exports/Found.json";
+        public readonly string RelativeFoundScriptPath = "/MigrationTool/Exports/GeneratedMappings.json";
+
+
+        /// <summary>
+        ///  Sets the formatting of the saved files
+        /// </summary>
+        public readonly Formatting IndentJson = Formatting.None;
 
         /// <summary>
         /// Fields to exclude in the field mapping of the MonoBehaviour Yaml

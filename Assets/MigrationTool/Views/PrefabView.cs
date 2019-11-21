@@ -52,43 +52,14 @@ namespace migrationtool.views
 
             foreach (string prefabGuid in prefabGuids)
             {
-                PrefabModel currentPrefab = prefabs.First(model => model.Guid == prefabGuid);
+                PrefabModel currentPrefab = prefabs.FirstOrDefault(model => model.Guid == prefabGuid);
+                if (currentPrefab == null)
+                {
+                    Debug.LogError("Find references to prefab but could not find prefab for guid : " + prefabGuid);
+                }
+
                 ParsePrefab(currentPrefab.Path, originalAssetPath, destinationAssetPath, prefabs, currentPrefab.Guid);
             }
-        }
-
-        public void MigrateAllPrefabs(string destinationAssetPath, string originalAssetPath = null)
-        {
-            
-            if (originalAssetPath == null)
-            {
-                ThreadUtil.RunWaitMainThread(() =>
-                    {
-                        originalAssetPath =
-                            EditorUtility.OpenFolderPanel("Export all prefabs in folder", destinationAssetPath, "");
-                    }
-                );
-            }
-            
-            if (string.IsNullOrEmpty(originalAssetPath))
-            {
-                Debug.Log("Copy prefabs aborted, no path given.");
-                return;
-            }
-
-            List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(originalAssetPath);
-            foreach (PrefabModel prefab in prefabs)
-            {
-                ThreadUtil.RunWaitThread(() =>
-                    {
-                        ParsePrefab(prefab.Path, originalAssetPath, destinationAssetPath, prefabs,
-                            prefab.Guid);
-                    }
-                );
-            }
-
-            ThreadUtil.RunMainThread(() => { AssetDatabase.Refresh(); });
-            Debug.Log("Migrated all prefabs");
         }
 
         /// <summary>
@@ -126,21 +97,18 @@ namespace migrationtool.views
 
             //Deserialize the old ID's
             List<ClassModel> oldIDs =
-                Administration.Instance.oldIDsOverride ?? JsonConvert.DeserializeObject<List<ClassModel>>(
-                    File.ReadAllText(originalProjectPath + constants.RelativeExportPath));
+                Administration.Instance.oldIDsOverride ?? IDController.DeserializeIDs(originalProjectPath + constants.RelativeExportPath);
 
             //Deserialize the new ID's
             List<ClassModel> newIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(
-                    File.ReadAllText(destinationAssetPath + constants.RelativeExportPath));
+                IDController.DeserializeIDs(destinationAssetPath + constants.RelativeExportPath);
 
 
             //Deserialize the foundScripts
             List<FoundScript> foundScripts = new List<FoundScript>();
             if (File.Exists(destinationAssetPath + constants.RelativeFoundScriptPath))
             {
-                foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(
-                    File.ReadAllText(destinationAssetPath + constants.RelativeFoundScriptPath));
+                foundScripts = MappingController.DeserializeMapping(destinationAssetPath + constants.RelativeFoundScriptPath);
             }
 
 
@@ -165,7 +133,7 @@ namespace migrationtool.views
                     {
                         foundScripts = foundScripts.Merge(mergedFoundScripts);
                         File.WriteAllText(destinationAssetPath + constants.RelativeFoundScriptPath,
-                            JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
+                            JsonConvert.SerializeObject(foundScripts, constants.IndentJson));
 
                         ThreadUtil.RunThread(() =>
                         {
@@ -184,6 +152,40 @@ namespace migrationtool.views
             }
         }
 
+        public void MigrateAllPrefabs(string destinationAssetPath, string originalAssetPath = null)
+        {
+            
+            if (originalAssetPath == null)
+            {
+                ThreadUtil.RunWaitMainThread(() =>
+                    {
+                        originalAssetPath =
+                            EditorUtility.OpenFolderPanel("Export all prefabs in folder", destinationAssetPath, "");
+                    }
+                );
+            }
+            
+            if (string.IsNullOrEmpty(originalAssetPath))
+            {
+                Debug.Log("Copy prefabs aborted, no path given.");
+                return;
+            }
+
+            List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(originalAssetPath);
+            foreach (PrefabModel prefab in prefabs)
+            {
+                ThreadUtil.RunWaitThread(() =>
+                    {
+                        ParsePrefab(prefab.Path, originalAssetPath, destinationAssetPath, prefabs,
+                            prefab.Guid);
+                    }
+                );
+            }
+
+            ThreadUtil.RunMainThread(() => { AssetDatabase.Refresh(); });
+            Debug.Log("Migrated all prefabs");
+        }
+
 
         /// <summary>
         /// Write the prefab to a new file
@@ -195,8 +197,11 @@ namespace migrationtool.views
         {
 //            string newPrefabMetaPath = destination + @"\" + Path.GetFileName(currentPrefab.MetaPath);
             string newPrefabMetaPath = destination + currentPrefab.MetaPath.GetRelativeAssetPath();
-            newPrefabMetaPath = ProjectPathUtility.AddTimestamp(newPrefabMetaPath);
-    
+            if (!Administration.Instance.OverwriteFiles)
+            {
+                newPrefabMetaPath = ProjectPathUtility.AddTimestamp(newPrefabMetaPath);
+            }
+
 //            if (File.Exists(newPrefabMetaPath))
 //            {
 //                bool shouldOverwrite = false;

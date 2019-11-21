@@ -16,6 +16,7 @@
             <e p="FieldGenerationController.cs" t="Include" />
             <e p="FieldMappingController.cs" t="Include" />
             <e p="IDController.cs" t="Include" />
+            <e p="MappingController.cs" t="Include" />
             <e p="PrefabController.cs" t="Include" />
           </e>
           <e p="Examples" t="Include">
@@ -54,10 +55,12 @@
           </e>
           <e p="Views" t="Include">
             <e p="IDExportView.cs" t="Include" />
+            <e p="MappingView.cs" t="Include" />
             <e p="PrefabView.cs" t="Include" />
             <e p="SceneView.cs" t="Include" />
           </e>
           <e p="Windows" t="Include">
+            <e p="Administration.cs" t="Include" />
             <e p="MergeWizard.cs" t="Include" />
             <e p="MigrationWindow.cs" t="Include" />
             <e p="OptionsWizard.cs" t="Include" />
@@ -299,6 +302,11 @@
             <e p="YamlDotNet.license.txt" t="Include" />
           </e>
         </e>
+        <e p="MigrationTool_Prespective" t="Include">
+          <e p="Prepackage" t="Include">
+            <e p="PrespectivePackageImporter.cs" t="Include" />
+          </e>
+        </e>
         <e p="Plugins" t="Include">
           <e p="Editor" t="Include">
             <e p="JetBrains" t="Include">
@@ -323,6 +331,8 @@
           <e p="NamespaceGettingTest" t="Include">
             <e p="GetNameSpaceFromGuidTestScript.cs" t="Include" />
           </e>
+          <e p="Tesssssst.cs" t="Include" />
+          <e p="TestScriptPrespective.cs" t="Include" />
           <e p="WizardTest" t="Include">
             <e p="MergingWizardEditorWindow.cs" t="Include" />
           </e>

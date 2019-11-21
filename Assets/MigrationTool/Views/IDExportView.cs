@@ -25,7 +25,7 @@ namespace migrationtool.views
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-                Formatting = Formatting.Indented
+                Formatting = constants.IndentJson
             };
 
             string jsonField = JsonConvert.SerializeObject(IDs, jsonSerializerSettings);
@@ -38,7 +38,7 @@ namespace migrationtool.views
             File.WriteAllText(idExportPath, jsonField);
 
             MigrationWindow.DisplayDialog("Export completed successfully",
-                "All classes were exported to " + idExportPath + ".");
+                "All IDs were exported to " + constants.RelativeExportPath + ".");
         }
     }
 }

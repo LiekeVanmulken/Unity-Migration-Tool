@@ -15,7 +15,7 @@ namespace migrationtool.utility
     /// </summary>
     public class BuildUtility
     {
-        /// <summary>
+        /// <summary> 
         /// Exports the classes of the project
         /// </summary>
         /// <param name="projectPath"></param>
@@ -33,7 +33,7 @@ namespace migrationtool.utility
         public static void ExportClassData(string projectPath, string exportPath)
         {
             List<ClassModel> export = ExportClassData(projectPath);
-            string jsonExport = JsonConvert.SerializeObject(export, Formatting.Indented);
+            string jsonExport = JsonConvert.SerializeObject(export, Constants.Instance.IndentJson);
 
             if (!Directory.Exists(Path.GetDirectoryName(exportPath)))
             {
@@ -73,10 +73,8 @@ namespace migrationtool.utility
                 throw new DirectoryNotFoundException("Could not find the original or destination path");
             }
 
-            List<ClassModel> oldIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(originalProjectPath));
-            List<ClassModel> newIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(destinationExportFile));
+            List<ClassModel> oldIDs = IDController.DeserializeIDs(originalProjectPath);
+            List<ClassModel> newIDs = IDController.DeserializeIDs(destinationExportFile);
 
             TransformIDsOfPrefabs(oldIDs, newIDs, originalProjectPath, destinationProjectPath);
         }

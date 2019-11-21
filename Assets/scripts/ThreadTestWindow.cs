@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using System.Threading;
 using migrationtool.windows;
+using UnityEditor;
 using UnityEngine;
 
 namespace migrationtool.utility
@@ -12,18 +13,29 @@ namespace migrationtool.utility
     public class ThreadTestWindow : MainThreadDispatcherEditorWindow
     {
         // Add menu named "My Window" to the Window menu
-//        [MenuItem("Window/ThreadTestWindow")]
-//        static void Init()
-//        {
-//            // Get existing open window or if none, make a new one:
-//            ThreadTestWindow window = (ThreadTestWindow) EditorWindow.GetWindow(typeof(ThreadTestWindow));
-//            window.Show();
-//        }
+        [MenuItem("Window/ThreadTestWindow2")]
+        static void Init()
+        {
+            // Get existing open window or if none, make a new one:
+            ThreadTestWindow window = (ThreadTestWindow) EditorWindow.GetWindow(typeof(ThreadTestWindow));
+            window.Show();
+        }
 
         private bool isRunning;
 
+        private long FileID_of_nested_PrefabInstance;
+        private long FileID_of_object_in_nested_Prefab;
+
         void OnGUI()
         {
+            FileID_of_nested_PrefabInstance = EditorGUILayout.LongField("FileID_of_nested_PrefabInstance",FileID_of_nested_PrefabInstance);
+            FileID_of_object_in_nested_Prefab = EditorGUILayout.LongField("FileID_of_object_in_nested_Prefab",FileID_of_object_in_nested_Prefab);
+            
+            long result = (FileID_of_nested_PrefabInstance ^ FileID_of_object_in_nested_Prefab) & 0x7fffffffffffffff;
+            EditorGUILayout.LongField(result);
+            
+            GUILayout.Space(50);
+            
             if (GUILayout.Button("AssetDatabaseTest"))
             {
                 Assembly executingAssembly = Assembly.GetExecutingAssembly();

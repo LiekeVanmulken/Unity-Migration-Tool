@@ -19,8 +19,11 @@ namespace migrationtool.views
     {
         private Constants constants = Constants.Instance;
 
+        private MappingView mappingView = new MappingView();
+
         private IDController idController = new IDController();
         private FieldMappingController fieldMappingController = new FieldMappingController();
+
 
         private MergeWizard mergeWizard;
 //        private Thread calculationThread;
@@ -74,13 +77,13 @@ namespace migrationtool.views
             }
 
             List<ClassModel> oldIDs =
-                Administration.Instance.oldIDsOverride ?? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(IDPath));
+                Administration.Instance.oldIDsOverride ?? IDController.DeserializeIDs(IDPath);
 
             string rootPath = Application.dataPath;
             string newIDsPath = rootPath + constants.RelativeExportPath;
 
             List<ClassModel> newIDs = File.Exists(newIDsPath)
-                ? JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(newIDsPath))
+                ? IDController.DeserializeIDs(newIDsPath)
                 : idController.ExportClassData(rootPath);
 
 
@@ -88,8 +91,7 @@ namespace migrationtool.views
             string foundScriptsPath = rootPath + constants.RelativeFoundScriptPath;
             if (File.Exists(foundScriptsPath))
             {
-                foundScripts =
-                    JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(foundScriptsPath));
+                foundScripts = MappingController.DeserializeMapping(foundScriptsPath);
             }
 
             ThreadUtil.RunThread(() => { this.ImportTransformIDs(rootPath, oldIDs, newIDs, scenePath, foundScripts); });
@@ -200,12 +202,14 @@ namespace migrationtool.views
 
                 string newScenePath = rootPath + scenePath.GetRelativeAssetPath();
 
-                newScenePath = ProjectPathUtility.AddTimestamp(newScenePath);
+                if (!Administration.Instance.OverwriteFiles)
+                {
+                    newScenePath = ProjectPathUtility.AddTimestamp(newScenePath);
+                }
 
-                Debug.Log("Exported scene, Please press   Ctrl + R   to view it in the project tab. File:  " +
-                          newScenePath + "");
+                Debug.Log("Exported scene, View it in the project tab, file:  " + newScenePath);
 
-                SaveFoundScripts(rootPath, originalFoundScripts);
+                mappingView.SaveFoundScripts(rootPath, originalFoundScripts);
                 SaveFile(newScenePath, linesToChange);
             });
         }
@@ -213,18 +217,6 @@ namespace migrationtool.views
         private string GetRelativePath(string rootPath, string scene)
         {
             return scene.Substring(ProjectPathUtility.getProjectPathFromFile(scene).Length);
-        }
-
-
-        /// <summary>
-        /// Write foundScripts to a file
-        /// </summary>
-        /// <param name="rootPath"></param>
-        /// <param name="foundScripts"></param>
-        private void SaveFoundScripts(string rootPath, List<FoundScript> foundScripts)
-        {
-            string foundScriptsPath = rootPath + constants.RelativeFoundScriptPath;
-            File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, Formatting.Indented));
         }
 
         /// <summary>

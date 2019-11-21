@@ -50,8 +50,7 @@ namespace migrationtool.controllers
                 //Deserialize the foundScripts
                 if (File.Exists(destinationPath + constants.RelativeFoundScriptPath))
                 {
-                    foundScripts = JsonConvert.DeserializeObject<List<FoundScript>>(
-                        File.ReadAllText(destinationPath + constants.RelativeFoundScriptPath));
+                    foundScripts = MappingController.DeserializeMapping(destinationPath + constants.RelativeFoundScriptPath);
                 }
                     
                 ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, foundScripts);
@@ -105,7 +104,11 @@ namespace migrationtool.controllers
             {
                 //Get the prefab file we're working with
                 string prefabGuid = (string) prefabInstance.RootNode["PrefabInstance"]["m_SourcePrefab"]["guid"];
-                PrefabModel prefabModel = oldPrefabs.First(prefabFile => prefabFile.Guid == prefabGuid);
+                PrefabModel prefabModel = oldPrefabs.FirstOrDefault(prefabFile => prefabFile.Guid == prefabGuid);
+                if (prefabModel == null)
+                {
+                    Debug.LogError("Found reference to prefab, but could not find the prefab. Prefab guid: " + prefabGuid );
+                }
 
                 //Load in the prefab file
                 YamlStream prefabStream = new YamlStream();
@@ -129,7 +132,14 @@ namespace migrationtool.controllers
                             document.RootNode.Anchor == fileID);
                     if (scriptReference == null)
                     {
-                        Debug.LogError("Nested prefab detected! Can not migrate fields in the scene. Could not find reference to script in file! Which we currently do not support.  fileID : " + fileID);
+//                        // handle nested prefab 
+//
+//                        int FileID_of_nested_PrefabInstance = 0;
+//                        int FileID_of_object_in_nested_Prefab = 0;
+//                        var a = (FileID_of_nested_PrefabInstance ^ FileID_of_object_in_nested_Prefab) & 0x7fffffffffffffff;
+                        
+                        
+                        Debug.LogError("Nested prefab detected! Can not migrate fields in the scene. If there are any field name changes these will not be migrated. Could not find reference to script in file! Currently nested prefabs are not supported.  fileID : " + fileID);
                         continue;
                     }
 

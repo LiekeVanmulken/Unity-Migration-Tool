@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 #if UNITY_EDITOR
 using migrationtool.utility;
 using System;
@@ -8,6 +7,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Threading;
+using migrationtool.controllers;
 using migrationtool.models;
 using migrationtool.views;
 using SceneView = migrationtool.views.SceneView;
@@ -31,6 +31,7 @@ namespace migrationtool.windows
         private readonly IDExportView idExportView = new IDExportView();
         private readonly SceneView sceneView = new SceneView();
         private readonly PrefabView prefabView = new PrefabView();
+        private readonly MappingView mappingView = new MappingView();
 
         /// <summary>
         /// Location of the Export.json in the current project
@@ -67,6 +68,7 @@ namespace migrationtool.windows
         private GUIStyle labelStyle;
 
         private GUIStyle titleStyle;
+//        private bool isOldProject;
 
         [MenuItem("Window/Migration Tool")]
         public static void ShowWindow()
@@ -98,6 +100,11 @@ namespace migrationtool.windows
                 padding = new RectOffset(10, 10, 10, 50)
             };
 
+            if (EditorPrefs.GetInt("UserSkin") == 1)
+            {
+                titleStyle.normal.textColor = new Color(209, 209, 209);
+            }
+
             buttonStyle = GUI.skin.button;
             buttonStyle.wordWrap = true;
             buttonStyle.margin = new RectOffset(10, 10, 10, 10);
@@ -113,6 +120,16 @@ namespace migrationtool.windows
         void OnGUI()
         {
             InitStyle();
+//            isOldProject = GUILayout.Toggle(isOldProject, "Is Old Project");
+//            if (isOldProject)
+//            {
+//                titleStyle.normal.textColor = Color.red;
+//            }
+//            else
+//            {
+//                titleStyle.normal.textColor = Color.green;
+//            }
+
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
             EditorGUILayout.LabelField("Migration Tool", titleStyle);
@@ -130,7 +147,7 @@ namespace migrationtool.windows
             }
 
             GUILayout.Space(20);
-            
+
             OnGuiDrawLineSeperator();
 
             EditorGUI.BeginDisabledGroup(!exportExists);
@@ -142,23 +159,17 @@ namespace migrationtool.windows
             GUILayout.Space(20);
 
             OnGUIBatchProcessing();
-
             OnGUIAdvanced();
 
             GUILayout.Space(20);
+            OnGuiDrawLineSeperator();
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndScrollView();
         }
 
-        private void OnGuiDrawLineSeperator(int offset = 10)
-        {
-            var rect = EditorGUILayout.BeginHorizontal();
-            Handles.color = Color.gray;
-            Handles.DrawLine(new Vector2(rect.x + offset, rect.y), new Vector2(rect.width - offset, rect.y));
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space();
-        }
-
+        /// <summary>
+        /// Render the batch processing part of the ui
+        /// </summary>
         private void OnGUIBatchProcessing()
         {
             EditorGUILayout.Separator();
@@ -167,13 +178,13 @@ namespace migrationtool.windows
 
             OnGuiDrawLineSeperator();
 
-            if (GUILayout.Button("Migrate all  prefabs \r\n from project folder"))
+            if (GUILayout.Button("Migrate all  prefabs \r\n from folder to current project"))
             {
                 string rootPath = Application.dataPath;
                 ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(rootPath); });
             }
 
-            if (GUILayout.Button("Migrate all  scenes \r\n from project folder"))
+            if (GUILayout.Button("Migrate all  scenes \r\n from folder to current project"))
             {
                 sceneView.MigrateAllScenes();
             }
@@ -181,6 +192,9 @@ namespace migrationtool.windows
 //            OnGuiDrawLineSeperator();
         }
 
+        /// <summary>
+        /// Render the Advanced part of the ui
+        /// </summary>
         private void OnGUIAdvanced()
         {
             EditorGUILayout.Separator();
@@ -190,12 +204,12 @@ namespace migrationtool.windows
             OnGuiDrawLineSeperator();
 
             GUILayout.Label(
-                "If you want to use a custom ID export of the old project, can select it here. If you do not know what that means, you shouldn't use this.");
+                "If you want to use a custom ID export of the old project, you can select it here. If you do not know what that means, you shouldn't use this.");
 
             EditorGUILayout.Separator();
 
             GUILayout.Label(String.IsNullOrEmpty(customOldIDSPath)
-                ? "No custom IDs path set, will use the default in the project."
+                ? "No custom IDs path set, will use the default in the old project (" + constants.RelativeExportPath + ")."
                 : "Old IDs being used : " + customOldIDSPath);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Select"))
@@ -210,8 +224,6 @@ namespace migrationtool.windows
                 {
                     LoadCustomIDs();
                 }
-
-
             }
 
             if (GUILayout.Button("Clear"))
@@ -220,12 +232,36 @@ namespace migrationtool.windows
             }
 
             GUILayout.EndHorizontal();
-//            OnGuiDrawLineSeperator();
+
+            EditorGUILayout.Separator();
+            OnGuiDrawLineSeperator();
+
+            GUILayout.Label("Generate the mapping from an Old and New ID export.");
+//            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Generate Code Mapping"))
+            {
+                mappingView.MapAllClasses();
+            }
+//            if (GUILayout.Button("Fix Code Mapping"))
+//            {
+//                mappingView.FixMapping();
+//            }
+//            GUILayout.EndHorizontal();
         }
+
+        private void OnGuiDrawLineSeperator(int offset = 10)
+        {
+            var rect = EditorGUILayout.BeginHorizontal();
+            Handles.color = Color.gray;
+            Handles.DrawLine(new Vector2(rect.x + offset, rect.y), new Vector2(rect.width - offset, rect.y));
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+        }
+
 
         private void LoadCustomIDs()
         {
-            Administration.Instance.oldIDsOverride = JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(customOldIDSPath));
+            Administration.Instance.oldIDsOverride = IDController.DeserializeIDs(customOldIDSPath);
         }
 
         #region ThreadedUI

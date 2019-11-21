@@ -143,10 +143,10 @@ namespace migrationtool.models
                     return false;
                 }
 
-                if (found.Type?.Fields != null && !checkHasBeenMappedRecursive(oldFieldData.Type, found.Type))
-                {
-                    return false;
-                }
+//                if (found.Type?.Fields != null && !checkHasBeenMappedRecursive(oldFieldData.Type, found.Type))
+//                {
+//                    return false;
+//                }
             }
 
             return true;
