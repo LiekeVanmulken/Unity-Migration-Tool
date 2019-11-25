@@ -1,25 +1,18 @@
-﻿using Newtonsoft.Json;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using migrationtool.utility;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Threading;
 using migrationtool.controllers;
-using migrationtool.models;
 using migrationtool.views;
 using SceneView = migrationtool.views.SceneView;
 
 namespace migrationtool.windows
 {
     /// <summary>
-    /// Changes the GUIDS and fileIDS to the new GUIDS and fileIDs.
-    /// To use this, open Window/Scene import window.
-    /// Set the old project path.
-    /// Click the import button and select the scene that you wish to replace the fileID's and GUIDs
-    /// It will now generate a copy with changed GUIDs and fileIDs causing unity to load the scene without missing references.
+    /// Main entry point to the Migration Tool
     /// 
     /// For a more detailed explanation read the README.MD
     /// </summary>
@@ -27,6 +20,7 @@ namespace migrationtool.windows
     public class MigrationWindow : MainThreadDispatcherEditorWindow
     {
         private readonly Constants constants = Constants.Instance;
+        private readonly Administration administration = Administration.Instance;
 
         private readonly IDExportView idExportView = new IDExportView();
         private readonly SceneView sceneView = new SceneView();
@@ -63,12 +57,20 @@ namespace migrationtool.windows
         /// </summary>
         private Vector2 scrollPosition;
 
+        /// <summary>
+        /// Style for the button
+        /// </summary>
         private GUIStyle buttonStyle;
 
+        /// <summary>
+        /// Style for the label
+        /// </summary>
         private GUIStyle labelStyle;
 
+        /// <summary>
+        /// Style for the title
+        /// </summary>
         private GUIStyle titleStyle;
-//        private bool isOldProject;
 
         [MenuItem("Window/Migration Tool")]
         public static void ShowWindow()
@@ -91,6 +93,9 @@ namespace migrationtool.windows
             EditorPrefs.SetString("MigrationTool.customOldIDSPath", customOldIDSPath);
         }
 
+        /// <summary>
+        /// Init the styles
+        /// </summary>
         private void InitStyle()
         {
             titleStyle = new GUIStyle()
@@ -104,6 +109,11 @@ namespace migrationtool.windows
             {
                 titleStyle.normal.textColor = new Color(209, 209, 209);
             }
+            if (administration.OverWriteMode)
+            {
+                titleStyle.normal.textColor = Color.red;
+            }
+            
 
             buttonStyle = GUI.skin.button;
             buttonStyle.wordWrap = true;
@@ -117,24 +127,17 @@ namespace migrationtool.windows
             labelStyle.margin = new RectOffset(10, 10, 10, 10);
         }
 
+        /// <summary>
+        /// Render the GUI
+        /// </summary>
         void OnGUI()
         {
             InitStyle();
-//            isOldProject = GUILayout.Toggle(isOldProject, "Is Old Project");
-//            if (isOldProject)
-//            {
-//                titleStyle.normal.textColor = Color.red;
-//            }
-//            else
-//            {
-//                titleStyle.normal.textColor = Color.green;
-//            }
-
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            EditorGUILayout.LabelField("Migration Tool", titleStyle);
+            EditorGUILayout.LabelField("Migration Tool"  + (administration.OverWriteMode ? " [OverWriting]" : ""), titleStyle);
             GUILayout.Space(25);
-            OnGuiDrawLineSeperator(25);
+            OnGuiDrawLineSeparator(25);
 
             exportExists = File.Exists(idExportPath);
             GUILayout.Label(exportExists
@@ -147,8 +150,7 @@ namespace migrationtool.windows
             }
 
             GUILayout.Space(20);
-
-            OnGuiDrawLineSeperator();
+            OnGuiDrawLineSeparator();
 
             EditorGUI.BeginDisabledGroup(!exportExists);
             if (GUILayout.Button("Migrate  scene \r\n to current project"))
@@ -162,7 +164,7 @@ namespace migrationtool.windows
             OnGUIAdvanced();
 
             GUILayout.Space(20);
-            OnGuiDrawLineSeperator();
+            OnGuiDrawLineSeparator();
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndScrollView();
         }
@@ -176,7 +178,7 @@ namespace migrationtool.windows
             batchProcessingEnabled = EditorGUILayout.Foldout(batchProcessingEnabled, "Batch processing tools");
             if (!batchProcessingEnabled) return;
 
-            OnGuiDrawLineSeperator();
+            OnGuiDrawLineSeparator();
 
             if (GUILayout.Button("Migrate all  prefabs \r\n from folder to current project"))
             {
@@ -188,8 +190,6 @@ namespace migrationtool.windows
             {
                 sceneView.MigrateAllScenes();
             }
-
-//            OnGuiDrawLineSeperator();
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace migrationtool.windows
             advancedOptionsEnabled = EditorGUILayout.Foldout(advancedOptionsEnabled,
                 "Advanced" + (!String.IsNullOrEmpty(customOldIDSPath) ? " [Custom IDs Enabled]" : ""));
             if (!advancedOptionsEnabled) return;
-            OnGuiDrawLineSeperator();
+            OnGuiDrawLineSeparator();
 
             GUILayout.Label(
                 "If you want to use a custom ID export of the old project, you can select it here. If you do not know what that means, you shouldn't use this.");
@@ -234,22 +234,46 @@ namespace migrationtool.windows
             GUILayout.EndHorizontal();
 
             EditorGUILayout.Separator();
-            OnGuiDrawLineSeperator();
+            OnGuiDrawLineSeparator();
 
-            GUILayout.Label("Generate the mapping from an Old and New ID export.");
-//            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Generate Code Mapping"))
+            GUILayout.Label("Generate a mapping from an Old and New ID export in advance.");
+            if (GUILayout.Button("Generate Mapping"))
             {
                 mappingView.MapAllClasses();
             }
-//            if (GUILayout.Button("Fix Code Mapping"))
-//            {
-//                mappingView.FixMapping();
-//            }
-//            GUILayout.EndHorizontal();
+            EditorGUILayout.Separator();
+            OnGuiDrawLineSeparator();
+            EditorGUILayout.Separator();
+            
+            bool cacheOverWriteMode =
+                GUILayout.Toggle(administration.OverWriteMode, "Overwrite scenes and prefabs instead of making copies.");
+            if (cacheOverWriteMode && !administration.OverWriteMode)
+            {
+                if (!EditorUtility.DisplayDialog("OVERWRITE MODE : ENABLED",
+                    "OVERWRITE MODE engaged. \r\n\r\nMAKE SURE YOU HAVE A BACKUP!", "I HAVE A BACKUP!",
+                    "I'm going to make one now"))
+                {
+                    cacheOverWriteMode = false;
+                    Debug.LogWarning("Please make a backup. Losing files and meta files would break the project irreversibly.");
+                }
+                else
+                {
+                    Debug.LogError("[OVERWRITE MODE] ENABLED. Please backup your project. This can break things irreversibly.\r\n");
+                }
+            }
+            else if (cacheOverWriteMode != administration.OverWriteMode)
+            {
+                Debug.Log("[OVERWRITE MODE] DISABLED");
+            }
+
+            administration.OverWriteMode = cacheOverWriteMode;
         }
 
-        private void OnGuiDrawLineSeperator(int offset = 10)
+        /// <summary>
+        /// Draw a line as a separator
+        /// </summary>
+        /// <param name="offset"></param>
+        private void OnGuiDrawLineSeparator(int offset = 10)
         {
             var rect = EditorGUILayout.BeginHorizontal();
             Handles.color = Color.gray;
@@ -259,6 +283,9 @@ namespace migrationtool.windows
         }
 
 
+        /// <summary>
+        /// Load custom IDs as old IDs
+        /// </summary>
         private void LoadCustomIDs()
         {
             Administration.Instance.oldIDsOverride = IDController.DeserializeIDs(customOldIDSPath);
@@ -286,7 +313,6 @@ namespace migrationtool.windows
                 };
                 Action onIgnore = () => { completed = true; };
 
-//                OptionsWizard optionsWizard =
                 OptionsWizard.CreateWizard(label, original, options, onComplete, onIgnore);
             });
 
@@ -295,7 +321,6 @@ namespace migrationtool.windows
                 Thread.Sleep(Constants.Instance.THREAD_WAIT_TIME);
             }
 
-//            Debug.Log("OptionsWindow result : " + result);
             return result;
         }
 

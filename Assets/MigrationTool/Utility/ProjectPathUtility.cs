@@ -76,8 +76,7 @@ namespace migrationtool.utility
             file = file.Substring(0, file.Length - extension.Length);
 
             //Added the timestamp and re-added the extension
-            file += "_imported_" + now.Hour + "_" + now.Minute + "_" +
-                    now.Second +  extension;
+            file += "_changed_" + now.ToString("dd-MM-yy H_mm_ss")  +  extension;
             return file;
         }
     }

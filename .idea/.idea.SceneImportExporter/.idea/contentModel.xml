@@ -5,6 +5,7 @@
     <e p="C:\Users\ArtPC-009\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_SceneImportExporter.1836620790.00" t="ExcludeRecursive" />
     <e p="D:\UnityProjects\GITHUB\SceneImportExporter" t="IncludeRecursive">
       <e p="Assembly-CSharp-Editor-firstpass.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
         <e p="MigrationTool" t="Include">
@@ -305,12 +306,180 @@
         <e p="MigrationTool_Prespective" t="Include">
           <e p="Prepackage" t="Include">
             <e p="PrespectivePackageImporter.cs" t="Include" />
+            <e p="PREspectiveUpdaterWindow.cs" t="Include" />
           </e>
         </e>
         <e p="Plugins" t="Include">
           <e p="Editor" t="Include">
             <e p="JetBrains" t="Include">
               <e p="Unity3DRider.cs" t="Include" />
+            </e>
+          </e>
+          <e p="PREspective" t="Include">
+            <e p="Components" t="Include">
+              <e p="PRElogic" t="Include">
+                <e p="Kinetics" t="Include">
+                  <e p="Gripper" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="GripperLogicControllerEditor.cs" t="Include" />
+                    </e>
+                    <e p="GripperLogicController.cs" t="Include" />
+                  </e>
+                  <e p="StepperMotor" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="ServoMotorLogicControllerEditor.cs" t="Include" />
+                      <e p="StepperMotorLogicControllerEditor.cs" t="Include" />
+                    </e>
+                    <e p="ServoMotorLogicController.cs" t="Include" />
+                    <e p="StepperMotorLogicController.cs" t="Include" />
+                  </e>
+                </e>
+                <e p="Optics" t="Include">
+                  <e p="BeamEmitterLogicController.cs" t="Include" />
+                  <e p="BeamReceiverLogicController.cs" t="Include" />
+                  <e p="Editor" t="Include">
+                    <e p="BeamEmitterLogicControllerEditor.cs" t="Include" />
+                    <e p="BeamReceiverLogicControllerEditor.cs" t="Include" />
+                  </e>
+                </e>
+                <e p="PreLogicAssetMenuItems.cs" t="Include" />
+                <e p="UI" t="Include">
+                  <e p="IndicatorLight" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="IndicatorLightLogicControllerEditor.cs" t="Include" />
+                    </e>
+                    <e p="IndicatorLightLogicController.cs" t="Include" />
+                  </e>
+                  <e p="Switches" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="RotarySwitchLogicControllerEditor.cs" t="Include" />
+                      <e p="SlideSwitchLogicControllerEditor.cs" t="Include" />
+                    </e>
+                    <e p="RotarySwitchLogicController.cs" t="Include" />
+                    <e p="SlideSwitchLogicController.cs" t="Include" />
+                  </e>
+                  <e p="UI" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="UILogicControllerEditor.cs" t="Include" />
+                    </e>
+                    <e p="UILogicController.cs" t="Include" />
+                  </e>
+                </e>
+              </e>
+              <e p="PREpair" t="Include">
+                <e p="Bodies" t="Include">
+                  <e p="Editor" t="Include">
+                    <e p="GameObjectSpawnerEditor.cs" t="Include" />
+                  </e>
+                  <e p="GameObjectSpawner.cs" t="Include" />
+                </e>
+                <e p="BoxColliderGenerator.cs" t="Include" />
+                <e p="BoxColliderGeneratorEditor.cs" t="Include" />
+                <e p="ConusColliderGenerator.cs" t="Include" />
+                <e p="ConusColliderGeneratorEditor.cs" t="Include" />
+                <e p="Infrastructure" t="Include">
+                  <e p="PTRZCamera" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="PTRZCameraDriverEditor.cs" t="Include" />
+                      <e p="PTRZCameraDriverInputManagerEditor.cs" t="Include" />
+                      <e p="PTRZCameraDriverPresetManagerEditor.cs" t="Include" />
+                      <e p="PTRZCameraEditor.cs" t="Include" />
+                    </e>
+                    <e p="PTRZCamera.cs" t="Include" />
+                    <e p="PTRZCameraDriver.cs" t="Include" />
+                    <e p="PTRZCameraDriverInputManager.cs" t="Include" />
+                    <e p="PTRZCameraDriverPreset.cs" t="Include" />
+                    <e p="PTRZCameraDriverPresetManager.cs" t="Include" />
+                  </e>
+                </e>
+                <e p="Inputs" t="Include">
+                  <e p="AxesManager.cs" t="Include" />
+                  <e p="Editor" t="Include">
+                    <e p="AxesManagerEditor.cs" t="Include" />
+                  </e>
+                  <e p="InputAxis.cs" t="Include" />
+                </e>
+                <e p="Kinetics" t="Include">
+                  <e p="Gripper" t="Include">
+                    <e p="BaseGripperBase.cs" t="Include" />
+                    <e p="BaseGripperFinger.cs" t="Include" />
+                    <e p="Editor" t="Include">
+                      <e p="GripperBaseEditor.cs" t="Include" />
+                    </e>
+                    <e p="GripperBase.cs" t="Include" />
+                    <e p="GripperFinger.cs" t="Include" />
+                    <e p="VacuumGripperBase.cs" t="Include" />
+                    <e p="VacuumGripperFinger.cs" t="Include" />
+                  </e>
+                  <e p="Motor" t="Include">
+                    <e p="BaseMotor.cs" t="Include" />
+                    <e p="DirectCurrentMotor.cs" t="Include" />
+                    <e p="DriverMotor.cs" t="Include" />
+                    <e p="Editor" t="Include">
+                      <e p="DirectCurrentMotorEditor.cs" t="Include" />
+                      <e p="ServoMotorEditor.cs" t="Include" />
+                      <e p="StepperMotorEditor.cs" t="Include" />
+                    </e>
+                    <e p="ServoMotor.cs" t="Include" />
+                    <e p="StepperMotor.cs" t="Include" />
+                  </e>
+                </e>
+                <e p="Optics" t="Include">
+                  <e p="BeamEmitter.cs" t="Include" />
+                  <e p="BeamReceiver.cs" t="Include" />
+                  <e p="BeamReflector.cs" t="Include" />
+                  <e p="Editor" t="Include">
+                    <e p="BeamEmitterEditor.cs" t="Include" />
+                    <e p="BeamReceiverEditor.cs" t="Include" />
+                  </e>
+                  <e p="IBeamEmitter.cs" t="Include" />
+                  <e p="IBeamTarget.cs" t="Include" />
+                  <e p="PerfectBeamReflector.cs" t="Include" />
+                </e>
+                <e p="PrePairAssetMenuItems.cs" t="Include" />
+                <e p="Sensors" t="Include">
+                  <e p="Editor" t="Include">
+                    <e p="ProximitySensorEditor.cs" t="Include" />
+                  </e>
+                  <e p="ProximitySensor.cs" t="Include" />
+                </e>
+                <e p="UI" t="Include">
+                  <e p="Buttons" t="Include">
+                    <e p="BaseEncoder.cs" t="Include" />
+                    <e p="BaseSwitch.cs" t="Include" />
+                    <e p="Editor" t="Include">
+                      <e p="JoystickControllerEditor.cs" t="Include" />
+                      <e p="LinearEncoderEditor.cs" t="Include" />
+                      <e p="RotaryEncoderEditor.cs" t="Include" />
+                      <e p="RotarySwitchEditor.cs" t="Include" />
+                      <e p="SlideSwitchEditor.cs" t="Include" />
+                    </e>
+                    <e p="JoystickController.cs" t="Include" />
+                    <e p="LinearEncoder.cs" t="Include" />
+                    <e p="RotaryEncoder.cs" t="Include" />
+                    <e p="RotarySwitch.cs" t="Include" />
+                    <e p="SlideSwitch.cs" t="Include" />
+                  </e>
+                  <e p="Lights" t="Include">
+                    <e p="Editor" t="Include">
+                      <e p="IndicatorLightEditor.cs" t="Include" />
+                    </e>
+                    <e p="IndicatorLight.cs" t="Include" />
+                  </e>
+                  <e p="PointFocusCamera.cs" t="Include" />
+                  <e p="PointFocusCameraEditor.cs" t="Include" />
+                </e>
+              </e>
+              <e p="PREscripted" t="Include">
+                <e p="TimelineTransitionManager.cs" t="Include" />
+              </e>
+            </e>
+            <e p="Node_Editor" t="Include">
+              <e p="Resources" t="Include">
+                <e p="Shader" t="Include">
+                  <e p="LineShader.shader" t="Include" />
+                </e>
+              </e>
             </e>
           </e>
         </e>

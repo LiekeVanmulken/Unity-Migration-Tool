@@ -1,6 +1,4 @@
-﻿
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +7,7 @@ using migrationtool.controllers.customlogic;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.views;
+using migrationtool.windows;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -33,29 +32,33 @@ namespace migrationtool.controllers
         /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            MigrateFields(string scenePath, ref string[] scene, List<FoundScript> foundScripts, string oldRootPath,
+            MigrateFields(string scenePath, ref string[] scene, ref List<FoundScript> foundScripts, string oldRootPath,
                 string destinationPath)
-        {   
+        {
             string sceneContent = string.Join("\n", scene.PrepareSceneForYaml());
 
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
-            
+
             int amountOfPrefabs =
                 yamlStream.Documents.Count(document => document.GetName() == "PrefabInstance");
             if (amountOfPrefabs > 0)
             {
-                new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath);
-                
+                if (Administration.Instance.MigrateScenePrefabDependencies)
+                {
+                    new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath, ref foundScripts);
+                }
+
                 //Deserialize the foundScripts
                 if (File.Exists(destinationPath + constants.RelativeFoundScriptPath))
                 {
-                    foundScripts = MappingController.DeserializeMapping(destinationPath + constants.RelativeFoundScriptPath);
+                    foundScripts =
+                        MappingController.DeserializeMapping(destinationPath + constants.RelativeFoundScriptPath);
                 }
-                    
+
                 ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, foundScripts);
             }
-            
+
             ConvertScene(ref scene, foundScripts, yamlStream);
             return scene;
         }
@@ -77,7 +80,8 @@ namespace migrationtool.controllers
 
                 if (scriptType != null)
                 {
-                    if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped || scriptType.HasBeenMapped == FoundScript.MappedState.Approved)
+                    if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped ||
+                        scriptType.HasBeenMapped == FoundScript.MappedState.Approved)
                     {
                         scene = recursiveReplaceField(ref scene, scriptType.MergeNodes, script, foundScripts);
                     }
@@ -105,15 +109,17 @@ namespace migrationtool.controllers
                 //Get the prefab file we're working with
                 string prefabGuid = (string) prefabInstance.RootNode["PrefabInstance"]["m_SourcePrefab"]["guid"];
                 PrefabModel prefabModel = oldPrefabs.FirstOrDefault(prefabFile => prefabFile.Guid == prefabGuid);
-                if (prefabModel == null)
+                if (prefabModel == null || string.IsNullOrEmpty(prefabModel.Path))
                 {
-                    Debug.LogError("Found reference to prefab, but could not find the prefab. Prefab guid: " + prefabGuid );
+                    Debug.LogError("Found reference to prefab, but could not find the prefab. Prefab guid: " +
+                                   prefabGuid);
+                    continue;
                 }
 
                 //Load in the prefab file
                 YamlStream prefabStream = new YamlStream();
                 string[] lines = File.ReadAllLines(prefabModel.Path).PrepareSceneForYaml();
-                prefabStream.Load(new StringReader(string.Join("\r\n",lines)));
+                prefabStream.Load(new StringReader(string.Join("\r\n", lines)));
 
 
                 //Get the modifications that have been done
@@ -137,9 +143,11 @@ namespace migrationtool.controllers
 //                        int FileID_of_nested_PrefabInstance = 0;
 //                        int FileID_of_object_in_nested_Prefab = 0;
 //                        var a = (FileID_of_nested_PrefabInstance ^ FileID_of_object_in_nested_Prefab) & 0x7fffffffffffffff;
-                        
-                        
-                        Debug.LogError("Nested prefab detected! Can not migrate fields in the scene. If there are any field name changes these will not be migrated. Could not find reference to script in file! Currently nested prefabs are not supported.  fileID : " + fileID);
+
+
+                        Debug.LogError(
+                            "Nested prefab detected! Can not migrate fields in the scene. If there are any field name changes these will not be migrated. Could not find reference to script in file! Currently nested prefabs are not supported.  fileID : " +
+                            fileID);
                         continue;
                     }
 

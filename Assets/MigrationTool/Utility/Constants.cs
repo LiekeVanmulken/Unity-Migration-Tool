@@ -67,7 +67,9 @@ namespace migrationtool.utility
         public readonly Dictionary<string, ICustomMappingLogic> CustomLogicMapping =
             new Dictionary<string, ICustomMappingLogic>()
             {
-//                {typeof(TestScriptQuaternion).FullName, new QuaternionCustomMappingLogic()}
+//                {typeof(TestScri
+//
+// ptQuaternion).FullName, new QuaternionCustomMappingLogic()}
             };
     }
 }

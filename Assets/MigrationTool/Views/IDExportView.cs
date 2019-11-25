@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using migrationtool.models;
 using migrationtool.utility;
+using UnityEngine;
 
 namespace migrationtool.views
 {
@@ -36,9 +37,12 @@ namespace migrationtool.views
             }
 
             File.WriteAllText(idExportPath, jsonField);
-
-            MigrationWindow.DisplayDialog("Export completed successfully",
-                "All IDs were exported to " + constants.RelativeExportPath + ".");
+            string logMessage = "All IDs were exported to " + constants.RelativeExportPath + ".";
+            Debug.Log(logMessage);
+            if (Administration.Instance.ShowInfoPopups)
+            {
+                MigrationWindow.DisplayDialog("Export completed successfully", logMessage);
+            }
         }
     }
 }

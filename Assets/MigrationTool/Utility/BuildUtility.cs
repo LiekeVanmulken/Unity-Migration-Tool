@@ -99,7 +99,7 @@ namespace migrationtool.utility
             foreach (PrefabModel prefab in exportPrefabs)
             {
                 string[] parsedPrefab = idController.TransformIDs(prefab.Path, oldIDs, newIDs, ref foundScripts);
-                prefabView.WritePrefab(parsedPrefab, prefab, destinationProjectPath);
+                prefabView.SavePrefabFile(parsedPrefab, prefab, destinationProjectPath);
             }
 
             Debug.Log("Converted all prefabs to : " + destinationProjectPath);

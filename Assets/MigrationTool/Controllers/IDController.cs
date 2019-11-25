@@ -363,8 +363,8 @@ namespace migrationtool.controllers
 
             if (types.Length == 0)
             {
-                Debug.Log("Checked for type  \"" + fileName +
-                          "\" no types were found.");
+                Debug.Log("[ID-Export] " + fileName +
+                          ", no types were found from the meta file.");
                 return null;
             }
 
@@ -388,8 +388,8 @@ namespace migrationtool.controllers
 
             if (monoBehaviours.Count == 0)
             {
-                Debug.Log("Class : " + fileName +
-                          " could not be found and is not an MonoBehaviour so will skip");
+                Debug.Log("[ID-Export] " + fileName +
+                          " could not be found and is not an MonoBehaviour, will not map.");
                 return null;
             }
 
@@ -410,7 +410,9 @@ namespace migrationtool.controllers
         /// <param name="old"></param>
         /// <param name="useUserFeedback">Sets whether the user gets to choose if it doesn't know or just return null.</param>
         /// <returns></returns>
-        public ClassModel FindNewID(List<ClassModel> newIDs, ClassModel old, bool useUserFeedback = true)
+        public ClassModel FindNewID(List<ClassModel> newIDs, ClassModel old
+//            , bool useUserFeedback = true
+            )
         {
             if (old == null)
             {
@@ -436,10 +438,10 @@ namespace migrationtool.controllers
                 return classModels[0];
             }
 
-            if (!useUserFeedback)
-            {
-                return null;
-            }
+//            if (!useUserFeedback)
+//            {
+//                return null;
+//            }
 
             // Generate the options for the options window
             string[] options = allClassData.Select(pair => pair.Key)

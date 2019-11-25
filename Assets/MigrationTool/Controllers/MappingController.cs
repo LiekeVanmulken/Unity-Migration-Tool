@@ -60,7 +60,7 @@ public class MappingController
         List<ClassModel> classesToMap = new List<ClassModel>();
         foreach (ClassModel oldID in oldIDs)
         {
-            var result = idController.FindNewID(newIDs, oldID, false);
+            var result = idController.FindNewID(newIDs, oldID);
             if (result == null)
             {
                 classesToMap.Add(oldID);

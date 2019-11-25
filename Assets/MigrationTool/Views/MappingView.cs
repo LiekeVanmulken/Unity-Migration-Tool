@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using migrationtool.controllers;
 using migrationtool.models;
@@ -17,12 +16,19 @@ public class MappingView
 
     public void MapAllClasses()
     {
-        
-        
         string oldIDs = EditorUtility.OpenFilePanel("Old IDs", Application.dataPath, "json");
+        if (string.IsNullOrEmpty(oldIDs))
+        {
+            Debug.Log("No old ID path selected. Aborting the mapping.");
+            return;
+        }
+
         string newIDs = EditorUtility.OpenFilePanel("New IDs", Application.dataPath, "json");
-//        string oldIDs = @"D:\UnityProjects\GITHUB\ImportingOldTestProject\Assets\MigrationTool\Exports\Export.json";
-//        string newIDs = @"D:\UnityProjects\GITHUB\SceneImportExporter\Assets\MigrationTool\Exports\Export.json";
+        if (string.IsNullOrEmpty(newIDs))
+        {
+            Debug.Log("No new ID path selected. Aborting the mapping.");
+            return;
+        }
         MapAllClasses(oldIDs, newIDs);
     }
 
@@ -78,24 +84,4 @@ public class MappingView
         string foundScriptsPath = rootPath + constants.RelativeFoundScriptPath;
         File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, constants.IndentJson));
     }
-
-//    public void FixMapping(string mappingPath = null)
-//    {
-//        if (mappingPath == null)
-//        {
-//            mappingPath = Application.dataPath + constants.RelativeFoundScriptPath;
-//            if (!File.Exists(mappingPath))
-//            {
-//                Debug.LogError("Could not find mapping path: " + mappingPath);
-//                return;
-//            }
-//        }
-//
-//        var foundScripts = MappingController.DeserializeMapping(mappingPath);        
-//        foundScripts = mappingController.FixMapping(foundScripts,);
-//
-//        
-//        SaveFoundScripts(ProjectPathUtility.getProjectPathFromFile(mappingPath),foundScripts);
-//        Debug.Log("Fixed the mapping file now ready for import.");
-//    }
 }
