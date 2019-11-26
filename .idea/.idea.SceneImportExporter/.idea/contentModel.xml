@@ -305,8 +305,9 @@
         </e>
         <e p="MigrationTool_Prespective" t="Include">
           <e p="Prepackage" t="Include">
-            <e p="PrespectivePackageImporter.cs" t="Include" />
-            <e p="PREspectiveUpdaterWindow.cs" t="Include" />
+            <e p="AfterImportScript.cs" t="Include" />
+            <e p="PREpackageImporter.cs" t="Include" />
+            <e p="Unzipper.cs" t="Include" />
           </e>
         </e>
         <e p="Plugins" t="Include">

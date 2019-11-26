@@ -59,11 +59,12 @@ namespace migrationtool.controllers
                 ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, foundScripts);
             }
 
-            ConvertScene(ref scene, foundScripts, yamlStream);
+            ConvertScene(scenePath, ref scene, foundScripts, yamlStream);
             return scene;
         }
 
-        private void ConvertScene(ref string[] scene, List<FoundScript> foundScripts, YamlStream yamlStream)
+        private void ConvertScene(string scenePath, ref string[] scene, List<FoundScript> foundScripts,
+            YamlStream yamlStream)
         {
             List<YamlDocument> yamlDocuments =
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
@@ -90,7 +91,8 @@ namespace migrationtool.controllers
                 }
                 else
                 {
-                    Debug.Log("Script found that has no mapping (No members will be replaced), Node: " +
+                    Debug.Log("Script found that has no mapping (No members will be replaced) in scene : " + scenePath +
+                              ", Node: " +
                               document.RootNode.ToString());
                 }
             }

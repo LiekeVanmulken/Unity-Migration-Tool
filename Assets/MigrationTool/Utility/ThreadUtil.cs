@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using migrationtool.utility;
 using migrationtool.windows;
 using UnityEngine;
@@ -15,7 +17,7 @@ public class ThreadUtil
     public static void RunWaitThread(Action mainLogic)
     {
         bool completed = false;
-        new Thread(() =>
+        new Task(() =>
             {
                 try
                 {
@@ -23,12 +25,20 @@ public class ThreadUtil
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    if (e is ThreadAbortException)
+                    {
+                        Debug.LogError("Migration failed because project was recompiled mid processing");
+                    }
+                    else
+                    {
+                        Debug.LogError(e);
+                    }
                 }
 
                 completed = true;
             }
         ).Start();
+
         while (!completed)
         {
             Thread.Sleep(constants.THREAD_WAIT_TIME);
@@ -41,7 +51,7 @@ public class ThreadUtil
     /// <param name="mainLogic"></param>
     public static void RunThread(Action mainLogic)
     {
-        new Thread(() =>
+        new Task(() =>
             {
                 try
                 {
@@ -49,7 +59,14 @@ public class ThreadUtil
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    if (e is ThreadAbortException)
+                    {
+                        Debug.LogError("Migration failed because project was recompiled mid processing");
+                    }
+                    else
+                    {
+                        Debug.LogError(e);
+                    }
                 }
             }
         ).Start();
@@ -70,9 +87,15 @@ public class ThreadUtil
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                if (e is ThreadAbortException)
+                {
+                    Debug.LogError("Migration failed this might be because the project was recompiled mid processing. If it was not, please report the occurence. \r\nException: " + e);
+                }
+                else
+                {
+                    Debug.LogError(e);
+                }
             }
-
             completed = true;
         });
         while (!completed)
@@ -95,7 +118,14 @@ public class ThreadUtil
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                if (e is ThreadAbortException)
+                {
+                    Debug.LogError("Migration failed because project was recompiled mid processing");
+                }
+                else
+                {
+                    Debug.LogError(e);
+                }
             }
         });
     }

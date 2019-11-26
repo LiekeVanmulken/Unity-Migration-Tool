@@ -26,7 +26,8 @@ namespace migrationtool.views
         /// Migrate all scenes in a project at once at once
         /// </summary>
         /// <param name="projectToExportFromPath">The path of the project that needs to be migrated to the current project</param>
-        public void MigrateAllScenes(string projectToExportFromPath = null)
+        /// <param name="onComplete">Runs after all scenes have been exported</param>
+        public void MigrateAllScenes(string projectToExportFromPath = null, Action onComplete = null)
         {
             MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scenes", 0.2f);
             string rootPath = Application.dataPath;
@@ -52,13 +53,15 @@ namespace migrationtool.views
                 {
                     string scene = sceneFiles[i];
                     MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scene: " + scene,
-                        i + 1 / sceneFiles.Length);
+                        (float)(i+1)/sceneFiles.Length);
 
                     ThreadUtil.RunWaitThread(() => { MigrateScene(scene,rootPath); });
                 }
 
                 MigrationWindow.ClearProgressBar();
                 Debug.Log("Migrated all scenes");
+                
+                onComplete?.Invoke();
             });
         }
 
@@ -224,8 +227,6 @@ namespace migrationtool.views
                 {
                     newScenePath = ProjectPathUtility.AddTimestamp(newScenePath);
                 }
-
-                Debug.Log("Exported scene, View it in the project tab, file:  " + newScenePath);
 
                 mappingView.SaveFoundScripts(rootPath, originalFoundScripts);
                 SaveSceneFile(newScenePath, linesToChange);

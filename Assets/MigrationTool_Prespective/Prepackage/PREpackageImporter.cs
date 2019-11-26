@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.views;
@@ -10,12 +11,13 @@ using UnityEditor;
 using UnityEngine;
 using SceneView = migrationtool.views.SceneView;
 
-namespace u040.migrationtoool
+namespace u040.prespective.migrationtoool
 {
     public class PREpackageImporter
     {
         private const string EXTENSION = "prepackage";
         public const string PREPACKAGE_PACKAGE_LOCATION = "MIGRATION_TOOL_UPDATER.PACKAGE_IMPORTING";
+        public const string PREPACKAGE_PACKAGE_CONTENT = "MIGRATION_TOOL_UPDATER.PACKAGE_CONTENT";
 
         private static SceneView sceneView = new SceneView();
         private static PrefabView prefabView = new PrefabView();
@@ -29,16 +31,21 @@ namespace u040.migrationtoool
             }
         }
 
-
         [MenuItem("Assets/PREpackage/Import")]
-        private static void ImportPackage()
+        private static void ImportPackage() 
         {
-            if (!EditorUtility.DisplayDialog("BACKUP YOUR PROJECT",
+            if (!EditorUtility.DisplayDialog("BACKUP YOUR PROJECT!",
                 "Please BACKUP your project before proceeding. A faulty migration can lead to DATA LOSS!",
-                "I've made a backup", "I will make a backup now"))
+                "I've made a backup!", "I will make a backup now"))
             {
                 return;
             }
+//
+//            if (PlayerPrefs.HasKey(PREPACKAGE_PACKAGE_LOCATION))
+//            {
+//                Debug.LogError("Packager already running");
+//                return;
+//            }
 
             Administration.Instance.ShowInfoPopups = false;
 
@@ -48,15 +55,19 @@ namespace u040.migrationtoool
                 Debug.Log("No package selected.");
                 return;
             }
+            PlayerPrefs.SetString(PREPACKAGE_PACKAGE_LOCATION, packageLocation);
 
             string rootPath = Application.dataPath;
             ThreadUtil.RunThread(() =>
             {
                 packageImportStarted(rootPath, packageLocation);
+                List<string> files = Unzipper.ParseUnityPackagesToFiles(packageLocation);
+                string packageContent = string.Join(",", files);
                 ThreadUtil.RunMainThread(() =>
                 {
                     AssetDatabase.ImportPackage(packageLocation, true);
                     PlayerPrefs.SetString(PREPACKAGE_PACKAGE_LOCATION, packageLocation);
+                    PlayerPrefs.SetString(PREPACKAGE_PACKAGE_CONTENT, packageContent);
                 });
             });
         }
@@ -75,7 +86,7 @@ namespace u040.migrationtoool
 
         public static void packageImportFinished(string projectPath, string packageLocation)
         {
-            Debug.LogWarning("[PREpackage] Package import Finished started ");
+            Debug.LogWarning("[PREpackage] Project migration started ");
 
             Constants constants = Constants.Instance;
 
@@ -102,30 +113,29 @@ namespace u040.migrationtoool
                 Administration.Instance.OverWriteMode = true;
                 Administration.Instance.ShowInfoPopups = false;
                 Administration.Instance.MigrateScenePrefabDependencies = false;
-                
-                ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(projectPath, projectPath); });
-               
-                sceneView.MigrateAllScenes(projectPath);
+
+                Action onCompleteScenes = () =>
+                {
+                    ThreadUtil.RunMainThread(() =>
+                    {
+                        Administration.Instance.OverWriteMode = false;
+                        Administration.Instance.ShowInfoPopups = true;
+                        Administration.Instance.MigrateScenePrefabDependencies = true;
+                        
+                        EditorUtility.DisplayDialog("Migration completed",
+                            "Completed the migration, everything should be migrated to the new version. \r\nPlease check your project for any errors.",
+                            "Ok");
+                    });
+                };
+                Action onCompletePrefabs = () =>
+                {
+                    ThreadUtil.RunMainThread(() => { sceneView.MigrateAllScenes(projectPath, onCompleteScenes); });
+                };
+                ThreadUtil.RunThread(() =>
+                {
+                    prefabView.MigrateAllPrefabs(projectPath, projectPath, onCompletePrefabs);
+                });
             });
-        }
-    }
-
-    class AfterImportScript : AssetPostprocessor
-    {
-        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
-            string[] movedFromAssetPaths)
-        {
-            if (!PlayerPrefs.HasKey(PREpackageImporter.PREPACKAGE_PACKAGE_LOCATION))
-            {
-                return;
-            }
-
-            string packageLocation = PlayerPrefs.GetString(PREpackageImporter.PREPACKAGE_PACKAGE_LOCATION);
-            PlayerPrefs.DeleteKey(PREpackageImporter.PREPACKAGE_PACKAGE_LOCATION);
-
-            Debug.Log("[PREpackage] Event called");
-
-            PREpackageImporter.packageImportFinished(Application.dataPath, packageLocation);
         }
     }
 }

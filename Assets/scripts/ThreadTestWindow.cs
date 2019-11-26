@@ -1,5 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿
 
+using u040.prespective.migrationtoool;
+#if UNITY_EDITOR
 using System.Linq;
 using System;
 using System.Reflection;
@@ -28,6 +30,18 @@ namespace migrationtool.utility
 
         void OnGUI()
         {
+            if (GUILayout.Button("test zip"))
+            {
+                string package= EditorUtility.OpenFilePanel("open packages",
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "prepackage");
+                if (string.IsNullOrEmpty(package))
+                {
+                    return;
+                }
+                Unzipper.ParseUnityPackagesToFiles(package);
+            }
+
+
             FileID_of_nested_PrefabInstance = EditorGUILayout.LongField("FileID_of_nested_PrefabInstance",FileID_of_nested_PrefabInstance);
             FileID_of_object_in_nested_Prefab = EditorGUILayout.LongField("FileID_of_object_in_nested_Prefab",FileID_of_object_in_nested_Prefab);
             
