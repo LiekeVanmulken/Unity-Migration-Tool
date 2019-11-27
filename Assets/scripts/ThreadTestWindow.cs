@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace migrationtool.utility
 {
-    public class ThreadTestWindow : MainThreadDispatcherEditorWindow
+    public class ThreadTestWindow : EditorWindow
     {
         // Add menu named "My Window" to the Window menu
         [MenuItem("Window/ThreadTestWindow2")]
@@ -110,7 +110,7 @@ namespace migrationtool.utility
         private void test(Action OnComplete)
         {
             string result = null;
-            ThreadTestWindow.Instance().Enqueue(() =>
+            ThreadUtil.RunMainThread(() =>
             {
                 OptionsWizard optionsWizard =
                     OptionsWizard.CreateWizard("Class cannot be found, select which one to choose",

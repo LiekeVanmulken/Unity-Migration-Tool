@@ -145,7 +145,7 @@ namespace migrationtool.views
                     idController.TransformIDs(scenePath, oldIDs, currentIDs,
                         ref foundScripts);
 
-                MigrationWindow.Instance().Enqueue(() =>
+                ThreadUtil.RunMainThread(() =>
                     {
                         MigrateFields(rootPath, scenePath, foundScripts, lastSceneExport);
                     }
@@ -246,7 +246,7 @@ namespace migrationtool.views
             }
 
             File.WriteAllText(scenePath, string.Join("\n", linesToWrite));
-            MigrationWindow.Instance().Enqueue(() =>
+            ThreadUtil.RunMainThread(() =>
             {
                 AssetDatabase.Refresh();
                 if (Administration.Instance.ShowInfoPopups)

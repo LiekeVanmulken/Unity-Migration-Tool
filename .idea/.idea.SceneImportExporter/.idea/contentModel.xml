@@ -46,7 +46,7 @@
             </e>
             <e p="Constants.cs" t="Include" />
             <e p="ExtensionMethods.cs" t="Include" />
-            <e p="MainThreadDispatcherEditorWindow.cs" t="Include" />
+            <e p="MainThreadDispatcher.cs" t="Include" />
             <e p="ProjectPathUtility.cs" t="Include" />
             <e p="Serialization" t="Include">
               <e p="ClassModelConverter.cs" t="Include" />

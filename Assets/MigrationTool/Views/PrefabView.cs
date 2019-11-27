@@ -126,7 +126,7 @@ namespace migrationtool.views
             else
             {
                 bool completed = false;
-                MigrationWindow.Instance().Enqueue(() =>
+                ThreadUtil.RunMainThread(() =>
                 {
                     MergeWizard wizard = MergeWizard.CreateWizard(unmappedFoundScripts);
                     wizard.onComplete = mergedFoundScripts =>

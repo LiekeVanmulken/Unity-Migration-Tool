@@ -17,7 +17,7 @@ namespace migrationtool.windows
     /// For a more detailed explanation read the README.MD
     /// </summary>
     [Serializable]
-    public class MigrationWindow : MainThreadDispatcherEditorWindow
+    public class MigrationWindow : EditorWindow
     {
         private readonly Constants constants = Constants.Instance;
         private readonly Administration administration = Administration.Instance;
@@ -171,7 +171,7 @@ namespace migrationtool.windows
 
         /// <summary>
         /// Render the batch processing part of the ui
-        /// </summary>
+        /// </summary>ww 
         private void OnGUIBatchProcessing()
         {
             EditorGUILayout.Separator();
@@ -304,7 +304,7 @@ namespace migrationtool.windows
         {
             string result = null;
             bool completed = false;
-            Instance().Enqueue(() =>
+            ThreadUtil.RunMainThread(() =>
             {
                 Action<string> onComplete = wizardResult =>
                 {
@@ -331,7 +331,7 @@ namespace migrationtool.windows
         /// <param name="info"></param>
         public static void DisplayDialog(string title, string info)
         {
-            Instance().Enqueue(() => { EditorUtility.DisplayDialog(title, info, "Ok"); });
+            ThreadUtil.RunMainThread(() => EditorUtility.DisplayDialog(title, info, "Ok"));
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace migrationtool.windows
         /// <param name="progress"></param>
         public static void DisplayProgressBar(string title, string info, float progress)
         {
-            Instance().Enqueue(() => { EditorUtility.DisplayProgressBar(title, info, progress); });
+            ThreadUtil.RunMainThread(() => EditorUtility.DisplayProgressBar(title, info, progress));
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace migrationtool.windows
         /// </summary>
         public static void ClearProgressBar()
         {
-            Instance().Enqueue(EditorUtility.ClearProgressBar);
+            ThreadUtil.RunMainThread(EditorUtility.ClearProgressBar);
         }
 
         #endregion

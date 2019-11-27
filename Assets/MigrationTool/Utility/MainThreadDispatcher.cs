@@ -2,20 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 
+
 /// <summary>
-/// EditorWindow that can be called to run actions on the MainThread from a different.
+/// Call actions on the MainThread from a different thread.
 /// This is mainly used for user input and updating the UI from a calculation thread that will wait for the user input. 
 /// </summary>
-public class MainThreadDispatcherEditorWindow : EditorWindow
+[InitializeOnLoad]
+public class MainThreadDispatcher
 {
     private static readonly Queue<Action> _executionQueue = new Queue<Action>();
 
-    public MainThreadDispatcherEditorWindow()
+    static MainThreadDispatcher()
     {
-        _instance = this;
+        EditorApplication.update += Update;
     }
 
-    public void Update()
+    static void Update()
     {
         lock (_executionQueue)
         {
@@ -26,23 +28,11 @@ public class MainThreadDispatcherEditorWindow : EditorWindow
         }
     }
 
-    private static MainThreadDispatcherEditorWindow _instance = null;
-
-    public static bool Exists()
-    {
-        return _instance != null;
-    }
-
-    public void Enqueue(Action action)
+    public static void Enqueue(Action action)
     {
         lock (_executionQueue)
         {
             _executionQueue.Enqueue(action);
         }
-    }
-
-    public static MainThreadDispatcherEditorWindow Instance()
-    {
-        return _instance;
     }
 }

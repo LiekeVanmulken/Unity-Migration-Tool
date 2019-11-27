@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using migrationtool.utility;
-using migrationtool.windows;
 using UnityEngine;
 
 public class ThreadUtil
@@ -79,7 +77,7 @@ public class ThreadUtil
     public static void RunWaitMainThread(Action mainLogic)
     {
         bool completed = false;
-        MigrationWindow.Instance().Enqueue(() =>
+        MainThreadDispatcher.Enqueue(() =>
         {
             try
             {
@@ -110,7 +108,7 @@ public class ThreadUtil
     /// <param name="mainLogic"></param>
     public static void RunMainThread(Action mainLogic)
     {
-        MigrationWindow.Instance().Enqueue(() =>
+        MainThreadDispatcher.Enqueue(() =>
         {
             try
             {
