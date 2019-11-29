@@ -36,7 +36,7 @@ namespace migrationtool.utility
         /// <summary>
         /// Path to the GeneratedMappings.json from the Asset path
         /// </summary>
-        public readonly string RelativeFoundScriptPath = "/MigrationTool/Exports/GeneratedMappings.json";
+        public readonly string RelativeScriptMappingPath = "/MigrationTool/Exports/GeneratedMappings.json";
 
 
         /// <summary>

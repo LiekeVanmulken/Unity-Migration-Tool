@@ -1,6 +1,4 @@
-﻿
-
-using u040.prespective.migrationtoool;
+﻿using u040.prespective.migrationtoool;
 #if UNITY_EDITOR
 using System.Linq;
 using System;
@@ -30,26 +28,38 @@ namespace migrationtool.utility
 
         void OnGUI()
         {
+//            if (GUILayout.Button("Get PREspective version"))
+//            {
+//                GetDLLVersion();
+//            }
+            if (GUILayout.Button("Map mappings"))
+            {
+                new MappingView().GenerateNewMapping();
+            }
+
             if (GUILayout.Button("test zip"))
             {
-                string package= EditorUtility.OpenFilePanel("open packages",
+                string package = EditorUtility.OpenFilePanel("open packages",
                     Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "prepackage");
                 if (string.IsNullOrEmpty(package))
                 {
                     return;
                 }
+
                 Unzipper.ParseUnityPackagesToFiles(package);
             }
 
 
-            FileID_of_nested_PrefabInstance = EditorGUILayout.LongField("FileID_of_nested_PrefabInstance",FileID_of_nested_PrefabInstance);
-            FileID_of_object_in_nested_Prefab = EditorGUILayout.LongField("FileID_of_object_in_nested_Prefab",FileID_of_object_in_nested_Prefab);
-            
+            FileID_of_nested_PrefabInstance =
+                EditorGUILayout.LongField("FileID_of_nested_PrefabInstance", FileID_of_nested_PrefabInstance);
+            FileID_of_object_in_nested_Prefab = EditorGUILayout.LongField("FileID_of_object_in_nested_Prefab",
+                FileID_of_object_in_nested_Prefab);
+
             long result = (FileID_of_nested_PrefabInstance ^ FileID_of_object_in_nested_Prefab) & 0x7fffffffffffffff;
             EditorGUILayout.LongField(result);
-            
+
             GUILayout.Space(50);
-            
+
             if (GUILayout.Button("AssetDatabaseTest"))
             {
                 Assembly executingAssembly = Assembly.GetExecutingAssembly();
@@ -106,6 +116,8 @@ namespace migrationtool.utility
         {
             isRunning = false;
         }
+
+        
 
         private void test(Action OnComplete)
         {

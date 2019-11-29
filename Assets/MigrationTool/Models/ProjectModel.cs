@@ -9,12 +9,12 @@ public class ProjectModel
 {
     public List<ClassModel> oldIDs;
     public List<ClassModel> newIDs;
-    public List<FoundScript> foundScripts;
+    public List<ScriptMapping> scriptMappings;
 
-    public ProjectModel(List<ClassModel> oldIDs, List<ClassModel> newIDs, List<FoundScript> foundScripts = null)
+    public ProjectModel(List<ClassModel> oldIDs, List<ClassModel> newIDs, List<ScriptMapping> scriptMappings = null)
     {
         this.oldIDs = oldIDs;
         this.newIDs = newIDs;
-        this.foundScripts = foundScripts;
+        this.scriptMappings = scriptMappings;
     }
 }

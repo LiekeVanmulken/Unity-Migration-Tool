@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 #if UNITY_EDITOR
-using static migrationtool.models.FoundScript;
+using static migrationtool.models.ScriptMapping;
 using YamlDotNet.RepresentationModel;
 using migrationtool.models;
 using migrationtool.utility;
@@ -160,22 +160,22 @@ namespace migrationtool.controllers
         /// <param name="fileToChange"></param>
         /// <param name="oldIDs"></param>
         /// <param name="newIDs"></param>
-        /// <param name="foundScripts"></param>
+        /// <param name="scriptMappings"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public string[] TransformIDs(string fileToChange, List<ClassModel> oldIDs,
-            List<ClassModel> newIDs, ref List<FoundScript> foundScripts)
+            List<ClassModel> newIDs, ref List<ScriptMapping> scriptMappings)
         {
             MigrationWindow.DisplayProgressBar("Migration started",
                 "Start importing current project classData and migrating scene.", 0.5f);
-            if (oldIDs == null || newIDs == null || foundScripts == null)
+            if (oldIDs == null || newIDs == null || scriptMappings == null)
             {
                 throw new NullReferenceException("Some of the data with which to export is null.");
             }
 
             string[] linesToChange = File.ReadAllLines(fileToChange);
 
-            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref foundScripts);
+            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref scriptMappings);
             MigrationWindow.ClearProgressBar();
 
             return linesToChange;
@@ -188,11 +188,11 @@ namespace migrationtool.controllers
         /// <param name="linesToChange"></param>
         /// <param name="oldIDs">List of GUIDs and FileID for all classes in the previous project.</param>
         /// <param name="newIDs">List of GUIDs and FileID for all currently in the project classes.</param>
-        /// <param name="foundScripts"></param>
+        /// <param name="scriptMappings"></param>
         /// <returns></returns>
         private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassModel> oldIDs,
             List<ClassModel> newIDs,
-            ref List<FoundScript> foundScripts)
+            ref List<ScriptMapping> scriptMappings)
         {
             string sceneContent = string.Join("\r\n", linesToChange.PrepareSceneForYaml());
 
@@ -220,8 +220,8 @@ namespace migrationtool.controllers
                     continue;
                 }
 
-                FoundScript
-                    mapping = FindMappingRecursively(newIDs, ref foundScripts,
+                ScriptMapping
+                    mapping = FindMappingRecursively(newIDs, ref scriptMappings,
                         oldClassModel);
                 if (mapping == null)
                 {
@@ -258,16 +258,16 @@ namespace migrationtool.controllers
         }
 
         /// <summary>
-        /// Maps all foundScripts for all variables and children of the type of the variable
-        /// Finds the foundScript that you need and otherwise creates it.
+        /// Maps all scriptMappings for all variables and children of the type of the variable
+        /// Finds the scriptMapping that you need and otherwise creates it.
         /// </summary>
         /// <param name="newIDs">The IDs of the new project</param>
-        /// <param name="foundScripts">The existing foundScripts that will be looked in and added to</param>
+        /// <param name="scriptMappings">The existing scriptMappings that will be looked in and added to</param>
         /// <param name="oldClassModel">Current class data of the old project as this maps to the scene file</param>
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
-        public FoundScript FindMappingRecursively(List<ClassModel> newIDs,
-            ref List<FoundScript> foundScripts, ClassModel oldClassModel)
+        public ScriptMapping FindMappingRecursively(List<ClassModel> newIDs,
+            ref List<ScriptMapping> scriptMappings, ClassModel oldClassModel)
         {
             // Can't look for something if we don't know what we're looking for
             if (oldClassModel == null)
@@ -276,11 +276,11 @@ namespace migrationtool.controllers
             }
 
 
-            FoundScript existingFoundScript = foundScripts.FirstOrDefault(
+            ScriptMapping existingScriptMapping = scriptMappings.FirstOrDefault(
                 script => script.oldClassModel.FullName == oldClassModel.FullName
             );
 
-            ClassModel replacementClassModel = existingFoundScript?.newClassModel;
+            ClassModel replacementClassModel = existingScriptMapping?.newClassModel;
 
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
@@ -292,35 +292,35 @@ namespace migrationtool.controllers
             }
             else if (replacementClassModel != null)
             {
-                return existingFoundScript;
+                return existingScriptMapping;
             }
             else
             {
                 return null;
             }
 
-            if (existingFoundScript != null)
+            if (existingScriptMapping != null)
             {
-                return existingFoundScript;
+                return existingScriptMapping;
             }
 
-            existingFoundScript = new FoundScript
+            existingScriptMapping = new ScriptMapping
             {
                 oldClassModel = oldClassModel,
                 newClassModel = replacementClassModel
             };
 
-            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
+            MappedState hasBeenMapped = existingScriptMapping.CheckHasBeenMapped();
             switch (hasBeenMapped)
             {
                 case MappedState.NotMapped:
-                    existingFoundScript.GenerateMappingNode();
+                    existingScriptMapping.GenerateMappingNode();
                     break;
                 case MappedState.Ignored:
                     return null;
             }
 
-            foundScripts.Add(existingFoundScript);
+            scriptMappings.Add(existingScriptMapping);
 
             //If it doesn't exist then create it
             if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
@@ -333,11 +333,11 @@ namespace migrationtool.controllers
                         throw new NullReferenceException("type of field is null for some reason");
                     }
 
-                    FindMappingRecursively(newIDs, ref foundScripts, field.Type);
+                    FindMappingRecursively(newIDs, ref scriptMappings, field.Type);
                 }
             }
 
-            return existingFoundScript;
+            return existingScriptMapping;
         }
 
         /// <summary>

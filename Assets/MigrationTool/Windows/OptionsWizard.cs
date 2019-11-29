@@ -41,7 +41,7 @@ namespace migrationtool.windows
         {
 
             var wizard = DisplayWizard<OptionsWizard>("Choose", "Choose"
-                ,"Ignore"   // todo : needs to be implemented in the foundscript so it doesn't keep making popups
+                ,"Ignore"
                 );
             wizard.label = label;
             wizard.comparison = comparison;

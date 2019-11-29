@@ -8,6 +8,9 @@ namespace migrationtool.windows
     {
         //todo : change this, you need to know this, this is bad design
         public List<ClassModel> oldIDsOverride;
+        public List<ClassModel> newIDsOverride;
+        public List<ScriptMapping> ScriptMappingsOverride;
+        
         
         /// <summary>
         /// Sets whether the migrationTool will overwrite scenes and prefabs.

@@ -16,7 +16,7 @@ namespace migrationtool.controllers.customlogic
         /// <example>An example of this can be found in the <see cref="QuaternionCustomMappingLogic"/></example>
         /// <param name="scene">The actual latest changed version of the scene file to transform. This is the data you need to set to change the actual scene!</param>
         /// <param name="yamlDocument">The Yaml of the scene with the data in it</param>
-        /// <param name="foundScript">The mapping that it has, will be null if nothing has changed</param>
-        void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, FoundScript foundScript);
+        /// <param name="scriptMapping">The mapping that it has, will be null if nothing has changed</param>
+        void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, ScriptMapping scriptMapping);
     }
 }

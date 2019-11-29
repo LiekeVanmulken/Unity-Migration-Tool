@@ -10,12 +10,12 @@ namespace migrationtool.windows
 {
     public class MergeWizard : ScriptableWizard
     {
-        public Action<List<FoundScript>> onComplete;
+        public Action<List<ScriptMapping>> onComplete;
 
 
-        private List<FoundScript> foundScripts;
+        private List<ScriptMapping> scriptMappings;
 
-        private FoundScriptWrapper[] foundScriptWrappers;
+        private ScriptMappingWrapper[] scriptMappingWrappers;
 
         GUIStyle richtextStyle;
         GUIStyle classNameStyle;
@@ -25,15 +25,15 @@ namespace migrationtool.windows
 
         Vector2 scrollPosition = Vector2.zero;
 
-        public static MergeWizard CreateWizard(List<FoundScript> scriptsToMerge)
+        public static MergeWizard CreateWizard(List<ScriptMapping> scriptsToMerge)
         {
             var wizard = DisplayWizard<MergeWizard>("Merge fieldNames", "Merge");
-            wizard.foundScripts = scriptsToMerge;
-            wizard.foundScriptWrappers = new FoundScriptWrapper[scriptsToMerge.Count];
+            wizard.scriptMappings = scriptsToMerge;
+            wizard.scriptMappingWrappers = new ScriptMappingWrapper[scriptsToMerge.Count];
 
             for (int i = 0; i < scriptsToMerge.Count; i++)
             {
-                wizard.foundScriptWrappers[i] = new FoundScriptWrapper(scriptsToMerge[i]);
+                wizard.scriptMappingWrappers[i] = new ScriptMappingWrapper(scriptsToMerge[i]);
             }
 
             return wizard;
@@ -61,24 +61,24 @@ namespace migrationtool.windows
             verticalMarginStyle = new GUIStyle() {margin = new RectOffset(0, 0, 0, 6)};
         }
 
-        private class FoundScriptWrapper
+        private class ScriptMappingWrapper
         {
-            public FoundScript FoundScript;
+            public ScriptMapping ScriptMapping;
             public bool[] FieldSelectionStates;
             public int[] OptionSelections;
 
-            public FoundScriptWrapper(FoundScript _foundScript)
+            public ScriptMappingWrapper(ScriptMapping scriptMapping)
             {
-                FoundScript = _foundScript;
-                FieldSelectionStates = new bool[_foundScript.MergeNodes.Count];
+                ScriptMapping = scriptMapping;
+                FieldSelectionStates = new bool[scriptMapping.MergeNodes.Count];
 
-                for (var i = 0; i < _foundScript.MergeNodes.Count; i++)
+                for (var i = 0; i < scriptMapping.MergeNodes.Count; i++)
                 {
-                    MergeNode mergeNode = _foundScript.MergeNodes[i];
+                    MergeNode mergeNode = scriptMapping.MergeNodes[i];
                     FieldSelectionStates[i] = mergeNode.OriginalValue != mergeNode.NameToExportTo;
                 }
 
-                OptionSelections = new int[_foundScript.MergeNodes.Count];
+                OptionSelections = new int[scriptMapping.MergeNodes.Count];
                 for (int i = 0; i < OptionSelections.Length; i++)
                 {
                     OptionSelections[i] = 0;
@@ -102,11 +102,11 @@ namespace migrationtool.windows
                 richtextStyle);
             GUILayout.Box(GUIContent.none, horizontalLineStyle);
 
-            for (int i = 0; i < foundScripts.Count; i++)
+            for (int i = 0; i < scriptMappings.Count; i++)
             {
-                ClassModel classModel = foundScripts[i].newClassModel;
-                FoundScriptWrapper wrapper = foundScriptWrappers[i];
-                List<MergeNode> fieldsToMerge = foundScripts[i].MergeNodes;
+                ClassModel classModel = scriptMappings[i].newClassModel;
+                ScriptMappingWrapper mappingWrapper = scriptMappingWrappers[i];
+                List<MergeNode> fieldsToMerge = scriptMappings[i].MergeNodes;
 
                 EditorGUILayout.LabelField(classModel.FullName, classNameStyle);
                 GUILayout.Box(GUIContent.none, verticalMarginStyle);
@@ -130,9 +130,9 @@ namespace migrationtool.windows
 
                     GUILayout.BeginHorizontal();
 
-                    wrapper.FieldSelectionStates[j] =
-                        EditorGUILayout.Toggle(wrapper.FieldSelectionStates[j], GetColumnWidth(1));
-                    GUI.enabled = wrapper.FieldSelectionStates[j];
+                    mappingWrapper.FieldSelectionStates[j] =
+                        EditorGUILayout.Toggle(mappingWrapper.FieldSelectionStates[j], GetColumnWidth(1));
+                    GUI.enabled = mappingWrapper.FieldSelectionStates[j];
                     EditorGUILayout.LabelField(originalName, richtextStyle, GetColumnWidth(5));
                     EditorGUILayout.LabelField(fieldToMerge.Type + (fieldToMerge.IsIterable ? "[]" : ""), richtextStyle,
                         GetColumnWidth(6));
@@ -145,17 +145,17 @@ namespace migrationtool.windows
 
                     EditorGUILayout.BeginVertical();
 
-                    wrapper.OptionSelections[j] = EditorGUILayout.Popup(wrapper.OptionSelections[j],
+                    mappingWrapper.OptionSelections[j] = EditorGUILayout.Popup(mappingWrapper.OptionSelections[j],
                         fieldToMerge.Options, GetColumnWidth(5));
 
-                    int optionsIndex = wrapper.OptionSelections[j];
+                    int optionsIndex = mappingWrapper.OptionSelections[j];
                     if (fieldToMerge.Options != null && optionsIndex < fieldToMerge.Options.Length)
                     {
                         fieldToMerge.NameToExportTo = fieldToMerge.Options[optionsIndex];
                     }
                     else
                     {
-                        wrapper.FieldSelectionStates[j] = false;
+                        mappingWrapper.FieldSelectionStates[j] = false;
                     }
 
                     EditorGUILayout.EndVertical();
@@ -166,10 +166,10 @@ namespace migrationtool.windows
 
                     GUILayout.Box(GUIContent.none, verticalMarginStyle);
 
-                    foundScripts[i].MergeNodes[j] = fieldToMerge;
+                    scriptMappings[i].MergeNodes[j] = fieldToMerge;
                 }
 
-                foundScriptWrappers[i] = wrapper;
+                scriptMappingWrappers[i] = mappingWrapper;
 
                 GUILayout.Box(GUIContent.none, horizontalLineStyle);
             }
@@ -182,11 +182,11 @@ namespace migrationtool.windows
 
         void OnWizardCreate()
         {
-            foreach (FoundScript foundScript in foundScripts)
+            foreach (ScriptMapping scriptMapping in scriptMappings)
             {
-                foundScript.HasBeenMapped = FoundScript.MappedState.Approved;
+                scriptMapping.HasBeenMapped = ScriptMapping.MappedState.Approved;
             }
-            onComplete(foundScripts);
+            onComplete(scriptMappings);
         }
     }
 }

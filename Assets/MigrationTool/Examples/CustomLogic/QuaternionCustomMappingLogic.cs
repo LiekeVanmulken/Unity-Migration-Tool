@@ -8,7 +8,7 @@ namespace migrationtool.examples
 {
     public class QuaternionCustomMappingLogic : ICustomMappingLogic
     {
-        public void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, FoundScript foundScript)
+        public void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, ScriptMapping scriptMapping)
         {
             // Get all values
             YamlNode yamlNodes = yamlDocument.RootNode.GetChildren()["MonoBehaviour"];

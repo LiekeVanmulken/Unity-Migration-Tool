@@ -37,7 +37,7 @@ namespace migrationtool.views
         /// <param name="oldIDs">Needs to be added because the oldIDs can be overriden</param>
         public void ParsePrefabsInAScene(string sceneFile, string originalAssetPath,
             string destinationAssetPath,
-            ref List<FoundScript> foundScripts) // todo : this will not use the classModel!!
+            ref List<ScriptMapping> scriptMappings)
         {
             YamlStream stream = new YamlStream();
             string[] lines = File.ReadAllLines(sceneFile).PrepareSceneForYaml();
@@ -60,8 +60,8 @@ namespace migrationtool.views
                     continue;
                 }
 
-                foundScripts = ParsePrefab(currentPrefab.Path, originalAssetPath, destinationAssetPath, prefabs,
-                    currentPrefab.Guid, foundScripts);
+                scriptMappings = ParsePrefab(currentPrefab.Path, originalAssetPath, destinationAssetPath, prefabs,
+                    currentPrefab.Guid, scriptMappings);
             }
         }
 
@@ -76,9 +76,9 @@ namespace migrationtool.views
         /// <param name="prefabGuid"></param>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="NullReferenceException"></exception>
-        public List<FoundScript> ParsePrefab(string prefabFile, string originalAssetPath, string destinationAssetPath,
+        public List<ScriptMapping> ParsePrefab(string prefabFile, string originalAssetPath, string destinationAssetPath,
             List<PrefabModel> prefabs,
-            string prefabGuid, List<FoundScript> foundScripts)
+            string prefabGuid, List<ScriptMapping> scriptMappings)
         {
             if (!prefabFile.EndsWith(".prefab"))
             {
@@ -109,17 +109,18 @@ namespace migrationtool.views
 
             //Deserialize the new ID's
             List<ClassModel> newIDs =
+                Administration.Instance.newIDsOverride??
                 IDController.DeserializeIDs(destinationAssetPath + constants.RelativeExportPath);
 
 
-            parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref foundScripts);
+            parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref scriptMappings);
 
-            var unmappedFoundScripts = foundScripts
-                .Where(script => script.HasBeenMapped == FoundScript.MappedState.NotMapped).ToList();
-            if (unmappedFoundScripts.Count == 0)
+            var unmappedScriptMappings = scriptMappings
+                .Where(script => script.HasBeenMapped == ScriptMapping.MappedState.NotMapped).ToList();
+            if (unmappedScriptMappings.Count == 0)
             {
                 parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
-                    ref foundScripts,
+                    ref scriptMappings,
                     originalAssetPath, destinationAssetPath);
                 SavePrefabFile(parsedPrefab, currentPrefab, destinationAssetPath);
             }
@@ -128,17 +129,17 @@ namespace migrationtool.views
                 bool completed = false;
                 ThreadUtil.RunMainThread(() =>
                 {
-                    MergeWizard wizard = MergeWizard.CreateWizard(unmappedFoundScripts);
-                    wizard.onComplete = mergedFoundScripts =>
+                    MergeWizard wizard = MergeWizard.CreateWizard(unmappedScriptMappings);
+                    wizard.onComplete = mergedScriptMappings =>
                     {
-                        foundScripts = foundScripts.Merge(mergedFoundScripts);
-                        File.WriteAllText(destinationAssetPath + constants.RelativeFoundScriptPath,
-                            JsonConvert.SerializeObject(foundScripts, constants.IndentJson));
+                        scriptMappings = scriptMappings.Merge(mergedScriptMappings);
+                        File.WriteAllText(destinationAssetPath + constants.RelativeScriptMappingPath,
+                            JsonConvert.SerializeObject(scriptMappings, constants.IndentJson));
 
                         ThreadUtil.RunThread(() =>
                         {
                             parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
-                                ref foundScripts, originalAssetPath, destinationAssetPath);
+                                ref scriptMappings, originalAssetPath, destinationAssetPath);
                             SavePrefabFile(parsedPrefab, currentPrefab, destinationAssetPath);
                         });
                         completed = true;
@@ -151,7 +152,7 @@ namespace migrationtool.views
                 }
             }
 
-            return foundScripts;
+            return scriptMappings;
         }
 
         /// <summary>
@@ -179,12 +180,12 @@ namespace migrationtool.views
                 return;
             }
 
-            //Deserialize the foundScripts
-            List<FoundScript> foundScripts = new List<FoundScript>();
-            if (File.Exists(destinationProjectPath + constants.RelativeFoundScriptPath))
+            //Deserialize the ScriptMappings
+            List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
+            if (File.Exists(destinationProjectPath + constants.RelativeScriptMappingPath))
             {
-                foundScripts =
-                    MappingController.DeserializeMapping(destinationProjectPath + constants.RelativeFoundScriptPath);
+                scriptMappings =
+                    MappingController.DeserializeMapping(destinationProjectPath + constants.RelativeScriptMappingPath);
             }
 
             List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(originalProjectPath);
@@ -195,7 +196,7 @@ namespace migrationtool.views
                 ThreadUtil.RunWaitThread(() =>
                     {
                         ParsePrefab(prefab.Path, originalProjectPath, destinationProjectPath, prefabs,
-                            prefab.Guid, foundScripts);
+                            prefab.Guid, scriptMappings);
                     }
                 );
             }

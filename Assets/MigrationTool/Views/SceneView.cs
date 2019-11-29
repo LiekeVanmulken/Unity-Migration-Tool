@@ -31,7 +31,7 @@ namespace migrationtool.views
         {
             MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scenes", 0.2f);
             string rootPath = Application.dataPath;
-            
+
             if (projectToExportFromPath == null)
             {
                 projectToExportFromPath =
@@ -53,14 +53,14 @@ namespace migrationtool.views
                 {
                     string scene = sceneFiles[i];
                     MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scene: " + scene,
-                        (float)(i+1)/sceneFiles.Length);
+                        (float) (i + 1) / sceneFiles.Length);
 
-                    ThreadUtil.RunWaitThread(() => { MigrateScene(scene,rootPath); });
+                    ThreadUtil.RunWaitThread(() => { MigrateScene(scene, rootPath); });
                 }
 
                 MigrationWindow.ClearProgressBar();
                 Debug.Log("Migrated all scenes");
-                
+
                 onComplete?.Invoke();
             });
         }
@@ -104,19 +104,31 @@ namespace migrationtool.views
 
                 string newIDsPath = rootPath + constants.RelativeExportPath;
 
-                List<ClassModel> newIDs = File.Exists(newIDsPath)
-                    ? IDController.DeserializeIDs(newIDsPath)
-                    : idController.ExportClassData(rootPath);
-
-
-                List<FoundScript> foundScripts = new List<FoundScript>();
-                string foundScriptsPath = rootPath + constants.RelativeFoundScriptPath;
-                if (File.Exists(foundScriptsPath))
+                List<ClassModel> newIDs;
+                if (Administration.Instance.newIDsOverride == null)
                 {
-                    foundScripts = MappingController.DeserializeMapping(foundScriptsPath);
+                    newIDs = File.Exists(newIDsPath)
+                        ? IDController.DeserializeIDs(newIDsPath)
+                        : idController.ExportClassData(rootPath);
+                }
+                else
+                {
+                    newIDs = Administration.Instance.newIDsOverride;
                 }
 
-                this.MigrateSceneIDs(rootPath, oldIDs, newIDs, scenePath, foundScripts);
+
+                List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
+                string scriptMappingsPath = rootPath + constants.RelativeScriptMappingPath;
+                if (Administration.Instance.ScriptMappingsOverride != null)
+                {
+                    scriptMappings = Administration.Instance.ScriptMappingsOverride;
+                }
+                else if (File.Exists(scriptMappingsPath))
+                {
+                    scriptMappings = MappingController.DeserializeMapping(scriptMappingsPath);
+                }
+
+                this.MigrateSceneIDs(rootPath, oldIDs, newIDs, scenePath, scriptMappings);
             });
             Debug.Log("Exported scene : " + scenePath);
         }
@@ -129,10 +141,10 @@ namespace migrationtool.views
         /// <param name="oldIDs"></param>
         /// <param name="currentIDs"></param>
         /// <param name="scenePath"></param>
-        /// <param name="foundScripts"></param>
+        /// <param name="scriptMappings"></param>
         private void MigrateSceneIDs(string rootPath, List<ClassModel> oldIDs, List<ClassModel> currentIDs,
             string scenePath,
-            List<FoundScript> foundScripts)
+            List<ScriptMapping> scriptMappings)
         {
             try
             {
@@ -143,12 +155,9 @@ namespace migrationtool.views
 
                 string[] lastSceneExport =
                     idController.TransformIDs(scenePath, oldIDs, currentIDs,
-                        ref foundScripts);
+                        ref scriptMappings);
 
-                ThreadUtil.RunMainThread(() =>
-                    {
-                        MigrateFields(rootPath, scenePath, foundScripts, lastSceneExport);
-                    }
+                ThreadUtil.RunMainThread(() => { MigrateFields(rootPath, scenePath, scriptMappings, lastSceneExport); }
                 );
             }
             catch (Exception e)
@@ -160,24 +169,24 @@ namespace migrationtool.views
 
         private void
             MigrateFields(string rootPath, string scenePath,
-                List<FoundScript> foundScripts,
+                List<ScriptMapping> scriptMappings,
                 string[] lastSceneExport)
         {
-            foreach (FoundScript script in foundScripts)
+            foreach (ScriptMapping script in scriptMappings)
             {
-                if (script.HasBeenMapped == FoundScript.MappedState.NotChecked)
+                if (script.HasBeenMapped == ScriptMapping.MappedState.NotChecked)
                 {
                     throw new NotImplementedException("Script has not been checked for mapping");
                 }
             }
 
 
-            FoundScript[] unmappedScripts = foundScripts
-                .Where(field => field.HasBeenMapped == FoundScript.MappedState.NotMapped).ToArray();
+            ScriptMapping[] unmappedScripts = scriptMappings
+                .Where(field => field.HasBeenMapped == ScriptMapping.MappedState.NotMapped).ToArray();
             if (unmappedScripts.Length > 0)
             {
                 // Remove duplicate scripts
-                List<FoundScript> scripts =
+                List<ScriptMapping> scripts =
                     unmappedScripts
                         .GroupBy(field => field.newClassModel.FullName)
                         .Select(group => group.First()).ToList();
@@ -189,36 +198,37 @@ namespace migrationtool.views
                 MergeWizard mergeWizard = MergeWizard.CreateWizard(scripts);
                 mergeWizard.onComplete = (userAuthorizedList) =>
                 {
-                    MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport, userAuthorizedList);
+                    MergingWizardCompleted(scriptMappings, rootPath, scenePath, lastSceneExport,
+                        userAuthorizedList);
                 };
             }
             else
             {
-                MergingWizardCompleted(foundScripts, rootPath, scenePath, lastSceneExport);
+                MergingWizardCompleted(scriptMappings, rootPath, scenePath, lastSceneExport);
             }
         }
 
         /// <summary>
         /// Change the fields after merging with the merging window
         /// </summary>
-        /// <param name="originalFoundScripts"></param>
+        /// <param name="originalScriptMappings"></param>
         /// <param name="rootPath"></param>
         /// <param name="scenePath"></param>
         /// <param name="linesToChange"></param>
-        /// <param name="mergedFoundScripts"></param>
-        private void MergingWizardCompleted(List<FoundScript> originalFoundScripts, string rootPath,
+        /// <param name="mergedScriptMappings"></param>
+        private void MergingWizardCompleted(List<ScriptMapping> originalScriptMappings, string rootPath,
             string scenePath,
             string[] linesToChange,
-            List<FoundScript> mergedFoundScripts = null)
+            List<ScriptMapping> mergedScriptMappings = null)
         {
-            if (mergedFoundScripts != null)
+            if (mergedScriptMappings != null)
             {
-                originalFoundScripts = originalFoundScripts.Merge(mergedFoundScripts);
+                originalScriptMappings = originalScriptMappings.Merge(mergedScriptMappings);
             }
 
             ThreadUtil.RunThread(() =>
             {
-                fieldMappingController.MigrateFields(scenePath, ref linesToChange, ref originalFoundScripts,
+                fieldMappingController.MigrateFields(scenePath, ref linesToChange, ref originalScriptMappings,
                     ProjectPathUtility.getProjectPathFromFile(scenePath), rootPath);
 
                 string newScenePath = rootPath + scenePath.GetRelativeAssetPath();
@@ -228,7 +238,7 @@ namespace migrationtool.views
                     newScenePath = ProjectPathUtility.AddTimestamp(newScenePath);
                 }
 
-                mappingView.SaveFoundScripts(rootPath, originalFoundScripts);
+                mappingView.SaveScriptMappings(rootPath, originalScriptMappings);
                 SaveSceneFile(newScenePath, linesToChange);
             });
         }

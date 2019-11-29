@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
 using migrationtool.controllers;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.windows;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,11 +34,12 @@ public class MappingView
             Debug.Log("No new ID path selected. Aborting the mapping.");
             return;
         }
+
         MapAllClasses(oldIDs, newIDs);
     }
 
     /// <summary>
-    /// Generate a mapping of all foundScripts in a project.
+    /// Generate a mapping of all scriptMappings in a project.
     /// Which means it creates a mapping between versions.
     /// </summary>
     /// <param name="oldIDsPath"></param>
@@ -47,7 +53,7 @@ public class MappingView
     }
 
     /// <summary>
-    /// Generate a mapping of all foundScripts in a project.
+    /// Generate a mapping of all scriptMappings in a project.
     /// Which means it creates a mapping between versions.
     /// </summary>
     /// <param name="oldIDs"></param>
@@ -59,29 +65,57 @@ public class MappingView
         ThreadUtil.RunThread(() =>
         {
             MigrationWindow.DisplayProgressBar("starting migration export", "Mapping classes", 0.4f);
-            mappingController.MapAllClasses(oldIDs, newIDs, 
-                mergedFoundScripts =>
-            {
-                SaveFoundScripts(rootPath, mergedFoundScripts);
-                MigrationWindow.ClearProgressBar();
-                ThreadUtil.RunMainThread(() =>
+            mappingController.MapAllClasses(oldIDs, newIDs,
+                mergedScriptMapping =>
+                {
+                    SaveScriptMappings(rootPath, mergedScriptMapping);
+                    MigrationWindow.ClearProgressBar();
+                    ThreadUtil.RunMainThread(() =>
                     {
                         EditorUtility.DisplayDialog("Completed mapping",
-                            "Completed the mapping. Saved the mapping to :" + constants.RelativeFoundScriptPath, "Ok");
+                            "Completed the mapping. Saved the mapping to :" + constants.RelativeScriptMappingPath,
+                            "Ok");
                     });
-            });
+                });
         });
+    }
+
+    public List<ScriptMapping> GenerateNewMapping(string oldVersion, string newVersion)
+    {
+        Dictionary<string, List<ScriptMapping>> allVersions = new Dictionary<string, List<ScriptMapping>>();
+        WebClient wc = new WebClient();
+        using (MemoryStream stream = new MemoryStream(wc.DownloadData("http://localhost:8080/versions")))
+        {
+            string request = Encoding.ASCII.GetString(stream.ToArray());
+            Debug.LogError(request);
+            JArray data = JArray.Parse(request);
+            foreach (JObject element in data)
+            {
+                string version = (string) element["version"];
+                string mappingUrl = (string) element["mappingUrl"];
+                using (MemoryStream linkStream = new MemoryStream(wc.DownloadData(mappingUrl)))
+                {
+                    Debug.Log("Downloaded mapping Version: " + version + " Url: " + mappingUrl);
+                    string mappingString = Encoding.ASCII.GetString(linkStream.ToArray());
+                    
+                    List<ScriptMapping> mapping =  JsonConvert.DeserializeObject<List<ScriptMapping>>(mappingString);
+                    allVersions[version] = mapping;
+                }
+            }
+        }
+
+        return mappingController.CombineMappings(allVersions);
     }
 
 
     /// <summary>
-    /// Write foundScripts to a file
+    /// Write scriptMappings to a file
     /// </summary>
     /// <param name="rootPath"></param>
-    /// <param name="foundScripts"></param>
-    public void SaveFoundScripts(string rootPath, List<FoundScript> foundScripts)
+    /// <param name="scriptMappings"></param>
+    public void SaveScriptMappings(string rootPath, List<ScriptMapping> scriptMappings)
     {
-        string foundScriptsPath = rootPath + constants.RelativeFoundScriptPath;
-        File.WriteAllText(foundScriptsPath, JsonConvert.SerializeObject(foundScripts, constants.IndentJson));
+        string scriptMappingsPath = rootPath + constants.RelativeScriptMappingPath;
+        File.WriteAllText(scriptMappingsPath, JsonConvert.SerializeObject(scriptMappings, constants.IndentJson));
     }
 }

@@ -1,1 +1,78 @@
-[{"newClassModel":{"FullName":"FileIDCalculationScript","Name":"FileIDCalculationScript","Guid":"842bf5de4730a264bb2062352b7be678","FileID":"11500000","Fields":[]},"oldClassModel":{"FullName":"FileIDCalculationScript","Name":"FileIDCalculationScript","Guid":"842bf5de4730a264bb2062352b7be678","FileID":"11500000","Fields":[]},"FieldsToMerge":[],"HasBeenMapped":"Mapped"},{"newClassModel":{"FullName":"YamlTestScript","Name":"YamlTestScript","Guid":"7c091ffd2ee4b5340bf55879d4192f81","FileID":"11500000","Fields":[{"Name":"publicString","Type":"System.String","IsIterable":false},{"Name":"privateSerializedString","Type":"System.String","IsIterable":false}]},"oldClassModel":{"FullName":"YamlTestScript","Name":"YamlTestScript","Guid":"7c091ffd2ee4b5340bf55879d4192f81","FileID":"11500000","Fields":[{"Name":"publicString","Type":"System.String","IsIterable":false},{"Name":"privateSerializedString","Type":"System.String","IsIterable":false}]},"FieldsToMerge":[],"HasBeenMapped":"Mapped"},{"newClassModel":{"FullName":"testNamespace.GetNameSpaceFromGuidTestScript","Name":"GetNameSpaceFromGuidTestScript","Guid":"a0f64faa1a4a2e2418bb92d6ffd077aa","FileID":"11500000","Fields":[]},"oldClassModel":{"FullName":"testNamespace.GetNameSpaceFromGuidTestScript","Name":"GetNameSpaceFromGuidTestScript","Guid":"a0f64faa1a4a2e2418bb92d6ffd077aa","FileID":"11500000","Fields":[]},"FieldsToMerge":[],"HasBeenMapped":"Mapped"}]
+[
+    {
+        "newClassModel": {
+            "FullName": "FileIDCalculationScript",
+            "Name": "FileIDCalculationScript",
+            "Guid": "842bf5de4730a264bb2062352b7be678",
+            "FileID": "11500000",
+            "Fields": []
+        },
+        "oldClassModel": {
+            "FullName": "FileIDCalculationScript",
+            "Name": "FileIDCalculationScript",
+            "Guid": "842bf5de4730a264bb2062352b7be678",
+            "FileID": "11500000",
+            "Fields": []
+        },
+        "FieldsToMerge": [],
+        "HasBeenMapped": "Mapped"
+    },
+    {
+        "newClassModel": {
+            "FullName": "YamlTestScript",
+            "Name": "YamlTestScript",
+            "Guid": "7c091ffd2ee4b5340bf55879d4192f81",
+            "FileID": "11500000",
+            "Fields": [
+                {
+                    "Name": "publicString",
+                    "Type": "System.String",
+                    "IsIterable": false
+                },
+                {
+                    "Name": "privateSerializedString",
+                    "Type": "System.String",
+                    "IsIterable": false
+                }
+            ]
+        },
+        "oldClassModel": {
+            "FullName": "YamlTestScript",
+            "Name": "YamlTestScript",
+            "Guid": "7c091ffd2ee4b5340bf55879d4192f81",
+            "FileID": "11500000",
+            "Fields": [
+                {
+                    "Name": "publicString",
+                    "Type": "System.String",
+                    "IsIterable": false
+                },
+                {
+                    "Name": "privateSerializedString",
+                    "Type": "System.String",
+                    "IsIterable": false
+                }
+            ]
+        },
+        "FieldsToMerge": [],
+        "HasBeenMapped": "Mapped"
+    },
+    {
+        "newClassModel": {
+            "FullName": "testNamespace.GetNameSpaceFromGuidTestScript",
+            "Name": "GetNameSpaceFromGuidTestScript",
+            "Guid": "a0f64faa1a4a2e2418bb92d6ffd077aa",
+            "FileID": "11500000",
+            "Fields": []
+        },
+        "oldClassModel": {
+            "FullName": "testNamespace.GetNameSpaceFromGuidTestScript",
+            "Name": "GetNameSpaceFromGuidTestScript",
+            "Guid": "a0f64faa1a4a2e2418bb92d6ffd077aa",
+            "FileID": "11500000",
+            "Fields": []
+        },
+        "FieldsToMerge": [],
+        "HasBeenMapped": "Mapped"
+    }
+]

@@ -12,19 +12,17 @@ namespace migrationtool.models
 {
     /// <summary>
     /// Class used to return the scripts that need to be remapped by the user.
-    /// When the fieldnames in the yaml do not match the fields in the class.
+    /// When the fieldNames in the yaml do not match the fields in the class.
     /// The reason this is returns is because this needs to be filled in by the user and as such
     /// cannot be done in the importExportUtility as this needs user input.
     ///
     /// Used in the <see cref="ImportExportUtility.GenerateFieldMapping"/> and the <seealso cref="MergeWizard"/>
     /// </summary>
     [Serializable]
-    public class FoundScript
+    public class ScriptMapping
     {
         public ClassModel newClassModel;
         public ClassModel oldClassModel;
-
-        [JsonIgnore] public YamlNode YamlOptions;
 
         [JsonProperty("FieldsToMerge")] [SerializeField]
         public List<MergeNode> MergeNodes = new List<MergeNode>();
@@ -41,17 +39,17 @@ namespace migrationtool.models
             Ignored
         }
 
-        public FoundScript()
+        public ScriptMapping()
         {
         }
 
-        public FoundScript(ClassModel oldClassModel, ClassModel newClassModel, YamlNode yamlOptions)
-        {
-            this.newClassModel = newClassModel;
-            this.oldClassModel = oldClassModel;
-            this.YamlOptions = yamlOptions;
-            this.HasBeenMapped = CheckHasBeenMapped(oldClassModel, newClassModel);
-        }
+//        public ScriptMapping(ClassModel oldClassModel, ClassModel newClassModel)
+//        {
+//            this.newClassModel = newClassModel;
+//            this.oldClassModel = oldClassModel;
+////            this.YamlOptions = yamlOptions;
+//            this.HasBeenMapped = CheckHasBeenMapped(oldClassModel, newClassModel);
+//        }
 
         public MappedState CheckHasBeenMapped()
         {
@@ -143,11 +141,6 @@ namespace migrationtool.models
                 {
                     return false;
                 }
-
-//                if (found.Type?.Fields != null && !checkHasBeenMappedRecursive(oldFieldData.Type, found.Type))
-//                {
-//                    return false;
-//                }
             }
 
             return true;

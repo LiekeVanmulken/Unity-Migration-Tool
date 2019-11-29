@@ -15,48 +15,48 @@ public class MappingController
     IDController idController = new IDController();
 
     /// <summary>
-    /// Generate a mapping of all foundScripts in a project.
+    /// Generate a mapping of all scriptMappings in a project.
     /// Which means it creates a mapping between versions.
     /// </summary>
     /// <param name="oldIDs"></param>
     /// <param name="newIDs"></param>
     /// <returns></returns>
-    public void MapAllClasses(List<ClassModel> oldIDs, List<ClassModel> newIDs, Action<List<FoundScript>> onComplete)
+    public void MapAllClasses(List<ClassModel> oldIDs, List<ClassModel> newIDs, Action<List<ScriptMapping>> onComplete)
     {
         if (oldIDs == null || newIDs == null)
         {
             Debug.LogError("Old or new IDS are null. Cannot map without the old and new IDs");
         }
 
-        List<FoundScript> unmergedFoundScripts = MappAllClasses(oldIDs, newIDs);
-        List<FoundScript> unmappedFoundScripts = unmergedFoundScripts
-            .Where(script => script.HasBeenMapped == FoundScript.MappedState.NotMapped).ToList();
-        if (unmappedFoundScripts.Count == 0)
+        List<ScriptMapping> unmergedScriptMappings = MappAllClasses(oldIDs, newIDs);
+        List<ScriptMapping> unmappedScriptMapping = unmergedScriptMappings
+            .Where(script => script.HasBeenMapped == ScriptMapping.MappedState.NotMapped).ToList();
+        if (unmappedScriptMapping.Count == 0)
         {
-            onComplete(unmappedFoundScripts);
+            onComplete(unmappedScriptMapping);
             return;
         }
 
         ThreadUtil.RunMainThread(() =>
         {
-            MergeWizard mergeWizard = MergeWizard.CreateWizard(unmappedFoundScripts);
-            mergeWizard.onComplete = (mergedFoundScripts) =>
+            MergeWizard mergeWizard = MergeWizard.CreateWizard(unmappedScriptMapping);
+            mergeWizard.onComplete = (mergedScriptMapping) =>
             {
-                List<FoundScript> completed = unmappedFoundScripts.Merge(mergedFoundScripts);
+                List<ScriptMapping> completed = unmappedScriptMapping.Merge(mergedScriptMapping);
                 onComplete(completed);
             };
         });
     }
 
     /// <summary>
-    /// Maps all classes to foundScripts in a project
+    /// Maps all classes to scriptMappings in a project
     /// </summary>
     /// <param name="oldIDs"></param>
     /// <param name="newIDs"></param>
     /// <returns></returns>
-    private List<FoundScript> MappAllClasses(List<ClassModel> oldIDs, List<ClassModel> newIDs)
+    private List<ScriptMapping> MappAllClasses(List<ClassModel> oldIDs, List<ClassModel> newIDs)
     {
-        List<FoundScript> foundScripts = new List<FoundScript>();
+        List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
         List<ClassModel> classesToMap = new List<ClassModel>();
         foreach (ClassModel oldID in oldIDs)
         {
@@ -66,7 +66,7 @@ public class MappingController
                 classesToMap.Add(oldID);
             }
 
-            idController.FindMappingRecursively(newIDs, ref foundScripts, oldID);
+            idController.FindMappingRecursively(newIDs, ref scriptMappings, oldID);
         }
 
         GC.Collect();
@@ -75,80 +75,125 @@ public class MappingController
         Debug.Log("Mapped classes. Total: " + oldIDs.Count + " classesThatNeedToBeMapped: " + classesToMap.Count);
         
 
-        return foundScripts;
+        return scriptMappings;
     }
 
-    public static List<FoundScript> DeserializeMapping(string path)
+    public static List<ScriptMapping> DeserializeMapping(string path)
     {
-        return JsonConvert.DeserializeObject<List<FoundScript>>(File.ReadAllText(path));
+        return JsonConvert.DeserializeObject<List<ScriptMapping>>(File.ReadAllText(path));
     }
 
-//    public List<FoundScript> FixMapping(List<FoundScript> foundScripts, List<ClassModel> oldIDs,
-//        List<ClassModel> newIDs)
-//    {
-//        for (var i = 0; i < foundScripts.Count; i++)
-//        {
-//            ClassModel old = foundScripts[i].oldClassModel;
-//            ClassModel oldReplacement = findClassModelRecursive(oldIDs, old);
-//            if (oldReplacement == null)
-//            {
-//                Debug.LogError("Could not find match for class in old IDs: " + old.FullName);
-//            }
-//            else
-//            {
-//                foundScripts[i].oldClassModel = oldReplacement;
-//            }
-//
-//
-//            ClassModel newClass = foundScripts[i].newClassModel;
-//            ClassModel newReplacement = findClassModelRecursive(newIDs, newClass);
-//            if (newReplacement == null)
-//            {
-//                Debug.LogError("Could not find match for class in new IDs: " + newClass.FullName);
-//            }
-//            else
-//            {
-//                foundScripts[i].newClassModel = newReplacement;
-//            }
-//        }
-//
-//        return foundScripts;
-//    }
-
+ 
+    
     /// <summary>
-    /// Find the classModel in a list recursively 
+    /// Combine multiple mappings to one
     /// </summary>
-    /// <param name="IDs"></param>
-    /// <param name="toFind"></param>
+    /// <param name="allScriptMappings">A dictionary where the Key is the version and the Value is a list of the scriptMappings</param>
     /// <returns></returns>
-    public static ClassModel FindClassModelRecursive(List<ClassModel> IDs, ClassModel toFind)
+    public List<ScriptMapping> CombineMappings(Dictionary<string, List<ScriptMapping>> allScriptMappings)
     {
-        string toFindFullName = toFind.FullName;
-        // First loop through all of them to check the first layer. 
-        // If we didn't use a separate loop we would get a subObject over a root script
-        // (root scripts are the ones with the guids and fileIDs) 
-        foreach (ClassModel id in IDs)
+        switch (allScriptMappings.Count)
         {
-            if (id.FullName == toFindFullName)
-            {
-                return id;
-            }
+            case 0:
+                throw new NullReferenceException("Cannot Combine for zero mapping");
+            case 1:
+                Debug.LogWarning("No Mappings combined, only a single mapping available.");
+                return allScriptMappings.First().Value;
         }
-        //Check if their fields might have the type
-        foreach (ClassModel id in IDs)
+
+        List<List<ScriptMapping>> sortedScriptMappings =
+            allScriptMappings
+                .ToList()
+                .OrderBy(pair => pair.Key)
+                .Select(pair => pair.Value)
+                .ToList();
+
+        var combinedScriptMapping = sortedScriptMappings[0];
+
+
+        for (var i = 1; i < sortedScriptMappings.Count; i++)
         {
-            if (id.Fields == null || id.Fields.Length == 0)
+            List<ScriptMapping> updatedMapping = sortedScriptMappings[i];
+            List<ScriptMapping> scriptMappingsToAdd = new List<ScriptMapping>();
+            foreach (ScriptMapping newMapping in updatedMapping)
             {
+                ScriptMapping oldMapping = combinedScriptMapping.FirstOrDefault(
+                    old => old.newClassModel.FullName == newMapping.oldClassModel.FullName);
+                if (oldMapping == null)
+                {
+                    scriptMappingsToAdd.Add(newMapping); // todo : fix fix
+                    //Should this make a new mapping?
+                    Debug.LogError("Could not find matching mapping in the old mapping, making a new mapping");
+                    continue;
+                }
+
+                oldMapping.MergeNodes = CombineMergeNodes(oldMapping.MergeNodes, newMapping.MergeNodes);
+                oldMapping.newClassModel = newMapping.newClassModel;
+            }
+
+            combinedScriptMapping.AddRange(scriptMappingsToAdd);
+        }
+
+        return combinedScriptMapping;
+    }
+
+    private List<MergeNode> CombineMergeNodes(List<MergeNode> oldMergeNodes, List<MergeNode> newMergeNodes)
+    {
+        List<MergeNode> mergeNodesToAdd = new List<MergeNode>();
+        foreach (MergeNode newMergeNode in newMergeNodes)
+        {
+            MergeNode mergeNode = oldMergeNodes.FirstOrDefault(old => old.NameToExportTo == newMergeNode.OriginalValue);
+            if (mergeNode == null)
+            {
+                mergeNodesToAdd.Add(newMergeNode);
+                Debug.LogError("Could not find mergeNode for new mergeNode: " + newMergeNode.OriginalValue +
+                               " adding new mergeNodes.");
                 continue;
             }
-            
-            ClassModel match = FindClassModelRecursive(id.Fields.Select(model => model.Type).ToList(), toFind);
-            if (match != null)
+
+            mergeNode.NameToExportTo = newMergeNode.NameToExportTo;
+        }
+
+        oldMergeNodes.AddRange(mergeNodesToAdd);
+        return oldMergeNodes;
+    }
+    /// <summary>
+    /// Checks whether the original has a higher version then the changed
+    /// </summary>
+    /// <param name="original"></param>
+    /// <param name="changed"></param>
+    /// <returns>
+    ///  1: if original is larger
+    ///  0: if they're the same
+    /// -1: if changed is larger
+    /// </returns>
+    /// <exception cref="FormatException"></exception>
+    private int IsOriginalVersionHigher(string original, string changed)
+    {
+        string[] originalSplit = original.Split('.');
+        string[] changedSplit = changed.Split('.');
+
+        if (originalSplit.Length != 4 || changedSplit.Length != 4)
+        {
+            throw new FormatException("original or changed version are not the correct format");
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            int originalCurrent = Int32.Parse(originalSplit[i]);
+            int changedCurrent = Int32.Parse(changedSplit[i]);
+            if (originalCurrent > changedCurrent)
             {
-                return match;
+                return 1;
+            }
+            if(originalCurrent < changedCurrent)
+            {
+                return -1;
             }
         }
 
-        return null;
+        return 0;
     }
+
+
 }

@@ -91,14 +91,14 @@ namespace migrationtool.utility
             string originalProjectPath, string destinationProjectPath)
         {
             List<PrefabModel> exportPrefabs = new PrefabController().ExportPrefabs(originalProjectPath);
-            List<FoundScript> foundScripts = new List<FoundScript>();
+            List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
 
             IDController idController = new IDController();
             PrefabView prefabView = new PrefabView();
 
             foreach (PrefabModel prefab in exportPrefabs)
             {
-                string[] parsedPrefab = idController.TransformIDs(prefab.Path, oldIDs, newIDs, ref foundScripts);
+                string[] parsedPrefab = idController.TransformIDs(prefab.Path, oldIDs, newIDs, ref scriptMappings);
                 prefabView.SavePrefabFile(parsedPrefab, prefab, destinationProjectPath);
             }
 

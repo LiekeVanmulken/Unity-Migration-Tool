@@ -27,12 +27,12 @@ namespace migrationtool.controllers
         /// Works for both scenes and prefabs. 
         /// </summary>
         /// <param name="scene"></param>
-        /// <param name="foundScripts"></param>
+        /// <param name="scriptMappings"></param>
         /// <param name="oldRootPath"></param>
         /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            MigrateFields(string scenePath, ref string[] scene, ref List<FoundScript> foundScripts, string oldRootPath,
+            MigrateFields(string scenePath, ref string[] scene, ref List<ScriptMapping> scriptMappings, string oldRootPath,
                 string destinationPath)
         {
             string sceneContent = string.Join("\n", scene.PrepareSceneForYaml());
@@ -46,24 +46,24 @@ namespace migrationtool.controllers
             {
                 if (Administration.Instance.MigrateScenePrefabDependencies)
                 {
-                    new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath, ref foundScripts);
+                    new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath, ref scriptMappings);
                 }
 
-                //Deserialize the foundScripts
-                if (File.Exists(destinationPath + constants.RelativeFoundScriptPath))
+                //Deserialize the scriptMapping
+                if (File.Exists(destinationPath + constants.RelativeScriptMappingPath))
                 {
-                    foundScripts =
-                        MappingController.DeserializeMapping(destinationPath + constants.RelativeFoundScriptPath);
+                    scriptMappings =
+                        MappingController.DeserializeMapping(destinationPath + constants.RelativeScriptMappingPath);
                 }
 
-                ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, foundScripts);
+                ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, scriptMappings);
             }
 
-            ConvertScene(scenePath, ref scene, foundScripts, yamlStream);
+            ConvertScene(scenePath, ref scene, scriptMappings, yamlStream);
             return scene;
         }
 
-        private void ConvertScene(string scenePath, ref string[] scene, List<FoundScript> foundScripts,
+        private void ConvertScene(string scenePath, ref string[] scene, List<ScriptMapping> scriptMappings,
             YamlStream yamlStream)
         {
             List<YamlDocument> yamlDocuments =
@@ -75,19 +75,19 @@ namespace migrationtool.controllers
                 string fileID = (string) script["m_Script"]["fileID"];
                 string guid = (string) script["m_Script"]["guid"];
 
-                FoundScript scriptType =
-                    foundScripts.FirstOrDefault(node =>
+                ScriptMapping scriptMappingType =
+                    scriptMappings.FirstOrDefault(node =>
                         node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
 
-                if (scriptType != null)
+                if (scriptMappingType != null)
                 {
-                    if (scriptType.HasBeenMapped == FoundScript.MappedState.NotMapped ||
-                        scriptType.HasBeenMapped == FoundScript.MappedState.Approved)
+                    if (scriptMappingType.HasBeenMapped == ScriptMapping.MappedState.NotMapped ||
+                        scriptMappingType.HasBeenMapped == ScriptMapping.MappedState.Approved)
                     {
-                        scene = recursiveReplaceField(ref scene, scriptType.MergeNodes, script, foundScripts);
+                        scene = recursiveReplaceField(ref scene, scriptMappingType.MergeNodes, script, scriptMappings);
                     }
 
-                    CheckCustomLogic(ref scene, document, scriptType);
+                    CheckCustomLogic(ref scene, document, scriptMappingType);
                 }
                 else
                 {
@@ -99,7 +99,7 @@ namespace migrationtool.controllers
         }
 
         private void ConvertPrefabsDataInScene(ref string[] scene, string oldRootPath, YamlStream yamlStream,
-            List<FoundScript> foundScripts)
+            List<ScriptMapping> scriptMappings)
         {
             // Copy prefabs
             List<YamlDocument> yamlPrefabs =
@@ -163,17 +163,17 @@ namespace migrationtool.controllers
                     string scriptGuid = (string) IDs["guid"];
                     string scriptFileID = (string) IDs["fileID"];
 
-                    FoundScript scriptType =
-                        foundScripts.FirstOrDefault(node =>
+                    ScriptMapping scriptMappingType =
+                        scriptMappings.FirstOrDefault(node =>
                             node.oldClassModel.Guid == scriptGuid && node.oldClassModel.FileID == scriptFileID);
-                    if (scriptType == null)
+                    if (scriptMappingType == null)
                     {
 //                        Debug.Log("Could not find mapping for guid: " + scriptGuid + " fileID: " + scriptFileID);
                         continue;
                     }
 
                     string[] properties = propertyPath.Split('.');
-                    List<MergeNode> currentMergeNodes = scriptType.MergeNodes;
+                    List<MergeNode> currentMergeNodes = scriptMappingType.MergeNodes;
 
                     for (var i = 0; i < properties.Length; i++)
                     {
@@ -197,7 +197,7 @@ namespace migrationtool.controllers
                         properties[i] = currentMergeNode.NameToExportTo;
 
                         currentMergeNodes =
-                            foundScripts
+                            scriptMappings
                                 .FirstOrDefault(script => script.oldClassModel.FullName == currentMergeNode.Type)
                                 ?.MergeNodes;
                     }
@@ -218,7 +218,7 @@ namespace migrationtool.controllers
         /// <returns></returns>
         private string[] recursiveReplaceField(ref string[] scene, List<MergeNode> currentMergeNodes,
             YamlNode rootYamlNode, // todo : refactor to multiple methods
-            List<FoundScript> foundScripts)
+            List<ScriptMapping> scriptMappings)
         {
             IDictionary<YamlNode, YamlNode> yamlChildren = rootYamlNode.GetChildren();
             foreach (KeyValuePair<YamlNode, YamlNode> yamlNode in yamlChildren)
@@ -241,11 +241,11 @@ namespace migrationtool.controllers
 
                 if (yamlNode.Value is YamlMappingNode)
                 {
-                    scene = handleMappingNode(ref scene, currentMergeNode, foundScripts, yamlNode);
+                    scene = handleMappingNode(ref scene, currentMergeNode, scriptMappings, yamlNode);
                 }
                 else if (yamlNode.Value is YamlSequenceNode)
                 {
-                    scene = handleSequenceNode(ref scene, currentMergeNode, foundScripts, yamlNode);
+                    scene = handleSequenceNode(ref scene, currentMergeNode, scriptMappings, yamlNode);
                 }
                 else
                 {
@@ -261,22 +261,19 @@ namespace migrationtool.controllers
         /// And calls that logic
         /// </summary>
         /// <param name="scene"></param>
-        /// <param name="foundScripts"></param>
-        /// <param name="currentMergeNode"></param>
-        /// <param name="yamlNode"></param>
-        /// <param name="yamlNodeKey"></param>
-        /// <param name="line"></param>
+        /// <param name="document"></param>
+        /// <param name="scriptMapping"></param>
         /// <returns>True when it handles logic, else false and it still needs to be handled</returns>
         private bool CheckCustomLogic(ref string[] scene,
-            YamlDocument document, FoundScript foundScript)
+            YamlDocument document, ScriptMapping scriptMapping)
         {
-            if (!Constants.Instance.CustomLogicMapping.ContainsKey(foundScript.newClassModel.FullName))
+            if (!Constants.Instance.CustomLogicMapping.ContainsKey(scriptMapping.newClassModel.FullName))
             {
                 return false;
             }
 
-            ICustomMappingLogic customLogic = Constants.Instance.CustomLogicMapping[foundScript.newClassModel.FullName];
-            customLogic.CustomLogic(ref scene, ref document, foundScript);
+            ICustomMappingLogic customLogic = Constants.Instance.CustomLogicMapping[scriptMapping.newClassModel.FullName];
+            customLogic.CustomLogic(ref scene, ref document, scriptMapping);
             return true;
         }
 
@@ -298,7 +295,7 @@ namespace migrationtool.controllers
         }
 
         private string[] handleMappingNode(ref string[] scene, MergeNode currentMergeNode,
-            List<FoundScript> foundScripts
+            List<ScriptMapping> scriptMappings
             , KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
             var recursiveChildren = yamlNode.Value.GetChildren();
@@ -318,10 +315,10 @@ namespace migrationtool.controllers
             scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
 
             List<MergeNode> typeNodes =
-                foundScripts.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
+                scriptMappings.FirstOrDefault(script => script.oldClassModel.FullName == type)?.MergeNodes;
             if (typeNodes != null)
             {
-                scene = recursiveReplaceField(ref scene, typeNodes, yamlNode.Value, foundScripts);
+                scene = recursiveReplaceField(ref scene, typeNodes, yamlNode.Value, scriptMappings);
             }
             else
             {
@@ -331,18 +328,18 @@ namespace migrationtool.controllers
             return scene;
         }
 
-        private string[] handleSequenceNode(ref string[] scene, MergeNode currentMergeNode, List<FoundScript>
-            foundScripts, KeyValuePair<YamlNode, YamlNode> yamlNode)
+        private string[] handleSequenceNode(ref string[] scene, MergeNode currentMergeNode, List<ScriptMapping>
+            scriptMappings, KeyValuePair<YamlNode, YamlNode> yamlNode)
         {
             int line = yamlNode.Key.Start.Line - 1;
             scene[line] = scene[line].ReplaceFirst(currentMergeNode.OriginalValue, currentMergeNode.NameToExportTo);
             string type = currentMergeNode.Type;
 
-            FoundScript foundScript =
-                foundScripts.FirstOrDefault(script => script.oldClassModel.Name == type);
-            if (foundScript == null)
+            ScriptMapping scriptMapping =
+                scriptMappings.FirstOrDefault(script => script.oldClassModel.Name == type);
+            if (scriptMapping == null)
             {
-                Debug.Log("Could not find foundScript for MergeNode, Type : " + currentMergeNode.Type +
+                Debug.Log("Could not find scriptMapping for MergeNode, Type : " + currentMergeNode.Type +
                           " originalValue : " +
                           currentMergeNode.OriginalValue);
                 return scene;
@@ -356,7 +353,7 @@ namespace migrationtool.controllers
 
             foreach (YamlNode item in items)
             {
-                scene = recursiveReplaceField(ref scene, foundScript.MergeNodes, item, foundScripts);
+                scene = recursiveReplaceField(ref scene, scriptMapping.MergeNodes, item, scriptMappings);
             }
 
             return scene;

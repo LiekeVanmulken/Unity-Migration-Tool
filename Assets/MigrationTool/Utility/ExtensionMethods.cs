@@ -78,42 +78,42 @@ namespace migrationtool.utility
         }
 
         /// <summary>
-        /// Merge two lists of foundScripts to one using the oldClassModel.Name
+        /// Merge two lists of scriptMappings to one using the oldClassModel.Name
         /// </summary>
-        /// <param name="originalFoundScripts"></param>
-        /// <param name="foundScriptsToMerge"></param>
+        /// <param name="originalScriptMappings"></param>
+        /// <param name="scriptMappingsToMerge"></param>
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
-        public static List<FoundScript> Merge(this List<FoundScript> originalFoundScripts,
-            List<FoundScript> foundScriptsToMerge)
+        public static List<ScriptMapping> Merge(this List<ScriptMapping> originalScriptMappings,
+            List<ScriptMapping> scriptMappingsToMerge)
         {
-            if (originalFoundScripts == null || foundScriptsToMerge == null)
+            if (originalScriptMappings == null || scriptMappingsToMerge == null)
             {
-                throw new NullReferenceException("Could not merge foundScripts for null foundScript list");
+                throw new NullReferenceException("Could not merge scriptMappings for null scriptMappings list");
             }
 
-            // Merge the MergeWindow changed FoundScripts with the originalFoundScripts
-            for (var i = 0; i < originalFoundScripts.Count; i++)
+            // Merge the MergeWindow changed scriptMappings with the originalScriptMappings
+            for (var i = 0; i < originalScriptMappings.Count; i++)
             {
-                FoundScript originalFoundScript = originalFoundScripts[i];
-                FoundScript changedFoundScript = foundScriptsToMerge.FirstOrDefault(script =>
-                    script.oldClassModel.FullName == originalFoundScript.oldClassModel.FullName);
-                if (changedFoundScript != null)
+                ScriptMapping originalScriptMapping = originalScriptMappings[i];
+                ScriptMapping changedScriptMapping = scriptMappingsToMerge.FirstOrDefault(script =>
+                    script.oldClassModel.FullName == originalScriptMapping.oldClassModel.FullName);
+                if (changedScriptMapping != null)
                 {
-                    originalFoundScripts[i] = changedFoundScript;
+                    originalScriptMappings[i] = changedScriptMapping;
                 }
             }
 
-            foreach (FoundScript foundScript in foundScriptsToMerge)
+            foreach (ScriptMapping scriptmapping in scriptMappingsToMerge)
             {
-                if (!originalFoundScripts.Exists(script =>
-                    script.oldClassModel.FullName == foundScript.oldClassModel.FullName))
+                if (!originalScriptMappings.Exists(script =>
+                    script.oldClassModel.FullName == scriptmapping.oldClassModel.FullName))
                 {
-                    originalFoundScripts.Add(foundScript);
+                    originalScriptMappings.Add(scriptmapping);
                 }
             }
 
-            return originalFoundScripts;
+            return originalScriptMappings;
         }
 
         /// <summary>
