@@ -52,7 +52,7 @@ namespace migrationtool.views
                 for (var i = 0; i < sceneFiles.Length; i++)
                 {
                     string scene = sceneFiles[i];
-                    MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scene: " + scene,
+                    MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scene: " + scene.Substring(projectToExportFromPath.Length),
                         (float) (i + 1) / sceneFiles.Length);
 
                     ThreadUtil.RunWaitThread(() => { MigrateScene(scene, rootPath); });

@@ -192,7 +192,7 @@ namespace migrationtool.views
             for (var i = 0; i < prefabs.Count; i++)
             {
                 PrefabModel prefab = prefabs[i];
-                MigrationWindow.DisplayProgressBar("Exporting prefab", "Exporting prefab: " + prefab, (float)(i+1)/prefabs.Count);
+                MigrationWindow.DisplayProgressBar("Exporting prefab", "Exporting prefab: " + prefab.Path.Substring(originalProjectPath.Length), (float)(i+1)/prefabs.Count);
                 ThreadUtil.RunWaitThread(() =>
                     {
                         ParsePrefab(prefab.Path, originalProjectPath, destinationProjectPath, prefabs,

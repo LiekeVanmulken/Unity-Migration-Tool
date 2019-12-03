@@ -8,17 +8,17 @@ namespace u040.prespective.migrationtoool
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
             string[] movedFromAssetPaths)
         {
-            if (!PlayerPrefs.HasKey(PREpackageImporter.PREPACKAGE_PACKAGE_LOCATION))
+            if (!PlayerPrefs.HasKey(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION))
             {
                 return;
             }
 
-            if (!PlayerPrefs.HasKey(PREpackageImporter.PREPACKAGE_PACKAGE_CONTENT))
+            if (!PlayerPrefs.HasKey(PrepackageConstants.PREPACKAGE_PACKAGE_CONTENT))
             {
                 return;
             }
 
-            string[] packageFiles = PlayerPrefs.GetString(PREpackageImporter.PREPACKAGE_PACKAGE_CONTENT).Split(',');
+            string[] packageFiles = PlayerPrefs.GetString(PrepackageConstants.PREPACKAGE_PACKAGE_CONTENT).Split(',');
 
             bool isPackageImport = false;
             foreach (string importedAsset in importedAssets)
@@ -44,11 +44,11 @@ namespace u040.prespective.migrationtoool
             }
 
 
-            string packageLocation = PlayerPrefs.GetString(PREpackageImporter.PREPACKAGE_PACKAGE_LOCATION);
+            string packageLocation = PlayerPrefs.GetString(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION);
 
 
-            PlayerPrefs.DeleteKey(PREpackageImporter.PREPACKAGE_PACKAGE_LOCATION);
-            PlayerPrefs.DeleteKey(PREpackageImporter.PREPACKAGE_PACKAGE_CONTENT);
+            PlayerPrefs.DeleteKey(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION);
+            PlayerPrefs.DeleteKey(PrepackageConstants.PREPACKAGE_PACKAGE_CONTENT);
 
 
             PREpackageImporter.packageImportFinished(Application.dataPath, packageLocation);

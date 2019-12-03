@@ -1,24 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Text;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.views;
 using migrationtool.windows;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 using SceneView = migrationtool.views.SceneView;
+using Constants = migrationtool.utility.Constants;
 
 namespace u040.prespective.migrationtoool
 {
     public class PREpackageImporter
     {
-        private const string EXTENSION = "prepackage";
-        public const string PREPACKAGE_PACKAGE_LOCATION = "MIGRATION_TOOL_UPDATER.PACKAGE_IMPORTING";
-        public const string PREPACKAGE_PACKAGE_CONTENT = "MIGRATION_TOOL_UPDATER.PACKAGE_CONTENT";
+        //todo : download the package
 
         private static SceneView sceneView = new SceneView();
         private static PrefabView prefabView = new PrefabView();
@@ -41,12 +42,15 @@ namespace u040.prespective.migrationtoool
             {
                 return;
             }
-//
-//            if (PlayerPrefs.HasKey(PREPACKAGE_PACKAGE_LOCATION))
-//            {
-//                Debug.LogError("Packager already running");
-//                return;
-//            }
+
+            if (!EditorUtility.DisplayDialog("THIS CAN IRREVERSIBLY BREAK YOUR PROJECT!",
+                "This upgrade can IRREVERSIBLY break your project. Please really have a backup with all meta files.",
+                "I've made a backup!", "I will make a backup now"))
+            {
+                return;
+            }
+            //todo : make a backup of the project 
+
 
             Administration.Instance.ShowInfoPopups = false;
 
@@ -57,7 +61,10 @@ namespace u040.prespective.migrationtoool
                 return;
             }
 
-            PlayerPrefs.SetString(PREPACKAGE_PACKAGE_LOCATION, packageLocation);
+            string currentPREspectiveVersion = GetDLLVersion();
+            PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION, packageLocation);
+            PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_OLD, currentPREspectiveVersion);
+            Debug.Log("Migrating from version " + currentPREspectiveVersion);
 
             string rootPath = Application.dataPath;
             ThreadUtil.RunThread(() =>
@@ -68,22 +75,41 @@ namespace u040.prespective.migrationtoool
                 ThreadUtil.RunMainThread(() =>
                 {
                     AssetDatabase.ImportPackage(packageLocation, true);
-                    PlayerPrefs.SetString(PREPACKAGE_PACKAGE_LOCATION, packageLocation);
-                    PlayerPrefs.SetString(PREPACKAGE_PACKAGE_CONTENT, packageContent);
+                    PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION, packageLocation);
+                    PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_CONTENT, packageContent);
                 });
             });
         }
 
         private static string getPackageLocation()
         {
-            return EditorUtility.OpenFilePanel("Select a prepackage",
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop), EXTENSION);
-        }
+            WebClient client = new WebClient();
+            using (MemoryStream stream =
+                new MemoryStream(client.DownloadData(PrepackageConstants.PREPACKAGE_DOMAIN +
+                                                     PrepackageConstants.PREPACKAGE_VERSIONS_PATH)))
+            {
+                string request = Encoding.ASCII.GetString(stream.ToArray());
+                Debug.LogError(request);
+                JArray data = JArray.Parse(request);
 
-        private static void packageImportStarted(string projectPath, string packageLocation)
-        {
-            Debug.LogWarning("[PREpackage] Package import Started");
-            IDView.ExportCurrentClassData(projectPath);
+                var lastVersion = data[data.Count - 1];
+                string packageUrl = (string) lastVersion["packageUrl"];
+                string version = (string) lastVersion["version"];
+
+                string packageLocal = Directory.GetCurrentDirectory() + "/PREspectivePackages/PREspective_v" + version +
+                                      ".prepackage";
+                if (!Directory.Exists(Path.GetDirectoryName(packageLocal)))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(packageLocal));
+                }
+
+                client.DownloadFile(packageUrl, packageLocal);
+                return packageLocal;
+            }
+
+//            return EditorUtility.OpenFilePanel("Select a prepackage",
+//                Environment.GetFolderPath(Environment.SpecialFolder.Desktop), PrepackageConstants.EXTENSION);
+
         }
 
         public static void packageImportFinished(string projectPath, string packageLocation)
@@ -98,6 +124,32 @@ namespace u040.prespective.migrationtoool
                 Debug.LogError("Could not find old PREspective IDs");
                 return;
             }
+
+            MappingView mappingView = new MappingView();
+
+            string oldVersion = PlayerPrefs.GetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_OLD);
+            string newVersion = GetDLLVersion();
+            if (oldVersion == newVersion)
+            {
+                if (!EditorUtility.DisplayDialog("Version are the same, not importing!",
+                    "The versions of PREspective are the same, the migration tool was halted. Do you want to migrate anyway?\r\nOriginal: v" +
+                    oldVersion + "\r\nNew: v" + newVersion,
+                    "Migrate anyway", "Cancel the migration"))
+                {
+                    return;
+                }
+            }
+
+            if (mappingView.IsOldVersionHigher(oldVersion, newVersion))
+            {
+                EditorUtility.DisplayDialog("Cannot downgrade project",
+                    "The new version of PREspective is older then the new version. Cannot migrate to older versions. The package was imported but the migration was not run.",
+                    "Ok");
+                return;
+            }
+
+            List<ScriptMapping> scriptMappings = mappingView.CombineMappings(oldVersion, newVersion);
+            Administration.Instance.ScriptMappingsOverride = scriptMappings;
 
             Administration.Instance.oldIDsOverride =
                 JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(customOldIDSPath));
@@ -140,7 +192,13 @@ namespace u040.prespective.migrationtoool
             });
         }
 
-        private string GetDLLVersion()
+        private static void packageImportStarted(string projectPath, string packageLocation)
+        {
+            Debug.LogWarning("[PREpackage] Package import Started");
+            IDView.ExportCurrentClassData(projectPath);
+        }
+
+        private static string GetDLLVersion()
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -152,7 +210,5 @@ namespace u040.prespective.migrationtoool
 
             return null;
         }
-
-  
     }
 }

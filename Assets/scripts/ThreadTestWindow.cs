@@ -28,13 +28,13 @@ namespace migrationtool.utility
 
         void OnGUI()
         {
-//            if (GUILayout.Button("Get PREspective version"))
-//            {
-//                GetDLLVersion();
-//            }
+            if (GUILayout.Button("Get PREspective version"))
+            {
+                TestPrespectiveVersion();
+            }
             if (GUILayout.Button("Map mappings"))
             {
-                new MappingView().GenerateNewMapping();
+                new MappingView().CombineMappings("1.0.0.1","1.0.0.2");
             }
 
             if (GUILayout.Button("test zip"))
@@ -110,6 +110,17 @@ namespace migrationtool.utility
             }
 
             GUILayout.Label(isRunning ? "Running" : "Stopped");
+        }
+
+        private static void TestPrespectiveVersion()
+        {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GetName().Name.ToLower().Contains("prespective"))
+                {
+                    Debug.LogWarning(assembly.GetName().Version.ToString());
+                }
+            }
         }
 
         private void OnComplete()

@@ -60,7 +60,7 @@ public class MappingController
         List<ClassModel> classesToMap = new List<ClassModel>();
         foreach (ClassModel oldID in oldIDs)
         {
-            var result = idController.FindNewID(newIDs, oldID);
+            ClassModel result = idController.FindNewID(newIDs, oldID);
             if (result == null)
             {
                 classesToMap.Add(oldID);
@@ -71,9 +71,13 @@ public class MappingController
 
         GC.Collect();
 
-        Debug.Log(string.Join("\r\n", classesToMap.Select(model => model.FullName).ToArray()));
+        if (classesToMap.Count > 0)
+        {
+            Debug.Log(string.Join("\r\n", classesToMap.Select(model => model.FullName).ToArray()));
+        }
+
         Debug.Log("Mapped classes. Total: " + oldIDs.Count + " classesThatNeedToBeMapped: " + classesToMap.Count);
-        
+
 
         return scriptMappings;
     }
@@ -83,30 +87,62 @@ public class MappingController
         return JsonConvert.DeserializeObject<List<ScriptMapping>>(File.ReadAllText(path));
     }
 
- 
-    
+    /// <summary>
+    /// Checks if the version is between the old and new version or is the old or new version 
+    /// </summary>
+    /// <param name="version"></param>
+    /// <param name="oldVersion"></param>
+    /// <param name="newVersion"></param>
+    /// <returns></returns>
+    public bool IsInsideVersions(string version, string oldVersion, string newVersion)
+    {
+        return (IsOriginalVersionHigher(version, oldVersion) == 1 || version == oldVersion)
+               &&
+               (IsOriginalVersionHigher(version, newVersion) == -1 || version == newVersion);
+    }
+
     /// <summary>
     /// Combine multiple mappings to one
     /// </summary>
     /// <param name="allScriptMappings">A dictionary where the Key is the version and the Value is a list of the scriptMappings</param>
+    /// <param name="oldVersion"></param>
+    /// <param name="newVersion"></param>
     /// <returns></returns>
-    public List<ScriptMapping> CombineMappings(Dictionary<string, List<ScriptMapping>> allScriptMappings)
+    public List<ScriptMapping> CombineMappings(Dictionary<string, List<ScriptMapping>> allScriptMappings,
+        string oldVersion, string newVersion)
+
     {
+        // ReSharper disable once SwitchStatementMissingSomeCases
         switch (allScriptMappings.Count)
         {
             case 0:
-                throw new NullReferenceException("Cannot Combine for zero mapping");
+                Debug.LogError("No mappings found, user will have to create the mappings when necessary..");
+                return new List<ScriptMapping>();
             case 1:
                 Debug.LogWarning("No Mappings combined, only a single mapping available.");
                 return allScriptMappings.First().Value;
         }
 
-        List<List<ScriptMapping>> sortedScriptMappings =
-            allScriptMappings
-                .ToList()
-                .OrderBy(pair => pair.Key)
-                .Select(pair => pair.Value)
-                .ToList();
+        List<string> keysToRemove = new List<string>();
+        foreach (var version in allScriptMappings)
+        {
+            if (IsInsideVersions(version.Key, oldVersion, newVersion))
+            {
+                continue;
+            }
+
+            keysToRemove.Add(version.Key);
+        }
+
+        foreach (string key in keysToRemove)
+        {
+            allScriptMappings.Remove(key);
+        }
+
+        KeyValuePair<string, List<ScriptMapping>>[] orderedList = allScriptMappings
+            .ToList()
+            .OrderBy(pair => pair.Key).ToArray();
+        List<List<ScriptMapping>> sortedScriptMappings = orderedList.Select(pair => pair.Value).ToList();
 
         var combinedScriptMapping = sortedScriptMappings[0];
 
@@ -121,9 +157,7 @@ public class MappingController
                     old => old.newClassModel.FullName == newMapping.oldClassModel.FullName);
                 if (oldMapping == null)
                 {
-                    scriptMappingsToAdd.Add(newMapping); // todo : fix fix
-                    //Should this make a new mapping?
-                    Debug.LogError("Could not find matching mapping in the old mapping, making a new mapping");
+                    scriptMappingsToAdd.Add(newMapping);
                     continue;
                 }
 
@@ -146,7 +180,7 @@ public class MappingController
             if (mergeNode == null)
             {
                 mergeNodesToAdd.Add(newMergeNode);
-                Debug.LogError("Could not find mergeNode for new mergeNode: " + newMergeNode.OriginalValue +
+                Debug.Log("Could not find mergeNode for new mergeNode: " + newMergeNode.OriginalValue +
                                " adding new mergeNodes.");
                 continue;
             }
@@ -157,6 +191,12 @@ public class MappingController
         oldMergeNodes.AddRange(mergeNodesToAdd);
         return oldMergeNodes;
     }
+
+    public bool IsOldVersionHigher(string oldVersion, string newVersion)
+    {
+        return IsOriginalVersionHigher(oldVersion, newVersion) == 1;
+    }
+
     /// <summary>
     /// Checks whether the original has a higher version then the changed
     /// </summary>
@@ -186,7 +226,8 @@ public class MappingController
             {
                 return 1;
             }
-            if(originalCurrent < changedCurrent)
+
+            if (originalCurrent < changedCurrent)
             {
                 return -1;
             }
@@ -194,6 +235,4 @@ public class MappingController
 
         return 0;
     }
-
-
 }

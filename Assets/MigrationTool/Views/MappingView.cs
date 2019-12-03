@@ -10,6 +10,7 @@ using migrationtool.utility;
 using migrationtool.windows;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using u040.prespective.migrationtoool;
 using UnityEditor;
 using UnityEngine;
 
@@ -73,38 +74,49 @@ public class MappingView
                     ThreadUtil.RunMainThread(() =>
                     {
                         EditorUtility.DisplayDialog("Completed mapping",
-                            "Completed the mapping. Saved the mapping to :" + constants.RelativeScriptMappingPath,
+                            "Completed the mapping. Saved the mapping to: " + constants.RelativeScriptMappingPath,
                             "Ok");
                     });
                 });
         });
     }
 
-    public List<ScriptMapping> GenerateNewMapping(string oldVersion, string newVersion)
+    public List<ScriptMapping> CombineMappings(string oldVersion, string newVersion)
     {
         Dictionary<string, List<ScriptMapping>> allVersions = new Dictionary<string, List<ScriptMapping>>();
         WebClient wc = new WebClient();
-        using (MemoryStream stream = new MemoryStream(wc.DownloadData("http://localhost:8080/versions")))
+        using (MemoryStream stream =
+            new MemoryStream(wc.DownloadData(PrepackageConstants.PREPACKAGE_DOMAIN +
+                                             PrepackageConstants.PREPACKAGE_VERSIONS_PATH)))
         {
             string request = Encoding.ASCII.GetString(stream.ToArray());
             Debug.LogError(request);
             JArray data = JArray.Parse(request);
+
+
             foreach (JObject element in data)
             {
                 string version = (string) element["version"];
+                if (!mappingController.IsInsideVersions(version, oldVersion, newVersion)) continue;
+                
                 string mappingUrl = (string) element["mappingUrl"];
+                if (string.IsNullOrEmpty(mappingUrl)) continue;
+                    
                 using (MemoryStream linkStream = new MemoryStream(wc.DownloadData(mappingUrl)))
                 {
-                    Debug.Log("Downloaded mapping Version: " + version + " Url: " + mappingUrl);
+                    Debug.Log("Downloaded mapping Version: " + version);
                     string mappingString = Encoding.ASCII.GetString(linkStream.ToArray());
-                    
-                    List<ScriptMapping> mapping =  JsonConvert.DeserializeObject<List<ScriptMapping>>(mappingString);
+
+                    List<ScriptMapping> mapping =
+                        JsonConvert.DeserializeObject<List<ScriptMapping>>(mappingString);
                     allVersions[version] = mapping;
                 }
             }
         }
 
-        return mappingController.CombineMappings(allVersions);
+        List<ScriptMapping> newMapping = mappingController.CombineMappings(allVersions, oldVersion, newVersion);
+        Debug.Log("Combined mappings of version " + oldVersion + " to " + newVersion);
+        return newMapping;
     }
 
 
@@ -117,5 +129,10 @@ public class MappingView
     {
         string scriptMappingsPath = rootPath + constants.RelativeScriptMappingPath;
         File.WriteAllText(scriptMappingsPath, JsonConvert.SerializeObject(scriptMappings, constants.IndentJson));
+    }
+
+    public bool IsOldVersionHigher(string oldVersion, string newVersion)
+    {
+        return mappingController.IsOldVersionHigher(oldVersion, newVersion);
     }
 }
