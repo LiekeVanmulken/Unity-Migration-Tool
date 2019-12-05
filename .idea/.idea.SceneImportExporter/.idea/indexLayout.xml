@@ -18,6 +18,8 @@
       <Path>.vs</Path>
       <Path>Images</Path>
       <Path>Library</Path>
+      <Path>MigrationTool</Path>
+      <Path>PREspectivePackages</Path>
       <Path>Temp</Path>
       <Path>obj</Path>
     </explicitExcludes>

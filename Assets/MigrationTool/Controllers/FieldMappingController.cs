@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
@@ -49,12 +50,16 @@ namespace migrationtool.controllers
                     new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath, ref scriptMappings);
                 }
 
-                //Deserialize the scriptMapping
-                if (File.Exists(destinationPath + constants.RelativeScriptMappingPath))
+                if (scriptMappings == null)
                 {
-                    scriptMappings =
-                        MappingController.DeserializeMapping(destinationPath + constants.RelativeScriptMappingPath);
+                    throw new NullReferenceException("Script mappings were null.");
                 }
+//                //Deserialize the scriptMapping
+//                if (File.Exists(destinationPath + constants.RelativeScriptMappingPath))
+//                {
+//                    scriptMappings =
+//                        MappingController.DeserializeMapping(destinationPath + constants.RelativeScriptMappingPath);
+//                }
 
                 ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, scriptMappings);
             }
@@ -113,7 +118,7 @@ namespace migrationtool.controllers
                 PrefabModel prefabModel = oldPrefabs.FirstOrDefault(prefabFile => prefabFile.Guid == prefabGuid);
                 if (prefabModel == null || string.IsNullOrEmpty(prefabModel.Path))
                 {
-                    Debug.LogError("Found reference to prefab, but could not find the prefab. Prefab guid: " +
+                    Debug.LogWarning("Found reference to prefab, but could not find the prefab. Might be a model file, not migrating. Prefab guid: " +
                                    prefabGuid);
                     continue;
                 }

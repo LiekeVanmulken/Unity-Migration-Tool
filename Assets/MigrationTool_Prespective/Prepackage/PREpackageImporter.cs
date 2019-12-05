@@ -21,6 +21,9 @@ namespace u040.prespective.migrationtoool
     {
         //todo : download the package
 
+        private static Constants constants = Constants.Instance;
+        private static Administration administration = Administration.Instance;
+
         private static SceneView sceneView = new SceneView();
         private static PrefabView prefabView = new PrefabView();
         private static IDExportView IDView = new IDExportView();
@@ -51,8 +54,7 @@ namespace u040.prespective.migrationtoool
             }
             //todo : make a backup of the project 
 
-
-            Administration.Instance.ShowInfoPopups = false;
+            administration.ShowInfoPopups = false;
 
             string packageLocation = getPackageLocation();
             if (string.IsNullOrEmpty(packageLocation))
@@ -66,10 +68,9 @@ namespace u040.prespective.migrationtoool
             PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_OLD, currentPREspectiveVersion);
             Debug.Log("Migrating from version " + currentPREspectiveVersion);
 
-            string rootPath = Application.dataPath;
             ThreadUtil.RunThread(() =>
             {
-                packageImportStarted(rootPath, packageLocation);
+                packageImportStarted(constants.RootDirectory, packageLocation);
                 List<string> files = Unzipper.ParseUnityPackagesToFiles(packageLocation);
                 string packageContent = string.Join(",", files);
                 ThreadUtil.RunMainThread(() =>
@@ -104,12 +105,12 @@ namespace u040.prespective.migrationtoool
                 }
 
                 client.DownloadFile(packageUrl, packageLocal);
+                PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_NEW, version);
                 return packageLocal;
             }
 
 //            return EditorUtility.OpenFilePanel("Select a prepackage",
 //                Environment.GetFolderPath(Environment.SpecialFolder.Desktop), PrepackageConstants.EXTENSION);
-
         }
 
         public static void packageImportFinished(string projectPath, string packageLocation)
@@ -128,7 +129,7 @@ namespace u040.prespective.migrationtoool
             MappingView mappingView = new MappingView();
 
             string oldVersion = PlayerPrefs.GetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_OLD);
-            string newVersion = GetDLLVersion();
+            string newVersion = PlayerPrefs.GetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_NEW);
             if (oldVersion == newVersion)
             {
                 if (!EditorUtility.DisplayDialog("Version are the same, not importing!",
@@ -187,7 +188,8 @@ namespace u040.prespective.migrationtoool
                 };
                 ThreadUtil.RunThread(() =>
                 {
-                    prefabView.MigrateAllPrefabs(projectPath, projectPath, onCompletePrefabs);
+                    prefabView.MigrateAllPrefabs(projectPath , projectPath,
+                        onCompletePrefabs, scriptMappings);
                 });
             });
         }

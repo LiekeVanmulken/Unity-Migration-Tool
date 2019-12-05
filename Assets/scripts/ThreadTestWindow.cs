@@ -28,6 +28,11 @@ namespace migrationtool.utility
 
         void OnGUI()
         {
+            if (GUILayout.Button("Combine versions"))
+            {
+                new MappingView().CombineMappings("1.0.0.75", "1.0.1.82");
+            }
+            
             if (GUILayout.Button("Get PREspective version"))
             {
                 TestPrespectiveVersion();
@@ -38,6 +43,7 @@ namespace migrationtool.utility
             }
 
             if (GUILayout.Button("test zip"))
+                
             {
                 string package = EditorUtility.OpenFilePanel("open packages",
                     Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "prepackage");

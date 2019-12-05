@@ -29,13 +29,12 @@ namespace migrationtool.views
         /// <param name="onComplete">Runs after all scenes have been exported</param>
         public void MigrateAllScenes(string projectToExportFromPath = null, Action onComplete = null)
         {
-            MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scenes", 0.2f);
-            string rootPath = Application.dataPath;
+            MigrationWindow.DisplayProgressBar("Migrating scenes", "Migrating scenes", 0.2f);
 
             if (projectToExportFromPath == null)
             {
                 projectToExportFromPath =
-                    EditorUtility.OpenFolderPanel("Export all scenes in folder", rootPath, "");
+                    EditorUtility.OpenFolderPanel("Export all scenes in folder", constants.RootDirectory, "");
             }
 
             if (string.IsNullOrEmpty(projectToExportFromPath))
@@ -47,15 +46,16 @@ namespace migrationtool.views
             ThreadUtil.RunThread(() =>
             {
                 string[] sceneFiles =
-                    Directory.GetFiles(projectToExportFromPath, "*.unity", SearchOption.AllDirectories);
+                    Directory.GetFiles(projectToExportFromPath , "*.unity", SearchOption.AllDirectories);
 
                 for (var i = 0; i < sceneFiles.Length; i++)
                 {
                     string scene = sceneFiles[i];
-                    MigrationWindow.DisplayProgressBar("Exporting scenes", "Exporting scene: " + scene.Substring(projectToExportFromPath.Length),
+                    MigrationWindow.DisplayProgressBar("Migrating scenes (" + (i+1) + "/" + sceneFiles.Length + ")",
+                        "Migrating scene: " + scene.Substring(projectToExportFromPath.Length),
                         (float) (i + 1) / sceneFiles.Length);
 
-                    ThreadUtil.RunWaitThread(() => { MigrateScene(scene, rootPath); });
+                    ThreadUtil.RunWaitThread(() => { MigrateScene(scene, constants.RootDirectory); });
                 }
 
                 MigrationWindow.ClearProgressBar();
@@ -73,9 +73,12 @@ namespace migrationtool.views
         {
             if (scenePath == null)
             {
-                scenePath =
-                    EditorUtility.OpenFilePanel("Scene to import", Application.dataPath,
-                        "unity"); //todo : check if this is in the current project
+                ThreadUtil.RunWaitMainThread(() =>
+                {
+                    scenePath =
+                        EditorUtility.OpenFilePanel("Scene to import", constants.RootDirectory,
+                            "unity");   
+                });
                 if (scenePath.Length == 0)
                 {
                     Debug.LogWarning("No path was selected");
@@ -85,20 +88,24 @@ namespace migrationtool.views
 
             if (rootPath == null)
             {
-                rootPath = Application.dataPath;
+                rootPath = constants.RootDirectory;
             }
+            
 
             string IDPath = ProjectPathUtility.getProjectPathFromFile(scenePath) + constants.RelativeExportPath;
 
             if (!File.Exists(IDPath))
             {
-                EditorUtility.DisplayDialog("Could not find old ID's",
-                    "Could not find the ID's of the original project.  File does not exist : \r\n" + IDPath, "Ok");
+                ThreadUtil.RunWaitMainThread(() =>
+                {
+                    EditorUtility.DisplayDialog("Could not find old ID's",
+                        "Could not find the ID's of the original project.  File does not exist : \r\n" + IDPath, "Ok");
+                });
                 return;
             }
 
-            ThreadUtil.RunWaitMainThread(() =>
-            {
+//            ThreadUtil.RunWaitMainThread(() =>
+//            {
                 List<ClassModel> oldIDs =
                     Administration.Instance.oldIDsOverride ?? IDController.DeserializeIDs(IDPath);
 
@@ -116,7 +123,6 @@ namespace migrationtool.views
                     newIDs = Administration.Instance.newIDsOverride;
                 }
 
-
                 List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
                 string scriptMappingsPath = rootPath + constants.RelativeScriptMappingPath;
                 if (Administration.Instance.ScriptMappingsOverride != null)
@@ -129,7 +135,7 @@ namespace migrationtool.views
                 }
 
                 this.MigrateSceneIDs(rootPath, oldIDs, newIDs, scenePath, scriptMappings);
-            });
+//            });
             Debug.Log("Exported scene : " + scenePath);
         }
 

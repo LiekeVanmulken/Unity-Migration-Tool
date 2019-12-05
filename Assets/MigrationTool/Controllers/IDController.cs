@@ -167,12 +167,12 @@ namespace migrationtool.controllers
             List<ClassModel> newIDs, ref List<ScriptMapping> scriptMappings)
         {
             MigrationWindow.DisplayProgressBar("Migration started",
-                "Start importing current project classData and migrating scene.", 0.5f);
+                "Migrating IDs.", 0.5f);
             if (oldIDs == null || newIDs == null || scriptMappings == null)
             {
                 throw new NullReferenceException("Some of the data with which to export is null.");
             }
-
+            Debug.LogError("[DEBUG] Transforming IDS of file: " + fileToChange);
             string[] linesToChange = File.ReadAllLines(fileToChange);
 
             linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref scriptMappings);

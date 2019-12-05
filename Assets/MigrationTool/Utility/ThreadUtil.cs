@@ -25,7 +25,7 @@ public class ThreadUtil
                 {
                     if (e is ThreadAbortException)
                     {
-                        Debug.LogError("Migration failed this might be because the project was recompiled mid processing. If it was not, please report the occurence. \r\nException: " + e);
+                        Debug.LogError("Migration failed because the thread was stopped mid processing. This might happen when Unity re-compiles. If it was not, please report the occurence. \r\nException: " + e);
                     }
                     else
                     {
@@ -59,7 +59,7 @@ public class ThreadUtil
                 {
                     if (e is ThreadAbortException)
                     {
-                        Debug.LogError("Migration failed this might be because the project was recompiled mid processing. If it was not, please report the occurence. \r\nException: " + e);
+                        Debug.LogError("Migration failed because the thread was stopped mid processing. This might happen when Unity re-compiles. If it was not, please report the occurence. \r\nException: " + e);
                     }
                     else
                     {
@@ -87,7 +87,7 @@ public class ThreadUtil
             {
                 if (e is ThreadAbortException)
                 {
-                    Debug.LogError("Migration failed this might be because the project was recompiled mid processing. If it was not, please report the occurence. \r\nException: " + e);
+                    Debug.LogError("Migration failed because the thread was stopped mid processing. This might happen when Unity re-compiles. If it was not, please report the occurence. \r\nException: " + e);
                 }
                 else
                 {
@@ -118,7 +118,7 @@ public class ThreadUtil
             {
                 if (e is ThreadAbortException)
                 {
-                    Debug.LogError("Migration failed this might be because the project was recompiled mid processing. If it was not, please report the occurence. \r\nException: " + e);
+                    Debug.LogError("Migration failed because the thread was stopped mid processing. This might happen when Unity re-compiles. If it was not, please report the occurence. \r\nException: " + e);
                 }
                 else
                 {

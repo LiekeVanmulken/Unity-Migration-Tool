@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using migrationtool.controllers.customlogic;
 using Newtonsoft.Json;
@@ -27,6 +28,11 @@ namespace migrationtool.utility
         /// Regex to extract the guid from a line of text
         /// </summary>
         public readonly Regex RegexGuid = new Regex(@"(?<=guid: )[A-z0-9]*", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Path to the project root
+        /// </summary>
+        public readonly string RootDirectory = Directory.GetCurrentDirectory();
 
         /// <summary>
         /// Path to the ProjectIDs.json from the Asset path

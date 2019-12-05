@@ -80,7 +80,7 @@ namespace migrationtool.windows
 
         protected void OnEnable()
         {
-            idExportPath = Application.dataPath + constants.RelativeExportPath;
+            idExportPath = constants.RootDirectory + constants.RelativeExportPath;
             customOldIDSPath = EditorPrefs.GetString("MigrationTool.customOldIDSPath", customOldIDSPath);
             if (File.Exists(customOldIDSPath))
             {
@@ -145,8 +145,7 @@ namespace migrationtool.windows
                 : "No IDs found, please export the current IDs.");
             if (GUILayout.Button((exportExists ? "Re-" : "") + "Export Classes \r\nof the current project"))
             {
-                string rootPath = Application.dataPath;
-                ThreadUtil.RunThread(() => { idExportView.ExportCurrentClassData(rootPath); });
+                ThreadUtil.RunThread(() => { idExportView.ExportCurrentClassData(constants.RootDirectory); });
             }
 
             GUILayout.Space(20);
@@ -155,7 +154,10 @@ namespace migrationtool.windows
             EditorGUI.BeginDisabledGroup(!exportExists);
             if (GUILayout.Button("Migrate  scene \r\n to current project"))
             {
-                sceneView.MigrateScene();
+                ThreadUtil.RunThread(() =>
+                {
+                    sceneView.MigrateScene();
+                });
             }
 
             GUILayout.Space(20);
@@ -182,8 +184,7 @@ namespace migrationtool.windows
 
             if (GUILayout.Button("Migrate all  prefabs \r\n from folder to current project"))
             {
-                string rootPath = Application.dataPath;
-                ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(rootPath); });
+                ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(constants.RootDirectory + "/Assets"); });
             }
 
             if (GUILayout.Button("Migrate all  scenes \r\n from folder to current project"))
@@ -215,7 +216,7 @@ namespace migrationtool.windows
             if (GUILayout.Button("Select"))
             {
                 customOldIDSPath =
-                    EditorUtility.OpenFilePanel("Select custom Export.json", Application.dataPath, "json");
+                    EditorUtility.OpenFilePanel("Select custom Export.json", constants.RootDirectory, "json");
                 if (string.IsNullOrEmpty(customOldIDSPath))
                 {
                     customOldIDSPath = null;

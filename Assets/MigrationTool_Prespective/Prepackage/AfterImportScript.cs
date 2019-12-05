@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using migrationtool.utility;
+using UnityEditor;
 using UnityEngine;
 
 namespace u040.prespective.migrationtoool
@@ -51,7 +52,7 @@ namespace u040.prespective.migrationtoool
             PlayerPrefs.DeleteKey(PrepackageConstants.PREPACKAGE_PACKAGE_CONTENT);
 
 
-            PREpackageImporter.packageImportFinished(Application.dataPath, packageLocation);
+            PREpackageImporter.packageImportFinished(Constants.Instance.RootDirectory, packageLocation);
         }
     }
 }

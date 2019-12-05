@@ -22,14 +22,14 @@ public class MappingView
 
     public void MapAllClasses()
     {
-        string oldIDs = EditorUtility.OpenFilePanel("Old IDs", Application.dataPath, "json");
+        string oldIDs = EditorUtility.OpenFilePanel("Old IDs", constants.RootDirectory, "json");
         if (string.IsNullOrEmpty(oldIDs))
         {
             Debug.Log("No old ID path selected. Aborting the mapping.");
             return;
         }
 
-        string newIDs = EditorUtility.OpenFilePanel("New IDs", Application.dataPath, "json");
+        string newIDs = EditorUtility.OpenFilePanel("New IDs", constants.RootDirectory, "json");
         if (string.IsNullOrEmpty(newIDs))
         {
             Debug.Log("No new ID path selected. Aborting the mapping.");
@@ -62,14 +62,13 @@ public class MappingView
     /// <returns></returns>
     public void MapAllClasses(List<ClassModel> oldIDs, List<ClassModel> newIDs)
     {
-        string rootPath = Application.dataPath;
         ThreadUtil.RunThread(() =>
         {
             MigrationWindow.DisplayProgressBar("starting migration export", "Mapping classes", 0.4f);
             mappingController.MapAllClasses(oldIDs, newIDs,
                 mergedScriptMapping =>
                 {
-                    SaveScriptMappings(rootPath, mergedScriptMapping);
+                    SaveScriptMappings(constants.RootDirectory, mergedScriptMapping);
                     MigrationWindow.ClearProgressBar();
                     ThreadUtil.RunMainThread(() =>
                     {

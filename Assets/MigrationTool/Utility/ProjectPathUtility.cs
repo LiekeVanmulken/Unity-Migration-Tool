@@ -15,42 +15,43 @@ namespace migrationtool.utility
         /// <returns></returns>
         public static string getProjectPathFromFile(string sceneLocation)
         {
-            int numberOfAssets = Regex.Matches(sceneLocation, "Assets").Count;
-            if (numberOfAssets == 1)
+//            int numberOfAssets = Regex.Matches(sceneLocation, "Assets").Count;
+//            if (numberOfAssets == 1)
+//            {
+//                return sceneLocation.Substring(0, sceneLocation.IndexOf("Assets", StringComparison.Ordinal) + 6);
+//            }
+
+//            if (numberOfAssets > 1)
+//            {
+            string previousMatches = "";
+            Regex regex = new Regex(".*?Assets");
+            MatchCollection matches = regex.Matches(sceneLocation);
+
+            string[] matchedStrings = new string[matches.Count];
+
+            for (var i = 0; i < matches.Count; i++)
             {
-                return sceneLocation.Substring(0, sceneLocation.IndexOf("Assets", StringComparison.Ordinal) + 6);
+                Match match = matches[i];
+                previousMatches += match;
+                matchedStrings[i] = previousMatches;
             }
 
-            if (numberOfAssets > 1)
+            matchedStrings = matchedStrings.Reverse().ToArray();
+            foreach (string match in matchedStrings)
             {
-                string previousMatches = "";
-                Regex regex = new Regex(".*?Assets");
-                MatchCollection matches = regex.Matches(sceneLocation);
-
-                string[] matchedStrings = new string[matches.Count];
-
-                for (var i = 0; i < matches.Count; i++)
+                string path = Path.GetFullPath(Path.Combine(match, @"..\"));
+                if (
+                    Directory.Exists(path + @"\Library") &&
+                    Directory.Exists(path + @"\obj") &&
+                    Directory.Exists(path + @"\Packages") &&
+                    Directory.Exists(path + @"\Temp")
+                )
                 {
-                    Match match = matches[i];
-                    previousMatches += match;
-                    matchedStrings[i] = previousMatches;
-                }
-
-                matchedStrings = matchedStrings.Reverse().ToArray();
-                foreach (string match in matchedStrings)
-                {
-                    string path = Path.GetFullPath(Path.Combine(match, @"..\"));
-                    if (
-                        Directory.Exists(path + @"\Library") &&
-                        Directory.Exists(path + @"\obj") &&
-                        Directory.Exists(path + @"\Packages") &&
-                        Directory.Exists(path + @"\Temp")
-                    )
-                    {
-                        return match;
-                    }
+//                    Debug.Log(path);
+                    return path.TrimEnd('\\');
                 }
             }
+//            }
 
             Debug.LogError("Could not parse scene to project location : " + sceneLocation);
             return null;
@@ -65,7 +66,7 @@ namespace migrationtool.utility
             string[] fileParts = file.Split('.');
             if (file.EndsWith(".meta"))
             {
-                extension = "." + fileParts[fileParts.Length - 2] + "."+  fileParts[fileParts.Length - 1];
+                extension = "." + fileParts[fileParts.Length - 2] + "." + fileParts[fileParts.Length - 1];
             }
             else
             {
@@ -76,7 +77,7 @@ namespace migrationtool.utility
             file = file.Substring(0, file.Length - extension.Length);
 
             //Added the timestamp and re-added the extension
-            file += "_changed_" + now.ToString("dd-MM-yy H_mm_ss")  +  extension;
+            file += "_changed_" + now.ToString("dd-MM-yy H_mm_ss") + extension;
             return file;
         }
     }

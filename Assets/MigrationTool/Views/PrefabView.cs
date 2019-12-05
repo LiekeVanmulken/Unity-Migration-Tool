@@ -95,23 +95,35 @@ namespace migrationtool.views
 
             string originalProjectPath = ProjectPathUtility.getProjectPathFromFile(prefabFile);
 
-            if (!File.Exists(originalProjectPath + constants.RelativeExportPath) ||
-                !File.Exists(destinationAssetPath + constants.RelativeExportPath))
-            {
-                throw new NullReferenceException(
-                    "Could not find one of the two Export.json files. Please export the IDs again in both projects ");
-            }
+//            if ((!File.Exists(originalProjectPath + constants.RelativeExportPath) ||
+//                !File.Exists(destinationAssetPath + constants.RelativeExportPath)) && 
+//                (
+//                    Administration.Instance.oldIDsOverride == null 
+//                    && 
+//                    Administration.Instance.newIDsOverride == null)
+//                )
+//            {
+//                throw new NullReferenceException(
+//                    "Could not find one of the two Export.json files. Please export the IDs again in both projects ");
+//            }
 
             //Deserialize the old ID's
             List<ClassModel> oldIDs =
                 Administration.Instance.oldIDsOverride ??
                 IDController.DeserializeIDs(originalProjectPath + constants.RelativeExportPath);
+            if (oldIDs == null)
+            {
+                throw new NullReferenceException("Old IDs not set");
+            }
 
             //Deserialize the new ID's
             List<ClassModel> newIDs =
                 Administration.Instance.newIDsOverride??
                 IDController.DeserializeIDs(destinationAssetPath + constants.RelativeExportPath);
-
+            if (newIDs == null)
+            {
+                throw new NullReferenceException("New IDs not set");
+            }
 
             parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref scriptMappings);
 
@@ -162,7 +174,7 @@ namespace migrationtool.views
         /// <param name="originalProjectPath"></param>
         /// <param name="onComplete"></param>
         public void MigrateAllPrefabs(string destinationProjectPath, string originalProjectPath = null,
-            Action onComplete = null)
+            Action onComplete = null, List<ScriptMapping> scriptMappings = null)
         {
             if (originalProjectPath == null)
             {
@@ -181,18 +193,17 @@ namespace migrationtool.views
             }
 
             //Deserialize the ScriptMappings
-            List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
-            if (File.Exists(destinationProjectPath + constants.RelativeScriptMappingPath))
+            if (scriptMappings == null && File.Exists(destinationProjectPath + constants.RelativeScriptMappingPath))
             {
                 scriptMappings =
                     MappingController.DeserializeMapping(destinationProjectPath + constants.RelativeScriptMappingPath);
             }
 
-            List<PrefabModel> prefabs = new PrefabController().ExportPrefabs(originalProjectPath);
+            List<PrefabModel> prefabs = prefabController.ExportPrefabs(originalProjectPath + "/Assets");
             for (var i = 0; i < prefabs.Count; i++)
             {
                 PrefabModel prefab = prefabs[i];
-                MigrationWindow.DisplayProgressBar("Exporting prefab", "Exporting prefab: " + prefab.Path.Substring(originalProjectPath.Length), (float)(i+1)/prefabs.Count);
+                MigrationWindow.DisplayProgressBar("Migrating prefab (" + (i+1) + "/" + prefabs.Count + ")", info: "Migrating prefab: " + prefab.Path.Substring(originalProjectPath.Length), progress: (float)(i+1)/prefabs.Count);
                 ThreadUtil.RunWaitThread(() =>
                     {
                         ParsePrefab(prefab.Path, originalProjectPath, destinationProjectPath, prefabs,
