@@ -195,7 +195,7 @@ namespace migrationtool.controllers
             ref List<ScriptMapping> scriptMappings)
         {
             string sceneContent = string.Join("\r\n", linesToChange.PrepareSceneForYaml());
-
+            
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
             IEnumerable<YamlDocument> yamlDocuments =

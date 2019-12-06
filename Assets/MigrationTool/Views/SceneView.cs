@@ -90,7 +90,12 @@ namespace migrationtool.views
             {
                 rootPath = constants.RootDirectory;
             }
-            
+            Debug.Log("Started migration of scene: " + scenePath);
+            if(Utility.IsBinaryFile(scenePath))
+            {
+                Debug.LogError("Could not parse file, since it's a binary file. Scene file: " + scenePath );
+                return;
+            }
 
             string IDPath = ProjectPathUtility.getProjectPathFromFile(scenePath) + constants.RelativeExportPath;
 
@@ -136,7 +141,7 @@ namespace migrationtool.views
 
                 this.MigrateSceneIDs(rootPath, oldIDs, newIDs, scenePath, scriptMappings);
 //            });
-            Debug.Log("Exported scene : " + scenePath);
+            Debug.Log("Migrated scene : " + scenePath);
         }
 
 

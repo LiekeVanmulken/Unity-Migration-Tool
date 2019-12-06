@@ -19,8 +19,6 @@ namespace u040.prespective.migrationtoool
 {
     public class PREpackageImporter
     {
-        //todo : download the package
-
         private static Constants constants = Constants.Instance;
         private static Administration administration = Administration.Instance;
 
@@ -28,15 +26,8 @@ namespace u040.prespective.migrationtoool
         private static PrefabView prefabView = new PrefabView();
         private static IDExportView IDView = new IDExportView();
 
-        void OnGUI()
-        {
-            if (GUILayout.Button("Import package"))
-            {
-                ImportPackage();
-            }
-        }
 
-        [MenuItem("Assets/PREpackage/Import")]
+        [MenuItem("Assets/PREpackage/Migrate To Latest Version")]
         private static void ImportPackage()
         {
             if (!EditorUtility.DisplayDialog("BACKUP YOUR PROJECT!",
@@ -173,13 +164,14 @@ namespace u040.prespective.migrationtoool
                 {
                     ThreadUtil.RunMainThread(() =>
                     {
+                        
+                        EditorUtility.DisplayDialog("Migration completed",
+                            "Completed the migration, everything should be migrated to the new version. \r\nPlease check your project for any errors.",
+                            "Ok");
                         Administration.Instance.OverWriteMode = false;
                         Administration.Instance.ShowInfoPopups = true;
                         Administration.Instance.MigrateScenePrefabDependencies = true;
 
-                        EditorUtility.DisplayDialog("Migration completed",
-                            "Completed the migration, everything should be migrated to the new version. \r\nPlease check your project for any errors.",
-                            "Ok");
                     });
                 };
                 Action onCompletePrefabs = () =>

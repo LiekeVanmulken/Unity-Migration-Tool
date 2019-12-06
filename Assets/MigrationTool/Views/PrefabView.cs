@@ -84,29 +84,24 @@ namespace migrationtool.views
             {
                 throw new FormatException("Could not parse prefab, not of type prefab, file : " + prefabFile);
             }
+            Debug.Log("Started migration of prefab: " + prefabFile);            
+            if(Utility.IsBinaryFile(prefabFile))
+            {
+                Debug.LogError("Could not parse file, since it's a binary file. Prefab file: " + prefabFile);
+                return scriptMappings;
+            }
 
             PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == prefabGuid);
             if (currentPrefab == null)
             {
+                Debug.LogError("Could not find reference to the prefab with the guid. Might be a model file. Prefab: " + prefabFile);
+                return scriptMappings;
             }
 
             string[] parsedPrefab = File.ReadAllLines(currentPrefab.Path);
 
 
             string originalProjectPath = ProjectPathUtility.getProjectPathFromFile(prefabFile);
-
-//            if ((!File.Exists(originalProjectPath + constants.RelativeExportPath) ||
-//                !File.Exists(destinationAssetPath + constants.RelativeExportPath)) && 
-//                (
-//                    Administration.Instance.oldIDsOverride == null 
-//                    && 
-//                    Administration.Instance.newIDsOverride == null)
-//                )
-//            {
-//                throw new NullReferenceException(
-//                    "Could not find one of the two Export.json files. Please export the IDs again in both projects ");
-//            }
-
             //Deserialize the old ID's
             List<ClassModel> oldIDs =
                 Administration.Instance.oldIDsOverride ??

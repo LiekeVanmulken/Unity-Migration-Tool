@@ -240,7 +240,7 @@ namespace migrationtool.controllers
                     currentMergeNodes.FirstOrDefault(node => node.OriginalValue == yamlNodeKey);
                 if (currentMergeNode == null)
                 {
-                    Debug.Log("[DataLoss] Could not find mergeNode for key : " + yamlNodeKey);
+                    Debug.LogError("[DataLoss] Could not find mergeNode for key : " + yamlNodeKey);
                     continue;
                 }
 
