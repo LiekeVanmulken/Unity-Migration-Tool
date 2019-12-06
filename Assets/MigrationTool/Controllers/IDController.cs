@@ -172,7 +172,7 @@ namespace migrationtool.controllers
             {
                 throw new NullReferenceException("Some of the data with which to export is null.");
             }
-            Debug.LogError("[DEBUG] Transforming IDs of file: " + fileToChange);
+            Debug.Log("[DEBUG] Transforming IDs of file: " + fileToChange);
             string[] linesToChange = File.ReadAllLines(fileToChange);
 
             linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref scriptMappings);
