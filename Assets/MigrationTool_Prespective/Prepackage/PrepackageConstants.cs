@@ -1,4 +1,4 @@
-﻿namespace u040.prespective.migrationtoool
+﻿namespace u040.prespective.migrationtool
 {
     public static class PrepackageConstants
     {

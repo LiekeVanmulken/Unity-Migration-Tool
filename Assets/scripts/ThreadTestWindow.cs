@@ -1,4 +1,4 @@
-﻿using u040.prespective.migrationtoool;
+﻿using u040.prespective.migrationtool;
 #if UNITY_EDITOR
 using System.Linq;
 using System;
@@ -28,19 +28,20 @@ namespace migrationtool.utility
 
         void OnGUI()
         {
-            if (GUILayout.Button("Combine versions"))
-            {
-                new MappingView().CombineMappings("1.0.0.75", "1.0.1.82");
-            }
+//            if (GUILayout.Button("Combine versions"))
+//            {
+//                new MappingView().CombineMappings("1.0.0.75", "1.0.1.82");
+//            }
+
             
             if (GUILayout.Button("Get PREspective version"))
             {
                 TestPrespectiveVersion();
             }
-            if (GUILayout.Button("Map mappings"))
-            {
-                new MappingView().CombineMappings("1.0.0.1","1.0.0.2");
-            }
+//            if (GUILayout.Button("Map mappings"))
+//            {
+//                new MappingView().CombineMappings("1.0.0.1","1.0.0.2");
+//            }
 
             if (GUILayout.Button("test zip"))
                 
@@ -153,7 +154,6 @@ namespace migrationtool.utility
                 Debug.Log("result : " + result);
                 Thread.Sleep(1000);
             }
-
             Debug.Log("result : " + result);
             Debug.Log("Completed");
             OnComplete();

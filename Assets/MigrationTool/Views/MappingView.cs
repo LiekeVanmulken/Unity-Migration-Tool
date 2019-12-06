@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
 using migrationtool.controllers;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.windows;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using u040.prespective.migrationtoool;
 using UnityEditor;
 using UnityEngine;
 
@@ -80,39 +74,8 @@ public class MappingView
         });
     }
 
-    public List<ScriptMapping> CombineMappings(string oldVersion, string newVersion)
+    public List<ScriptMapping> CombineMappings(string oldVersion, string newVersion,Dictionary<string, List<ScriptMapping>> allVersions)
     {
-        Dictionary<string, List<ScriptMapping>> allVersions = new Dictionary<string, List<ScriptMapping>>();
-        WebClient wc = new WebClient();
-        using (MemoryStream stream =
-            new MemoryStream(wc.DownloadData(PrepackageConstants.PREPACKAGE_DOMAIN +
-                                             PrepackageConstants.PREPACKAGE_VERSIONS_PATH)))
-        {
-            string request = Encoding.ASCII.GetString(stream.ToArray());
-            Debug.LogError(request);
-            JArray data = JArray.Parse(request);
-
-
-            foreach (JObject element in data)
-            {
-                string version = (string) element["version"];
-                if (!mappingController.IsInsideVersions(version, oldVersion, newVersion)) continue;
-                
-                string mappingUrl = (string) element["mappingUrl"];
-                if (string.IsNullOrEmpty(mappingUrl)) continue;
-                    
-                using (MemoryStream linkStream = new MemoryStream(wc.DownloadData(mappingUrl)))
-                {
-                    Debug.Log("Downloaded mapping Version: " + version);
-                    string mappingString = Encoding.ASCII.GetString(linkStream.ToArray());
-
-                    List<ScriptMapping> mapping =
-                        JsonConvert.DeserializeObject<List<ScriptMapping>>(mappingString);
-                    allVersions[version] = mapping;
-                }
-            }
-        }
-
         List<ScriptMapping> newMapping = mappingController.CombineMappings(allVersions, oldVersion, newVersion);
         Debug.Log("Combined mappings of version " + oldVersion + " to " + newVersion);
         return newMapping;

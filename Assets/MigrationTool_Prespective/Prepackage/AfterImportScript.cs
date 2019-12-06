@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace u040.prespective.migrationtoool
+namespace u040.prespective.migrationtool
 {
     class AfterImportScript : AssetPostprocessor
     {

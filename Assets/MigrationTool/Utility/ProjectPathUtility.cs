@@ -15,14 +15,6 @@ namespace migrationtool.utility
         /// <returns></returns>
         public static string getProjectPathFromFile(string sceneLocation)
         {
-//            int numberOfAssets = Regex.Matches(sceneLocation, "Assets").Count;
-//            if (numberOfAssets == 1)
-//            {
-//                return sceneLocation.Substring(0, sceneLocation.IndexOf("Assets", StringComparison.Ordinal) + 6);
-//            }
-
-//            if (numberOfAssets > 1)
-//            {
             string previousMatches = "";
             Regex regex = new Regex(".*?Assets");
             MatchCollection matches = regex.Matches(sceneLocation);
@@ -43,16 +35,13 @@ namespace migrationtool.utility
                 if (
                     Directory.Exists(path + @"\Library") &&
                     Directory.Exists(path + @"\obj") &&
-                    Directory.Exists(path + @"\Packages") &&
-                    Directory.Exists(path + @"\Temp")
+                    Directory.Exists(path + @"\Packages")
                 )
                 {
 //                    Debug.Log(path);
                     return path.TrimEnd('\\');
                 }
             }
-//            }
-
             Debug.LogError("Could not parse scene to project location : " + sceneLocation);
             return null;
         }

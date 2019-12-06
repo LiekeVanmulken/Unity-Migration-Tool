@@ -266,8 +266,20 @@ namespace migrationtool.windows
             {
                 Debug.Log("[OVERWRITE MODE] DISABLED");
             }
-
             administration.OverWriteMode = cacheOverWriteMode;
+            
+            
+            EditorGUILayout.Separator();
+            OnGuiDrawLineSeparator();
+            EditorGUILayout.Separator();
+            
+            
+            administration.ShowInfoPopups=
+                GUILayout.Toggle(administration.ShowInfoPopups, "Show info popups.");
+            administration.MigrateScenePrefabDependencies=
+                GUILayout.Toggle(administration.MigrateScenePrefabDependencies, "Migrate prefab dependencies of scenes.");
+            GUILayout.Toggle(administration.newIDsOverride != null, "New IDs overriden.");
+            GUILayout.Toggle(administration.ScriptMappingsOverride != null, "Script mappings overriden.");
         }
 
         /// <summary>

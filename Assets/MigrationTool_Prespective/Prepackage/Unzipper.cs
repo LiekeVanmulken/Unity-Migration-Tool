@@ -5,7 +5,7 @@ using System.IO.Compression;
 using System.Text;
 using UnityEngine;
 
-namespace u040.prespective.migrationtoool
+namespace u040.prespective.migrationtool
 {
     /// <summary>
     /// Source : https://gist.github.com/voxsoftware/590c3c87d5e337106f0bdb80536c0c0c

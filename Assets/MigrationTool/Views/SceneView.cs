@@ -39,7 +39,8 @@ namespace migrationtool.views
 
             if (string.IsNullOrEmpty(projectToExportFromPath))
             {
-                Debug.Log("Copy prefabs aborted, no path given.");
+                Debug.Log("Migrating all scenes aborted, no path given.");
+                MigrationWindow.ClearProgressBar();
                 return;
             }
 
