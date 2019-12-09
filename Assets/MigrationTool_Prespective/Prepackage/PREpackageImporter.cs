@@ -103,7 +103,7 @@ namespace u040.prespective.migrationtool
                 Debug.LogError(request);
                 JArray packageVersions = JArray.Parse(request);
 
-                var versionToUse = packageVersions[packageVersions.Count - 1];
+                JObject versionToUse = (JObject) packageVersions[packageVersions.Count - 1];
                 string packageUrl = (string) versionToUse["packageUrl"];
                 string version = (string) versionToUse["version"];
 

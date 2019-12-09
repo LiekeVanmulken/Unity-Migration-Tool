@@ -278,8 +278,16 @@ namespace migrationtool.windows
                 GUILayout.Toggle(administration.ShowInfoPopups, "Show info popups.");
             administration.MigrateScenePrefabDependencies=
                 GUILayout.Toggle(administration.MigrateScenePrefabDependencies, "Migrate prefab dependencies of scenes.");
+            
+            EditorGUILayout.Separator();
+            OnGuiDrawLineSeparator();
+            EditorGUILayout.Separator();
+
+            GUILayout.Label("Debug");
+            EditorGUI.BeginDisabledGroup(true);
             GUILayout.Toggle(administration.newIDsOverride != null, "New IDs overriden.");
             GUILayout.Toggle(administration.ScriptMappingsOverride != null, "Script mappings overriden.");
+            EditorGUI.EndDisabledGroup();
         }
 
         /// <summary>
