@@ -1,5 +1,4 @@
-﻿using System.Linq;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using migrationtool.models;
 using System;
 using System.Collections.Generic;

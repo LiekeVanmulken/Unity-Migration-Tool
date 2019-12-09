@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+
+using System.Collections.Generic;
 using System.IO;
 using migrationtool.controllers;
 using migrationtool.models;
@@ -98,3 +100,4 @@ public class MappingView
         return mappingController.IsOldVersionHigher(oldVersion, newVersion);
     }
 }
+#endif

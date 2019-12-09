@@ -1,4 +1,6 @@
-﻿using migrationtool.utility;
+﻿#if UNITY_EDITOR
+
+using migrationtool.utility;
 using UnityEditor;
 using UnityEngine;
 
@@ -56,3 +58,4 @@ namespace u040.prespective.migrationtool
         }
     }
 }
+#endif

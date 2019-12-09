@@ -1,4 +1,5 @@
-﻿namespace u040.prespective.migrationtool
+﻿#if UNITY_EDITOR
+namespace u040.prespective.migrationtool
 {
     public static class PrepackageConstants
     {
@@ -12,3 +13,4 @@
         public const string PREPACKAGE_VERSIONS_PATH = "/versions";
     }
 }
+#endif

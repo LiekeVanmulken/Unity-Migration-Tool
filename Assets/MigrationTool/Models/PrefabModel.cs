@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.IO;
 
 namespace migrationtool.models
 {

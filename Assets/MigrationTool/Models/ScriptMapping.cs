@@ -6,7 +6,6 @@ using migrationtool.windows;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
-using YamlDotNet.RepresentationModel;
 
 namespace migrationtool.models
 {

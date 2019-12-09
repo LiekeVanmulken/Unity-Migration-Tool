@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-#if UNITY_EDITOR
+﻿
+using Newtonsoft.Json;
 using static migrationtool.models.ScriptMapping;
 using YamlDotNet.RepresentationModel;
 using migrationtool.models;
@@ -554,4 +554,3 @@ namespace migrationtool.controllers
 
     }
 }
-#endif

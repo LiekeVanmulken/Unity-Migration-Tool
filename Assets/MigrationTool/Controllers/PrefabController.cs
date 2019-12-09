@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -53,4 +52,3 @@ namespace migrationtool.controllers
         }
     }
 }
-#endif
