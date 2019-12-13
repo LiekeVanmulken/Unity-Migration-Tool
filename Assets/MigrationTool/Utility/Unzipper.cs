@@ -1,11 +1,11 @@
-﻿
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-namespace u040.prespective.migrationtool
+namespace migrationtool.utility
 {
     /// <summary>
     /// Source : https://gist.github.com/voxsoftware/590c3c87d5e337106f0bdb80536c0c0c
@@ -86,3 +86,4 @@ namespace u040.prespective.migrationtool
 
     }
 }
+#endif

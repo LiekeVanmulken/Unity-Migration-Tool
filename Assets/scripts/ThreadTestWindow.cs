@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using u040.prespective.migrationtool;
 using System.Linq;
 using System;
 using System.Reflection;
@@ -52,8 +51,6 @@ namespace migrationtool.utility
                 {
                     return;
                 }
-
-                Unzipper.ParseUnityPackagesToFiles(package);
             }
 
 
