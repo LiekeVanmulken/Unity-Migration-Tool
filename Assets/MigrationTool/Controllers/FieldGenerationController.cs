@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -139,3 +140,4 @@ namespace migrationtool.controllers
         }
     }
 }
+#endif

@@ -1,4 +1,4 @@
-﻿
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,7 +40,7 @@ namespace migrationtool.controllers
                 return;
             }
 
-            ThreadUtil.RunMainThread(() =>
+            ThreadUtility.RunMainTask(() =>
             {
                 MergeWizard mergeWizard = MergeWizard.CreateWizard(unmappedScriptMapping);
                 mergeWizard.onComplete = (mergedScriptMapping) =>
@@ -241,3 +241,4 @@ namespace migrationtool.controllers
         }
     }
 }
+#endif

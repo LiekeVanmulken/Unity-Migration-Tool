@@ -1,16 +1,14 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 
-﻿using System.Linq;
+using System.Reflection;
+using System.Linq;
 using System;
 using UnityEditor;
 using UnityEngine;
 
-
 namespace migrationtool.windows
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [Obfuscation(Exclude = true, ApplyToMembers = true)]
     public class OptionsWizard : ScriptableWizard
     {
         [HideInInspector] public volatile bool completed;

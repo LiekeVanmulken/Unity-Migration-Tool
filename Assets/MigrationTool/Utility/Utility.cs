@@ -1,32 +1,38 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-public static class Utility
+
+namespace migrationtool.utility
 {
-    public static bool IsBinaryFile(string filePath)
+    public static class Utility
     {
-        IEnumerable<string> content = File.ReadLines(filePath);
-        int upperLimit = 20;
-        int counter = 0;
-        foreach (string line in content)
+        public static bool IsBinaryFile(string filePath)
         {
-            counter++;
-            if (counter > upperLimit)
+            IEnumerable<string> content = File.ReadLines(filePath);
+            int upperLimit = 20;
+            int counter = 0;
+            foreach (string line in content)
             {
-                return false;
+                counter++;
+                if (counter > upperLimit)
+                {
+                    return false;
+                }
+
+                if (HasBinaryContent(line))
+                {
+                    return true;
+                }
             }
 
-            if (HasBinaryContent(line))
-            {
-                return true;
-            }
+            return false;
         }
 
-        return false;
-    }
-
-    private static bool HasBinaryContent(string content)
-    {
-        return content.Any(ch => char.IsControl(ch) && ch != '\r' && ch != '\n');
+        private static bool HasBinaryContent(string content)
+        {
+            return content.Any(ch => char.IsControl(ch) && ch != '\r' && ch != '\n');
+        }
     }
 }
+#endif

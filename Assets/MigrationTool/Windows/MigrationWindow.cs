@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+
+using System.Reflection;
 using migrationtool.utility;
 using System;
 using UnityEngine;
@@ -9,7 +11,7 @@ using migrationtool.controllers;
 using migrationtool.views;
 using SceneView = migrationtool.views.SceneView;
 
-namespace migrationtool.windows
+namespace migrationtool.windows 
 {
     /// <summary>
     /// Main entry point to the Migration Tool
@@ -17,6 +19,7 @@ namespace migrationtool.windows
     /// For a more detailed explanation read the README.MD
     /// </summary>
     [Serializable]
+    [Obfuscation(Exclude = true, ApplyToMembers = true)]
     public class MigrationWindow : EditorWindow
     {
         private readonly Constants constants = Constants.Instance;
@@ -145,7 +148,7 @@ namespace migrationtool.windows
                 : "No IDs found, please export the current IDs.");
             if (GUILayout.Button((exportExists ? "Re-" : "") + "Export Classes \r\nof the current project"))
             {
-                ThreadUtil.RunThread(() => { idExportView.ExportCurrentClassData(constants.RootDirectory); });
+                ThreadUtility.RunTask(() => { idExportView.ExportCurrentClassData(constants.RootDirectory); });
             }
 
             GUILayout.Space(20);
@@ -154,7 +157,7 @@ namespace migrationtool.windows
             EditorGUI.BeginDisabledGroup(!exportExists);
             if (GUILayout.Button("Migrate  scene \r\n to current project"))
             {
-                ThreadUtil.RunThread(() =>
+                ThreadUtility.RunTask(() =>
                 {
                     sceneView.MigrateScene();
                 });
@@ -184,7 +187,7 @@ namespace migrationtool.windows
 
             if (GUILayout.Button("Migrate all  prefabs \r\n from folder to current project"))
             {
-                ThreadUtil.RunThread(() => { prefabView.MigrateAllPrefabs(constants.RootDirectory + "/Assets"); });
+                ThreadUtility.RunTask(() => { prefabView.MigrateAllPrefabs(constants.RootDirectory + "/Assets"); });
             }
 
             if (GUILayout.Button("Migrate all  scenes \r\n from folder to current project"))
@@ -325,7 +328,7 @@ namespace migrationtool.windows
         {
             string result = null;
             bool completed = false;
-            ThreadUtil.RunMainThread(() =>
+            ThreadUtility.RunMainTask(() =>
             {
                 Action<string> onComplete = wizardResult =>
                 {
@@ -352,7 +355,7 @@ namespace migrationtool.windows
         /// <param name="info"></param>
         public static void DisplayDialog(string title, string info)
         {
-            ThreadUtil.RunMainThread(() => EditorUtility.DisplayDialog(title, info, "Ok"));
+            ThreadUtility.RunMainTask(() => EditorUtility.DisplayDialog(title, info, "Ok"));
         }
 
         /// <summary>
@@ -363,7 +366,7 @@ namespace migrationtool.windows
         /// <param name="progress"></param>
         public static void DisplayProgressBar(string title, string info, float progress)
         {
-            ThreadUtil.RunMainThread(() => EditorUtility.DisplayProgressBar(title, info, progress));
+            ThreadUtility.RunMainTask(() => EditorUtility.DisplayProgressBar(title, info, progress));
         }
 
         /// <summary>
@@ -371,7 +374,7 @@ namespace migrationtool.windows
         /// </summary>
         public static void ClearProgressBar()
         {
-            ThreadUtil.RunMainThread(EditorUtility.ClearProgressBar);
+            ThreadUtility.RunMainTask(EditorUtility.ClearProgressBar);
         }
 
         #endregion

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using migrationtool.controllers.customlogic;
@@ -35,16 +36,20 @@ namespace migrationtool.utility
         public readonly string RootDirectory = Directory.GetCurrentDirectory();
 
         /// <summary>
-        /// Path to the ProjectIDs.json from the Asset path
+        /// Path to the ProjectIDs.json from the Root path
         /// </summary>
         public readonly string RelativeExportPath = "/MigrationTool/Exports/ProjectIDs.json";
 
         /// <summary>
-        /// Path to the GeneratedMappings.json from the Asset path
+        /// Path to the GeneratedMappings.json from the Root path
         /// </summary>
         public readonly string RelativeScriptMappingPath = "/MigrationTool/Exports/GeneratedMappings.json";
 
-
+        /// <summary>
+        /// Path to the log file from the Root path
+        /// </summary>
+        public readonly string RelativeLogPath = "/MigrationTool/Exports/Migration.log";
+        
         /// <summary>
         ///  Sets the formatting of the saved files
         /// </summary>
@@ -79,3 +84,4 @@ namespace migrationtool.utility
             };
     }
 }
+#endif

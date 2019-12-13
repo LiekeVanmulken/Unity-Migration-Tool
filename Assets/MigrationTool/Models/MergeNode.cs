@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 using UnityEngine;
 
@@ -24,3 +25,4 @@ namespace migrationtool.models
 //        }
     }
 }
+#endif

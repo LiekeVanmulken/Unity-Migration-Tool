@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using migrationtool.controllers.customlogic;
 using migrationtool.models;
 using migrationtool.utility;
@@ -39,3 +40,4 @@ namespace migrationtool.examples
         }
     }
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using UnityEngine;
 
 
 namespace migrationtool.examples.customlogic
@@ -24,3 +25,4 @@ namespace migrationtool.examples.customlogic
         public Vector3 testQuaternion;
     }
 }
+#endif

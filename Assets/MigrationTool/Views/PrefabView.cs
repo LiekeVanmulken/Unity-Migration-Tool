@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 
 using UnityEditor;
 using System;
@@ -35,7 +35,7 @@ namespace migrationtool.views
         /// <param name="originalAssetPath"></param>
         /// <param name="destinationAssetPath"></param>
         /// <param name="oldIDs">Needs to be added because the oldIDs can be overriden</param>
-        public void ParsePrefabsInAScene(string sceneFile, string originalAssetPath,
+        public void MigratePrefabsInAScene(string sceneFile, string originalAssetPath,
             string destinationAssetPath,
             ref List<ScriptMapping> scriptMappings)
         {
@@ -60,7 +60,7 @@ namespace migrationtool.views
                     continue;
                 }
 
-                scriptMappings = ParsePrefab(currentPrefab.Path, originalAssetPath, destinationAssetPath, prefabs,
+                scriptMappings = MigratePrefab(currentPrefab.Path, originalAssetPath, destinationAssetPath, prefabs,
                     currentPrefab.Guid, scriptMappings);
             }
         }
@@ -76,87 +76,95 @@ namespace migrationtool.views
         /// <param name="prefabGuid"></param>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="NullReferenceException"></exception>
-        public List<ScriptMapping> ParsePrefab(string prefabFile, string originalAssetPath, string destinationAssetPath,
+        public List<ScriptMapping> MigratePrefab(string prefabFile, string originalAssetPath, string destinationAssetPath,
             List<PrefabModel> prefabs,
             string prefabGuid, List<ScriptMapping> scriptMappings)
         {
-            if (!prefabFile.EndsWith(".prefab"))
+            try
             {
-                throw new FormatException("Could not parse prefab, not of type prefab, file : " + prefabFile);
-            }
-            Debug.Log("Started migration of prefab: " + prefabFile);            
-            if(Utility.IsBinaryFile(prefabFile))
-            {
-                Debug.LogError("Could not parse file, since it's a binary file. Prefab file: " + prefabFile);
-                return scriptMappings;
-            }
-
-            PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == prefabGuid);
-            if (currentPrefab == null)
-            {
-                Debug.LogError("Could not find reference to the prefab with the guid. Might be a model file. Prefab: " + prefabFile);
-                return scriptMappings;
-            }
-
-            string[] parsedPrefab = File.ReadAllLines(currentPrefab.Path);
-
-
-            string originalProjectPath = ProjectPathUtility.getProjectPathFromFile(prefabFile);
-            //Deserialize the old ID's
-            List<ClassModel> oldIDs =
-                Administration.Instance.oldIDsOverride ??
-                IDController.DeserializeIDs(originalProjectPath + constants.RelativeExportPath);
-            if (oldIDs == null)
-            {
-                throw new NullReferenceException("Old IDs not set");
-            }
-
-            //Deserialize the new ID's
-            List<ClassModel> newIDs =
-                Administration.Instance.newIDsOverride??
-                IDController.DeserializeIDs(destinationAssetPath + constants.RelativeExportPath);
-            if (newIDs == null)
-            {
-                throw new NullReferenceException("New IDs not set");
-            }
-
-            parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref scriptMappings);
-
-            var unmappedScriptMappings = scriptMappings
-                .Where(script => script.HasBeenMapped == ScriptMapping.MappedState.NotMapped).ToList();
-            if (unmappedScriptMappings.Count == 0)
-            {
-                parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
-                    ref scriptMappings,
-                    originalAssetPath, destinationAssetPath);
-                SavePrefabFile(parsedPrefab, currentPrefab, destinationAssetPath);
-            }
-            else
-            {
-                bool completed = false;
-                ThreadUtil.RunMainThread(() =>
+                if (!prefabFile.EndsWith(".prefab"))
                 {
-                    MergeWizard wizard = MergeWizard.CreateWizard(unmappedScriptMappings);
-                    wizard.onComplete = mergedScriptMappings =>
-                    {
-                        scriptMappings = scriptMappings.Merge(mergedScriptMappings);
-                        File.WriteAllText(destinationAssetPath + constants.RelativeScriptMappingPath,
-                            JsonConvert.SerializeObject(scriptMappings, constants.IndentJson));
-
-                        ThreadUtil.RunThread(() =>
-                        {
-                            parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
-                                ref scriptMappings, originalAssetPath, destinationAssetPath);
-                            SavePrefabFile(parsedPrefab, currentPrefab, destinationAssetPath);
-                        });
-                        completed = true;
-                    };
-                });
-
-                while (!completed)
-                {
-                    Thread.Sleep(constants.THREAD_WAIT_TIME);
+                    throw new FormatException("Could not parse prefab, not of type prefab, file : " + prefabFile);
                 }
+
+                Debug.Log("Started migration of prefab: " + prefabFile);
+                if (Utility.IsBinaryFile(prefabFile))
+                {
+                    Debug.LogError("Could not parse file, since it's a binary file. Prefab file: " + prefabFile);
+                    return scriptMappings;
+                }
+
+                PrefabModel currentPrefab = prefabs.FirstOrDefault(prefab => prefab.Guid == prefabGuid);
+                if (currentPrefab == null)
+                {
+                    Debug.LogError(
+                        "Could not find reference to the prefab with the guid. Might be a model file. Prefab: " +
+                        prefabFile);
+                    return scriptMappings;
+                }
+
+                string originalProjectPath = ProjectPathUtility.getProjectPathFromFile(prefabFile);
+                
+                //Deserialize the old ID's
+                List<ClassModel> oldIDs =
+                    Administration.Instance.oldIDsOverride ??
+                    IDController.DeserializeIDs(originalProjectPath + constants.RelativeExportPath);
+                if (oldIDs == null)
+                {
+                    throw new NullReferenceException("Old IDs not set");
+                }
+
+                //Deserialize the new ID's
+                List<ClassModel> newIDs =
+                    Administration.Instance.newIDsOverride ??
+                    IDController.DeserializeIDs(destinationAssetPath + constants.RelativeExportPath);
+                if (newIDs == null)
+                {
+                    throw new NullReferenceException("New IDs not set");
+                }
+
+                string[] parsedPrefab = idController.TransformIDs(currentPrefab.Path, oldIDs, newIDs, ref scriptMappings);
+
+                var unmappedScriptMappings = scriptMappings
+                    .Where(script => script.HasBeenMapped == ScriptMapping.MappedState.NotMapped).ToList();
+                if (unmappedScriptMappings.Count == 0)
+                {
+                    parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
+                        ref scriptMappings,
+                        originalAssetPath, destinationAssetPath);
+                    SavePrefabFile(parsedPrefab, currentPrefab, destinationAssetPath);
+                }
+                else
+                {
+                    bool completed = false;
+                    ThreadUtility.RunMainTask(() =>
+                    {
+                        MergeWizard wizard = MergeWizard.CreateWizard(unmappedScriptMappings);
+                        wizard.onComplete = mergedScriptMappings =>
+                        {
+                            scriptMappings = scriptMappings.Merge(mergedScriptMappings);
+                            File.WriteAllText(destinationAssetPath + constants.RelativeScriptMappingPath,
+                                JsonConvert.SerializeObject(scriptMappings, constants.IndentJson));
+
+                            ThreadUtility.RunTask(() =>
+                            {
+                                parsedPrefab = fieldMappingController.MigrateFields(prefabFile, ref parsedPrefab,
+                                    ref scriptMappings, originalAssetPath, destinationAssetPath);
+                                SavePrefabFile(parsedPrefab, currentPrefab, destinationAssetPath);
+                            });
+                            completed = true;
+                        };
+                    });
+
+                    while (!completed)
+                    {
+                        Thread.Sleep(constants.THREAD_WAIT_TIME);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Could not parse prefab: " + prefabFile + "\r\nException: " + e);
             }
 
             return scriptMappings;
@@ -173,7 +181,7 @@ namespace migrationtool.views
         {
             if (originalProjectPath == null)
             {
-                ThreadUtil.RunWaitMainThread(() =>
+                ThreadUtility.RunWaitMainTask(() =>
                     {
                         originalProjectPath =
                             EditorUtility.OpenFolderPanel("Export all prefabs in folder", destinationProjectPath, "");
@@ -198,18 +206,21 @@ namespace migrationtool.views
             for (var i = 0; i < prefabs.Count; i++)
             {
                 PrefabModel prefab = prefabs[i];
-                MigrationWindow.DisplayProgressBar("Migrating prefab (" + (i+1) + "/" + prefabs.Count + ")", info: "Migrating prefab: " + prefab.Path.Substring(originalProjectPath.Length), progress: (float)(i+1)/prefabs.Count);
-                ThreadUtil.RunWaitThread(() =>
+                MigrationWindow.DisplayProgressBar("Migrating prefab (" + (i + 1) + "/" + prefabs.Count + ")",
+                    info: "Migrating prefab: " + prefab.Path.Substring(originalProjectPath.Length),
+                    progress: (float) (i + 1) / prefabs.Count);
+                ThreadUtility.RunWaitTask(() =>
                     {
-                        ParsePrefab(prefab.Path, originalProjectPath, destinationProjectPath, prefabs,
+                        MigratePrefab(prefab.Path, originalProjectPath, destinationProjectPath, prefabs,
                             prefab.Guid, scriptMappings);
                     }
                 );
+                GC.Collect();
             }
 
             MigrationWindow.ClearProgressBar();
 
-            ThreadUtil.RunMainThread(() => { AssetDatabase.Refresh(); });
+            ThreadUtility.RunMainTask(() => { AssetDatabase.Refresh(); });
             Debug.Log("Migrated all prefabs");
             onComplete?.Invoke();
         }

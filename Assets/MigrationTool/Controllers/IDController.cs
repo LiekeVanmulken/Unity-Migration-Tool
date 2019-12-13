@@ -1,4 +1,5 @@
-﻿
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+
 using Newtonsoft.Json;
 using static migrationtool.models.ScriptMapping;
 using YamlDotNet.RepresentationModel;
@@ -153,6 +154,7 @@ namespace migrationtool.controllers
         #endregion
 
         #region Transform IDs
+
         /// <summary>
         /// Replaces all old GUIDs and old fileIDs with the new GUID and fileID and returns a the new scenefile.
         /// This can be saved as an .unity file and then be opened in the editor.
@@ -166,17 +168,15 @@ namespace migrationtool.controllers
         public string[] TransformIDs(string fileToChange, List<ClassModel> oldIDs,
             List<ClassModel> newIDs, ref List<ScriptMapping> scriptMappings)
         {
-            MigrationWindow.DisplayProgressBar("Migration started",
-                "Migrating IDs.", 0.5f);
             if (oldIDs == null || newIDs == null || scriptMappings == null)
             {
                 throw new NullReferenceException("Some of the data with which to export is null.");
             }
+
             Debug.Log("[DEBUG] Transforming IDs of file: " + fileToChange);
             string[] linesToChange = File.ReadAllLines(fileToChange);
 
-            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref scriptMappings);
-            MigrationWindow.ClearProgressBar();
+            linesToChange = MigrateGUIDsAndFileIDs(fileToChange, linesToChange, oldIDs, newIDs, ref scriptMappings);
 
             return linesToChange;
         }
@@ -190,67 +190,76 @@ namespace migrationtool.controllers
         /// <param name="newIDs">List of GUIDs and FileID for all currently in the project classes.</param>
         /// <param name="scriptMappings"></param>
         /// <returns></returns>
-        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassModel> oldIDs,
+        private string[] MigrateGUIDsAndFileIDs(string fileToChange, string[] linesToChange, List<ClassModel> oldIDs,
             List<ClassModel> newIDs,
             ref List<ScriptMapping> scriptMappings)
         {
             string sceneContent = string.Join("\r\n", linesToChange.PrepareSceneForYaml());
-            
+
             YamlStream yamlStream = new YamlStream();
             yamlStream.Load(new StringReader(sceneContent));
             IEnumerable<YamlDocument> yamlDocuments =
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour");
             foreach (YamlDocument document in yamlDocuments)
             {
-                YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
-
-                YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
-                YamlNode oldGuidNode = monoBehaviour["m_Script"]["guid"];
-
-                string oldFileId = oldFileIdNode.ToString();
-                string oldGuid = oldGuidNode.ToString();
-
-                ClassModel oldClassModel =
-                    oldIDs.FirstOrDefault(data =>
-                        data.Guid == oldGuid && data.FileID == oldFileId);
-                if (oldClassModel == null)
+                try
                 {
-                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid +
-                                   " oldFileID : " + oldFileId);
-                    continue;
-                }
+                    YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
+                    YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
+                    YamlNode oldGuidNode = monoBehaviour["m_Script"]["guid"];
 
-                ScriptMapping
-                    mapping = FindMappingRecursively(newIDs, ref scriptMappings,
-                        oldClassModel);
-                if (mapping == null)
-                {
-                    Debug.LogError("mapping is null for " + oldClassModel.FullName);
-                    continue;
-                }
+                    string oldFileId = oldFileIdNode.ToString();
+                    string oldGuid = oldGuidNode.ToString();
 
-                ClassModel realNewClassModel = newIDs.FirstOrDefault(model => model.FullName == mapping.newClassModel?.FullName);
-                if (realNewClassModel == null)
-                {
+                    ClassModel oldClassModel =
+                        oldIDs.FirstOrDefault(data =>
+                            data.Guid == oldGuid && data.FileID == oldFileId);
+                    if (oldClassModel == null)
+                    {
+                        Debug.LogWarning("Could not find class for script with type, not migrating guid : " + oldGuid +
+                                         " oldFileID : " + oldFileId);
+                        continue;
+                    }
+
+                    ScriptMapping
+                        mapping = FindMappingRecursively(newIDs, ref scriptMappings,
+                            oldClassModel);
+                    if (mapping == null)
+                    {
+                        Debug.LogError("mapping is null for " + oldClassModel.FullName);
+                        continue;
+                    }
+
+                    ClassModel realNewClassModel =
+                        newIDs.FirstOrDefault(model => model.FullName == mapping.newClassModel?.FullName);
+                    if (realNewClassModel == null)
+                    {
 //                    Debug.LogError("mapping is null for " + oldClassModel.FullName + " could not find new guid.");
-                    throw new NullReferenceException("mapping is null for " + oldClassModel.FullName + " could not find new guid.");
-                }
+                        throw new NullReferenceException("mapping is null for " + oldClassModel.FullName +
+                                                         " could not find new guid.");
+                    }
 
-                int line = oldFileIdNode.Start.Line - 1;
-                if (!string.IsNullOrEmpty(realNewClassModel.Guid))
-                {
-                    // Replace the Guid
-                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, realNewClassModel.Guid);
-                }
-                else
-                {
-                    Debug.Log("Found empty guid in a scene! Will not replace");
-                    continue;
-                }
+                    int line = oldFileIdNode.Start.Line - 1;
+                    if (!string.IsNullOrEmpty(realNewClassModel.Guid))
+                    {
+                        // Replace the Guid
+                        linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, realNewClassModel.Guid);
+                    }
+                    else
+                    {
+                        Debug.Log("Found empty guid in a scene! Will not replace");
+                        continue;
+                    }
 
-                if (!String.IsNullOrEmpty(oldFileId))
+                    if (!String.IsNullOrEmpty(oldFileId))
+                    {
+                        linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, realNewClassModel.FileID);
+                    }
+                }
+                catch (Exception e)
                 {
-                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, realNewClassModel.FileID);
+                    Debug.LogError("Could not migrate guid and fileID in file: " + fileToChange + "\r\n node: " +
+                                   document + "\r\nException" + e);
                 }
             }
 
@@ -412,7 +421,7 @@ namespace migrationtool.controllers
         /// <returns></returns>
         public ClassModel FindNewID(List<ClassModel> newIDs, ClassModel old
 //            , bool useUserFeedback = true
-            )
+        )
         {
             if (old == null)
             {
@@ -548,9 +557,9 @@ namespace migrationtool.controllers
         public static List<ClassModel> DeserializeIDs(string path)
         {
             return JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(path));
-        }        
-        
-        #endregion
+        }
 
+        #endregion
     }
 }
+#endif

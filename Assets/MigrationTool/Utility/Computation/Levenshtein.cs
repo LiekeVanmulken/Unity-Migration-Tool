@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System;
 
 namespace migrationtool.utility
 {
@@ -48,3 +49,4 @@ namespace migrationtool.utility
             Math.Min(Math.Min(e1, e2), e3);
     }
 }
+#endif

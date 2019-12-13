@@ -1,4 +1,4 @@
-﻿
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System.Collections.Generic;
 using migrationtool.models;
 
@@ -18,3 +18,4 @@ public class ProjectModel
         this.scriptMappings = scriptMappings;
     }
 }
+#endif

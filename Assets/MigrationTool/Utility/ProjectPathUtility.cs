@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -71,3 +72,4 @@ namespace migrationtool.utility
         }
     }
 }
+#endif

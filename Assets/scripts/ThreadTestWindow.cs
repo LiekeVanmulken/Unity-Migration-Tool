@@ -1,5 +1,5 @@
-﻿using u040.prespective.migrationtool;
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using u040.prespective.migrationtool;
 using System.Linq;
 using System;
 using System.Reflection;
@@ -140,7 +140,7 @@ namespace migrationtool.utility
         private void test(Action OnComplete)
         {
             string result = null;
-            ThreadUtil.RunMainThread(() =>
+            ThreadUtility.RunMainTask(() =>
             {
                 OptionsWizard optionsWizard =
                     OptionsWizard.CreateWizard("Class cannot be found, select which one to choose",

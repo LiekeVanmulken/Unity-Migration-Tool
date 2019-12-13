@@ -1,4 +1,4 @@
-﻿
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 
 namespace migrationtool.models
@@ -36,3 +36,4 @@ namespace migrationtool.models
         }
     }
 }
+#endif

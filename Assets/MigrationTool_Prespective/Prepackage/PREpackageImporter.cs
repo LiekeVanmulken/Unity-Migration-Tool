@@ -1,17 +1,16 @@
-
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 
 using migrationtool.controllers;
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.views;
-using migrationtool.windows;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
@@ -31,31 +30,44 @@ namespace u040.prespective.migrationtool
         private static IDExportView IDView = new IDExportView();
 
 
-        [MenuItem("Assets/PREspective/Migrate To Latest Version")]
+//        [MenuItem("Assets/PREspective/Migrate To Latest Version")]
         private static void MigratePREspective()
         {
             MigratePREspective(null);
         }
 
+        static void WriteLogToFile(string logString, string stackTrace, LogType type)
+        {
+            string path = constants.RootDirectory +  constants.RelativeLogPath;
+
+            using (StreamWriter sw = !File.Exists(path) ? File.CreateText(path) : File.AppendText(path))
+            {
+                string log = "["+DateTime.Now.ToString("dd-MM-yyy, hh:mm:ss")+"]"+"[" + type + "] " + logString;
+                if (type == LogType.Warning || type == LogType.Error)
+                {
+                    log += "\r\nStackTrace:\r\n" + stackTrace;
+                }
+
+                sw.WriteLine(log);
+            }
+        }
+
+
         /// <summary>
-        /// Import the
+        /// Start the migration to the new version of PREspective
         /// </summary>
         /// <param name="version"></param>
-        private static void MigratePREspective(string version = null)
+        public static void MigratePREspective(string version = null)
         {
-            if (!EditorUtility.DisplayDialog("BACKUP YOUR PROJECT!",
-                "Please BACKUP your project before proceeding. A faulty migration can lead to DATA LOSS!",
-                "I've made a backup!", "I will make a backup now"))
-            {
-                return;
-            }
-
             if (!EditorUtility.DisplayDialog("THIS CAN IRREVERSIBLY BREAK YOUR PROJECT!",
                 "This upgrade can IRREVERSIBLY break your project. Please really have a backup with all meta files.",
                 "I've made a backup!", "I will make a backup now"))
             {
                 return;
             }
+
+            Application.logMessageReceived += WriteLogToFile;
+            
 
             //todo : make a backup of the project 
             administration.ShowInfoPopups = false;
@@ -72,16 +84,15 @@ namespace u040.prespective.migrationtool
             string currentPREspectiveVersion = GetPREspectiveDLLVersion();
             PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION, packageLocation);
             PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_VERSION_OLD, currentPREspectiveVersion);
-            Debug.Log("Migrating from version " + currentPREspectiveVersion);
 
-            ThreadUtil.RunThread(() =>
+            ThreadUtility.RunTask(() =>
             {
                 packageImportStarted(constants.RootDirectory, packageLocation);
                 List<string> files = Unzipper.ParseUnityPackagesToFiles(packageLocation);
                 string packageContent = string.Join(",", files);
-                ThreadUtil.RunMainThread(() =>
+                ThreadUtility.RunMainTask(() =>
                 {
-                    AssetDatabase.ImportPackage(packageLocation, true);
+                    AssetDatabase.ImportPackage(packageLocation, false);
                     PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_LOCATION, packageLocation);
                     PlayerPrefs.SetString(PrepackageConstants.PREPACKAGE_PACKAGE_CONTENT, packageContent);
                 });
@@ -104,7 +115,6 @@ namespace u040.prespective.migrationtool
                                                      PrepackageConstants.PREPACKAGE_VERSIONS_PATH)))
             {
                 string request = Encoding.ASCII.GetString(stream.ToArray());
-                Debug.LogError(request);
                 JArray packageVersions = JArray.Parse(request);
 
                 JObject versionToUse = (JObject) packageVersions[packageVersions.Count - 1];
@@ -152,6 +162,7 @@ namespace u040.prespective.migrationtool
         /// <param name="packageLocation"></param>
         public static void packageImportFinished(string projectPath, string packageLocation)
         {
+            Application.logMessageReceived += WriteLogToFile;
             Debug.LogWarning("[PREpackage] Project migration started ");
 
             Constants constants = Constants.Instance;
@@ -201,7 +212,7 @@ namespace u040.prespective.migrationtool
             File.Move(customOldIDSPath, moveTo);
 
             IDView.ExportCurrentClassData(projectPath);
-            ThreadUtil.RunMainThread(() =>
+            ThreadUtility.RunMainTask(() =>
             {
                 Administration.Instance.OverWriteMode = true;
                 Administration.Instance.ShowInfoPopups = false;
@@ -209,21 +220,25 @@ namespace u040.prespective.migrationtool
 
                 Action onCompleteScenes = () =>
                 {
-                    ThreadUtil.RunMainThread(() =>
+                    Thread.Sleep(1000);
+                    ThreadUtility.RunMainTask(() =>
                     {
+                        Application.logMessageReceived -= WriteLogToFile;
+                        GC.Collect();
                         EditorUtility.DisplayDialog("Migration completed",
                             "Completed the migration, everything should be migrated to the new version. \r\nPlease check your project for any errors.",
                             "Ok");
                         Administration.Instance.OverWriteMode = false;
                         Administration.Instance.ShowInfoPopups = true;
                         Administration.Instance.MigrateScenePrefabDependencies = true;
+                        PlayerPrefs.DeleteKey(PrepackageConstants.PREPACKAGE_UPDATER);
                     });
                 };
                 Action onCompletePrefabs = () =>
                 {
-                    ThreadUtil.RunMainThread(() => { sceneView.MigrateAllScenes(projectPath, onCompleteScenes); });
+                    ThreadUtility.RunMainTask(() => { sceneView.MigrateAllScenes(projectPath, onCompleteScenes); });
                 };
-                ThreadUtil.RunThread(() =>
+                ThreadUtility.RunTask(() =>
                 {
                     prefabView.MigrateAllPrefabs(projectPath, projectPath,
                         onCompletePrefabs, scriptMappings);
@@ -249,7 +264,6 @@ namespace u040.prespective.migrationtool
                                                  PrepackageConstants.PREPACKAGE_VERSIONS_PATH)))
             {
                 string request = Encoding.ASCII.GetString(stream.ToArray());
-                Debug.LogError(request);
                 JArray data = JArray.Parse(request);
 
 

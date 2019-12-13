@@ -1,4 +1,4 @@
-﻿
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using migrationtool.windows;
 using System.IO;
 using migrationtool.controllers;
@@ -45,3 +45,4 @@ namespace migrationtool.views
         }
     }
 }
+#endif

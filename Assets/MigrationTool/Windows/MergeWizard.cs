@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+
+using System.Reflection;
 using migrationtool.models;
 using System;
 using System.Collections.Generic;
@@ -7,10 +9,10 @@ using UnityEngine;
 
 namespace migrationtool.windows
 {
+    [Obfuscation(Exclude = true, ApplyToMembers = true)]
     public class MergeWizard : ScriptableWizard
     {
         public Action<List<ScriptMapping>> onComplete;
-
 
         private List<ScriptMapping> scriptMappings;
 

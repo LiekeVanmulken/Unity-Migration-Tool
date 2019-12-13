@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using migrationtool.models;
 using YamlDotNet.RepresentationModel;
 
@@ -20,3 +21,4 @@ namespace migrationtool.controllers.customlogic
         void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, ScriptMapping scriptMapping);
     }
 }
+#endif

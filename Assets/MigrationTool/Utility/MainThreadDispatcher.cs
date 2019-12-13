@@ -1,40 +1,43 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 
-
-/// <summary>
-/// Call actions on the MainThread from a different thread.
-/// This is mainly used for user input and updating the UI from a calculation thread that will wait for the user input. 
-/// </summary>
-[InitializeOnLoad]
-public class MainThreadDispatcher
+namespace migrationtool.utility
 {
-    private static readonly Queue<Action> _executionQueue = new Queue<Action>();
-
-    static MainThreadDispatcher()
+    /// <summary>
+    /// Call actions on the MainThread from a different thread.
+    /// This is mainly used for user input and updating the UI from a calculation thread that will wait for the user input. 
+    /// </summary>
+    [InitializeOnLoad]
+    public class MainThreadDispatcher
     {
-        EditorApplication.update += Update;
-    }
+        private static readonly Queue<Action> _executionQueue = new Queue<Action>();
 
-    static void Update()
-    {
-        lock (_executionQueue)
+        static MainThreadDispatcher()
         {
-            while (_executionQueue.Count > 0)
+            EditorApplication.update += Update;
+        }
+
+
+        static void Update()
+        {
+            lock (_executionQueue)
             {
-                _executionQueue.Dequeue().Invoke();
+                while (_executionQueue.Count > 0)
+                {
+                    _executionQueue.Dequeue().Invoke();
+                }
             }
         }
-    }
 
-    public static void Enqueue(Action action)
-    {
-        lock (_executionQueue)
+        public static void Enqueue(Action action)
         {
-            _executionQueue.Enqueue(action);
+            lock (_executionQueue)
+            {
+                _executionQueue.Enqueue(action);
+            }
         }
     }
 }

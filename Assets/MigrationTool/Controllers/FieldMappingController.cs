@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,6 @@ using migrationtool.controllers.customlogic;
 using migrationtool.models;
 using migrationtool.utility;
 using migrationtool.views;
-using migrationtool.windows;
 using UnityEngine;
 using YamlDotNet.RepresentationModel;
 
@@ -31,38 +31,41 @@ namespace migrationtool.controllers
         /// <param name="destinationPath"></param>
         /// <returns></returns>
         public string[]
-            MigrateFields(string scenePath, ref string[] scene, ref List<ScriptMapping> scriptMappings, string oldRootPath,
+            MigrateFields(string scenePath, ref string[] scene, ref List<ScriptMapping> scriptMappings,
+                string oldRootPath,
                 string destinationPath)
         {
-            string sceneContent = string.Join("\n", scene.PrepareSceneForYaml());
-
-            YamlStream yamlStream = new YamlStream();
-            yamlStream.Load(new StringReader(sceneContent));
-
-            int amountOfPrefabs =
-                yamlStream.Documents.Count(document => document.GetName() == "PrefabInstance");
-            if (amountOfPrefabs > 0)
+            try
             {
-                if (Administration.Instance.MigrateScenePrefabDependencies)
+                string sceneContent = string.Join("\n", scene.PrepareSceneForYaml());
+
+                YamlStream yamlStream = new YamlStream();
+                yamlStream.Load(new StringReader(sceneContent));
+
+                int amountOfPrefabs =
+                    yamlStream.Documents.Count(document => document.GetName() == "PrefabInstance");
+                if (amountOfPrefabs > 0)
                 {
-                    new PrefabView().ParsePrefabsInAScene(scenePath, oldRootPath, destinationPath, ref scriptMappings);
+                    if (Administration.Instance.MigrateScenePrefabDependencies)
+                    {
+                        new PrefabView().MigratePrefabsInAScene(scenePath, oldRootPath, destinationPath,
+                            ref scriptMappings);
+                    }
+
+                    if (scriptMappings == null)
+                    {
+                        throw new NullReferenceException("Script mappings were null.");
+                    }
+                    ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, scriptMappings);
                 }
 
-                if (scriptMappings == null)
-                {
-                    throw new NullReferenceException("Script mappings were null.");
-                }
-//                //Deserialize the scriptMapping
-//                if (File.Exists(destinationPath + constants.RelativeScriptMappingPath))
-//                {
-//                    scriptMappings =
-//                        MappingController.DeserializeMapping(destinationPath + constants.RelativeScriptMappingPath);
-//                }
-
-                ConvertPrefabsDataInScene(ref scene, oldRootPath, yamlStream, scriptMappings);
+                ConvertScene(scenePath, ref scene, scriptMappings, yamlStream);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Could not map fields for scene: " + scenePath + "\r\nException: " + e);
             }
 
-            ConvertScene(scenePath, ref scene, scriptMappings, yamlStream);
             return scene;
         }
 
@@ -73,30 +76,40 @@ namespace migrationtool.controllers
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour").ToList();
             foreach (YamlDocument document in yamlDocuments)
             {
-                YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
-
-                string fileID = (string) script["m_Script"]["fileID"];
-                string guid = (string) script["m_Script"]["guid"];
-
-                ScriptMapping scriptMappingType =
-                    scriptMappings.FirstOrDefault(node =>
-                        node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
-
-                if (scriptMappingType != null)
+                try
                 {
-                    if (scriptMappingType.HasBeenMapped == ScriptMapping.MappedState.NotMapped ||
-                        scriptMappingType.HasBeenMapped == ScriptMapping.MappedState.Approved)
+                    YamlNode script = document.RootNode.GetChildren()["MonoBehaviour"]; //todo : duplicate code, fix 
+
+                    string fileID = (string) script["m_Script"]["fileID"];
+                    string guid = (string) script["m_Script"]["guid"];
+
+                    ScriptMapping scriptMappingType =
+                        scriptMappings.FirstOrDefault(node =>
+                            node.newClassModel.Guid == guid && node.newClassModel.FileID == fileID);
+
+                    if (scriptMappingType != null)
                     {
-                        scene = recursiveReplaceField(ref scene, scriptMappingType.MergeNodes, script, scriptMappings);
-                    }
+                        if (scriptMappingType.HasBeenMapped == ScriptMapping.MappedState.NotMapped ||
+                            scriptMappingType.HasBeenMapped == ScriptMapping.MappedState.Approved)
+                        {
+                            scene = recursiveReplaceField(ref scene, scriptMappingType.MergeNodes, script,
+                                scriptMappings);
+                        }
 
-                    CheckCustomLogic(ref scene, document, scriptMappingType);
+                        CheckCustomLogic(ref scene, document, scriptMappingType);
+                    }
+                    else
+                    {
+                        Debug.Log("Script found that has no mapping (No members will be replaced) in scene : " +
+                                  scenePath +
+                                  ", Node: " +
+                                  document.RootNode.ToString());
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Debug.Log("Script found that has no mapping (No members will be replaced) in scene : " + scenePath +
-                              ", Node: " +
-                              document.RootNode.ToString());
+                    Debug.LogError("Could not convert scene in the FieldMappingController scene: " + scenePath +
+                                   "\r\nException:" + e);
                 }
             }
         }
@@ -116,8 +129,9 @@ namespace migrationtool.controllers
                 PrefabModel prefabModel = oldPrefabs.FirstOrDefault(prefabFile => prefabFile.Guid == prefabGuid);
                 if (prefabModel == null || string.IsNullOrEmpty(prefabModel.Path))
                 {
-                    Debug.LogWarning("Found reference to prefab, but could not find the prefab. Might be a model file, not migrating. Prefab guid: " +
-                                   prefabGuid);
+                    Debug.LogWarning(
+                        "Found reference to prefab, but could not find the prefab. Might be a model file, not migrating. Prefab guid: " +
+                        prefabGuid);
                     continue;
                 }
 
@@ -275,7 +289,8 @@ namespace migrationtool.controllers
                 return false;
             }
 
-            ICustomMappingLogic customLogic = Constants.Instance.CustomLogicMapping[scriptMapping.newClassModel.FullName];
+            ICustomMappingLogic customLogic =
+                Constants.Instance.CustomLogicMapping[scriptMapping.newClassModel.FullName];
             customLogic.CustomLogic(ref scene, ref document, scriptMapping);
             return true;
         }
@@ -363,3 +378,4 @@ namespace migrationtool.controllers
         }
     }
 }
+#endif
