@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using migrationtool.controllers.customlogic;
 using migrationtool.models;
 using migrationtool.utility;
@@ -8,7 +9,7 @@ namespace migrationtool.examples
 {
     public class QuaternionCustomMappingLogic : ICustomMappingLogic
     {
-        public void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, FoundScript foundScript)
+        public void CustomLogic(ref string[] scene, ref YamlDocument yamlDocument, ScriptMapping scriptMapping)
         {
             // Get all values
             YamlNode yamlNodes = yamlDocument.RootNode.GetChildren()["MonoBehaviour"];
@@ -39,3 +40,4 @@ namespace migrationtool.examples
         }
     }
 }
+#endif

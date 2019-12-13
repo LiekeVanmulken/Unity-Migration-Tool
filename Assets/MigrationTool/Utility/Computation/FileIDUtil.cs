@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 using System.Security.Cryptography;
 
@@ -26,3 +27,4 @@ namespace migrationtool.utility
         }
     }
 }
+#endif

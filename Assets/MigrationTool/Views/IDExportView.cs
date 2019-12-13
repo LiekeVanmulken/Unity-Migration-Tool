@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using migrationtool.windows;
 using System.IO;
 using migrationtool.controllers;
@@ -7,6 +6,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using migrationtool.models;
 using migrationtool.utility;
+using UnityEngine;
 
 namespace migrationtool.views
 {
@@ -25,7 +25,7 @@ namespace migrationtool.views
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-                Formatting = Formatting.Indented
+                Formatting = constants.IndentJson
             };
 
             string jsonField = JsonConvert.SerializeObject(IDs, jsonSerializerSettings);
@@ -36,9 +36,12 @@ namespace migrationtool.views
             }
 
             File.WriteAllText(idExportPath, jsonField);
-
-            MigrationWindow.DisplayDialog("Export completed successfully",
-                "All classes were exported to " + idExportPath + ".");
+            string logMessage = "All IDs were exported to " + constants.RelativeExportPath + ".";
+            Debug.Log(logMessage);
+            if (Administration.Instance.ShowInfoPopups)
+            {
+                MigrationWindow.DisplayDialog("Export completed successfully", logMessage);
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
 
-using static migrationtool.models.FoundScript;
+using Newtonsoft.Json;
+using static migrationtool.models.ScriptMapping;
 using YamlDotNet.RepresentationModel;
 using migrationtool.models;
 using migrationtool.utility;
@@ -36,6 +37,7 @@ namespace migrationtool.controllers
         /// </summary>
         private KeyValuePair<string, Type>[] cachedLowerTypeList;
 
+        #region Export Classes
 
         /// <summary>
         /// Gets all the classes in the project and gets the name of the class, the guid that unity assigned and the fileID.
@@ -66,6 +68,7 @@ namespace migrationtool.controllers
                 ParseDLLFile((float) i / dllMetaFiles.Length, metaFile, ref classes, gcLimit, ref gcCount);
             }
 
+            GC.Collect();
             MigrationWindow.ClearProgressBar();
             return classes;
         }
@@ -77,7 +80,6 @@ namespace migrationtool.controllers
             MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + Path.GetFileName(file),
                 progress);
             IEnumerable<string> lines = File.ReadLines(file);
-
             foreach (string line in lines)
             {
                 Match match = constants.RegexGuid.Match(line);
@@ -126,6 +128,12 @@ namespace migrationtool.controllers
                 Assembly assembly = Assembly.LoadFile(file);
                 foreach (Type type in assembly.GetTypes())
                 {
+                    if (!type.IsSubclassOf(typeof(MonoBehaviour)))
+                    {
+                        //todo :check if this works
+                        continue;
+                    }
+
                     MigrationWindow.DisplayProgressBar("Exporting IDs", "Exporting IDs " + type, progress);
                     data.Add(new ClassModel(type, match.Value, FileIDUtil.Compute(type).ToString()));
 
@@ -143,6 +151,10 @@ namespace migrationtool.controllers
             }
         }
 
+        #endregion
+
+        #region Transform IDs
+
         /// <summary>
         /// Replaces all old GUIDs and old fileIDs with the new GUID and fileID and returns a the new scenefile.
         /// This can be saved as an .unity file and then be opened in the editor.
@@ -150,23 +162,21 @@ namespace migrationtool.controllers
         /// <param name="fileToChange"></param>
         /// <param name="oldIDs"></param>
         /// <param name="newIDs"></param>
-        /// <param name="foundScripts"></param>
+        /// <param name="scriptMappings"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public string[] TransformIDs(string fileToChange, List<ClassModel> oldIDs,
-            List<ClassModel> newIDs, ref List<FoundScript> foundScripts)
+            List<ClassModel> newIDs, ref List<ScriptMapping> scriptMappings)
         {
-            MigrationWindow.DisplayProgressBar("Migration started",
-                "Start importing current project classData and migrating scene.", 0.5f);
-            if (oldIDs == null || newIDs == null || foundScripts == null)
+            if (oldIDs == null || newIDs == null || scriptMappings == null)
             {
                 throw new NullReferenceException("Some of the data with which to export is null.");
             }
 
+            Debug.Log("[DEBUG] Transforming IDs of file: " + fileToChange);
             string[] linesToChange = File.ReadAllLines(fileToChange);
 
-            linesToChange = MigrateGUIDsAndFieldIDs(linesToChange, oldIDs, newIDs, ref foundScripts);
-            MigrationWindow.ClearProgressBar();
+            linesToChange = MigrateGUIDsAndFileIDs(fileToChange, linesToChange, oldIDs, newIDs, ref scriptMappings);
 
             return linesToChange;
         }
@@ -178,11 +188,11 @@ namespace migrationtool.controllers
         /// <param name="linesToChange"></param>
         /// <param name="oldIDs">List of GUIDs and FileID for all classes in the previous project.</param>
         /// <param name="newIDs">List of GUIDs and FileID for all currently in the project classes.</param>
-        /// <param name="foundScripts"></param>
+        /// <param name="scriptMappings"></param>
         /// <returns></returns>
-        private string[] MigrateGUIDsAndFieldIDs(string[] linesToChange, List<ClassModel> oldIDs,
+        private string[] MigrateGUIDsAndFileIDs(string fileToChange, string[] linesToChange, List<ClassModel> oldIDs,
             List<ClassModel> newIDs,
-            ref List<FoundScript> foundScripts)
+            ref List<ScriptMapping> scriptMappings)
         {
             string sceneContent = string.Join("\r\n", linesToChange.PrepareSceneForYaml());
 
@@ -192,50 +202,64 @@ namespace migrationtool.controllers
                 yamlStream.Documents.Where(document => document.GetName() == "MonoBehaviour");
             foreach (YamlDocument document in yamlDocuments)
             {
-                YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
-
-                YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
-                YamlNode oldGuidNode = monoBehaviour["m_Script"]["guid"];
-
-                string oldFileId = oldFileIdNode.ToString();
-                string oldGuid = oldGuidNode.ToString();
-
-                ClassModel oldClassModel =
-                    oldIDs.FirstOrDefault(data =>
-                        data.Guid == oldGuid && data.FileID == oldFileId);
-                if (oldClassModel == null)
+                try
                 {
-                    Debug.LogError("Could not find class for script with type, not migrating guid : " + oldGuid +
-                                   " oldFileID : " + oldFileId);
-                    continue;
+                    YamlNode monoBehaviour = document.RootNode.GetChildren()["MonoBehaviour"];
+                    YamlNode oldFileIdNode = monoBehaviour["m_Script"]["fileID"];
+                    YamlNode oldGuidNode = monoBehaviour["m_Script"]["guid"];
+
+                    string oldFileId = oldFileIdNode.ToString();
+                    string oldGuid = oldGuidNode.ToString();
+
+                    ClassModel oldClassModel =
+                        oldIDs.FirstOrDefault(data =>
+                            data.Guid == oldGuid && data.FileID == oldFileId);
+                    if (oldClassModel == null)
+                    {
+                        Debug.LogWarning("Could not find class for script with type, not migrating guid : " + oldGuid +
+                                         " oldFileID : " + oldFileId);
+                        continue;
+                    }
+
+                    ScriptMapping
+                        mapping = FindMappingRecursively(newIDs, ref scriptMappings,
+                            oldClassModel);
+                    if (mapping == null)
+                    {
+                        Debug.LogError("mapping is null for " + oldClassModel.FullName);
+                        continue;
+                    }
+
+                    ClassModel realNewClassModel =
+                        newIDs.FirstOrDefault(model => model.FullName == mapping.newClassModel?.FullName);
+                    if (realNewClassModel == null)
+                    {
+//                    Debug.LogError("mapping is null for " + oldClassModel.FullName + " could not find new guid.");
+                        throw new NullReferenceException("mapping is null for " + oldClassModel.FullName +
+                                                         " could not find new guid.");
+                    }
+
+                    int line = oldFileIdNode.Start.Line - 1;
+                    if (!string.IsNullOrEmpty(realNewClassModel.Guid))
+                    {
+                        // Replace the Guid
+                        linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, realNewClassModel.Guid);
+                    }
+                    else
+                    {
+                        Debug.Log("Found empty guid in a scene! Will not replace");
+                        continue;
+                    }
+
+                    if (!String.IsNullOrEmpty(oldFileId))
+                    {
+                        linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, realNewClassModel.FileID);
+                    }
                 }
-
-                FoundScript
-                    mapping = FoundScriptMappingRecursively(newIDs, ref foundScripts,
-                        oldClassModel);
-                if (mapping == null)
+                catch (Exception e)
                 {
-                    Debug.LogError("mapping is null for " + oldClassModel.FullName);
-                    continue;
-                }
-
-                int line = oldFileIdNode.Start.Line - 1;
-                if (!string.IsNullOrEmpty(mapping.newClassModel.Guid))
-                {
-                    // Replace the Guid
-                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldGuid, mapping.newClassModel.Guid);
-                }
-                else
-                {
-                    Debug.Log("Found empty guid");
-                    continue;
-                    //todo : this should throw an error
-                    //todo : this is when a non script is being used or the guid is not available. This should probably be a popup with a warning
-                }
-
-                if (!String.IsNullOrEmpty(oldFileId))
-                {
-                    linesToChange[line] = linesToChange[line].ReplaceFirst(oldFileId, mapping.newClassModel.FileID);
+                    Debug.LogError("Could not migrate guid and fileID in file: " + fileToChange + "\r\n node: " +
+                                   document + "\r\nException" + e);
                 }
             }
 
@@ -243,30 +267,33 @@ namespace migrationtool.controllers
         }
 
         /// <summary>
-        /// Maps all foundScripts for all variables and children of the type of the variable
+        /// Maps all scriptMappings for all variables and children of the type of the variable
+        /// Finds the scriptMapping that you need and otherwise creates it.
         /// </summary>
         /// <param name="newIDs">The IDs of the new project</param>
-        /// <param name="foundScripts">The existing foundScripts that will be looked in and added to</param>
+        /// <param name="scriptMappings">The existing scriptMappings that will be looked in and added to</param>
         /// <param name="oldClassModel">Current class data of the old project as this maps to the scene file</param>
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
-        private FoundScript FoundScriptMappingRecursively(List<ClassModel> newIDs,
-            ref List<FoundScript> foundScripts, ClassModel oldClassModel)
+        public ScriptMapping FindMappingRecursively(List<ClassModel> newIDs,
+            ref List<ScriptMapping> scriptMappings, ClassModel oldClassModel)
         {
+            // Can't look for something if we don't know what we're looking for
             if (oldClassModel == null)
             {
                 throw new NullReferenceException("No old classData found");
             }
 
-            FoundScript existingFoundScript = foundScripts.FirstOrDefault(script =>
-                script.oldClassModel.FullName == oldClassModel.FullName);
 
-            ClassModel replacementClassModel =
-                existingFoundScript
-                    ?.newClassModel;
+            ScriptMapping existingScriptMapping = scriptMappings.FirstOrDefault(
+                script => script.oldClassModel.FullName == oldClassModel.FullName
+            );
+
+            ClassModel replacementClassModel = existingScriptMapping?.newClassModel;
+
             if (replacementClassModel == null && oldClassModel.Fields != null)
             {
-                replacementClassModel = findNewID(newIDs, oldClassModel); //todo : testScript gets called double
+                replacementClassModel = FindNewID(newIDs, oldClassModel);
                 if (replacementClassModel == null)
                 {
                     return null;
@@ -274,34 +301,37 @@ namespace migrationtool.controllers
             }
             else if (replacementClassModel != null)
             {
-                return existingFoundScript;
+                return existingScriptMapping;
             }
             else
             {
                 return null;
             }
 
-            if (existingFoundScript != null)
+            if (existingScriptMapping != null)
             {
-                return existingFoundScript;
+                return existingScriptMapping;
             }
 
-
-            existingFoundScript = new FoundScript
+            existingScriptMapping = new ScriptMapping
             {
                 oldClassModel = oldClassModel,
                 newClassModel = replacementClassModel
             };
-            MappedState hasBeenMapped = existingFoundScript.CheckHasBeenMapped();
-            if (hasBeenMapped == MappedState.NotMapped)
+
+            MappedState hasBeenMapped = existingScriptMapping.CheckHasBeenMapped();
+            switch (hasBeenMapped)
             {
-                existingFoundScript.GenerateMappingNode(foundScripts);
+                case MappedState.NotMapped:
+                    existingScriptMapping.GenerateMappingNode();
+                    break;
+                case MappedState.Ignored:
+                    return null;
             }
 
-            foundScripts.Add(existingFoundScript);
+            scriptMappings.Add(existingScriptMapping);
 
             //If it doesn't exist then create it
-
             if (oldClassModel.Fields != null && oldClassModel.Fields.Length != 0)
             {
                 foreach (FieldModel field in oldClassModel.Fields)
@@ -312,11 +342,11 @@ namespace migrationtool.controllers
                         throw new NullReferenceException("type of field is null for some reason");
                     }
 
-                    FoundScriptMappingRecursively(newIDs, ref foundScripts, field.Type);
+                    FindMappingRecursively(newIDs, ref scriptMappings, field.Type);
                 }
             }
 
-            return existingFoundScript;
+            return existingScriptMapping;
         }
 
         /// <summary>
@@ -342,8 +372,8 @@ namespace migrationtool.controllers
 
             if (types.Length == 0)
             {
-                Debug.Log("Checked for type  \"" + fileName +
-                          "\" no types were found.");
+                Debug.Log("[ID-Export] " + fileName +
+                          ", no types were found from the meta file.");
                 return null;
             }
 
@@ -367,8 +397,8 @@ namespace migrationtool.controllers
 
             if (monoBehaviours.Count == 0)
             {
-                Debug.LogWarning("Class : " + fileName +
-                                 " could not be found and is not an MonoBehaviour so will skip");
+                Debug.Log("[ID-Export] " + fileName +
+                          " could not be found and is not an MonoBehaviour, will not map.");
                 return null;
             }
 
@@ -387,8 +417,11 @@ namespace migrationtool.controllers
         /// </summary>
         /// <param name="newIDs"></param>
         /// <param name="old"></param>
+        /// <param name="useUserFeedback">Sets whether the user gets to choose if it doesn't know or just return null.</param>
         /// <returns></returns>
-        private ClassModel findNewID(List<ClassModel> newIDs, ClassModel old)
+        public ClassModel FindNewID(List<ClassModel> newIDs, ClassModel old
+//            , bool useUserFeedback = true
+        )
         {
             if (old == null)
             {
@@ -401,9 +434,9 @@ namespace migrationtool.controllers
 
             //Get all classes including all subclasses and check if it might be a subclass
             Dictionary<string, ClassModel> allClassData = generateOptions(newIDs);
-            if (allClassData.ContainsKey(old.Name))
+            if (allClassData.ContainsKey(old.FullName))
             {
-                return allClassData[old.Name];
+                return allClassData[old.FullName];
             }
 
             // Check if there is an exact match with only the classname
@@ -413,6 +446,11 @@ namespace migrationtool.controllers
             {
                 return classModels[0];
             }
+
+//            if (!useUserFeedback)
+//            {
+//                return null;
+//            }
 
             // Generate the options for the options window
             string[] options = allClassData.Select(pair => pair.Key)
@@ -424,6 +462,7 @@ namespace migrationtool.controllers
                 old.FullName,
                 options
             );
+
 
             // Return the selected class
             if (string.IsNullOrEmpty(result))
@@ -510,6 +549,17 @@ namespace migrationtool.controllers
                 }
             }
         }
+
+        #endregion
+
+        #region ID Utilities
+
+        public static List<ClassModel> DeserializeIDs(string path)
+        {
+            return JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(path));
+        }
+
+        #endregion
     }
 }
 #endif

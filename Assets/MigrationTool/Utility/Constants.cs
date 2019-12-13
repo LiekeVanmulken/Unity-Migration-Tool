@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using migrationtool.controllers.customlogic;
+using Newtonsoft.Json;
 
 namespace migrationtool.utility
 {
@@ -10,11 +13,11 @@ namespace migrationtool.utility
         /// How long the while loop that is waiting for a thread should sleep before checking the isComplete again.
         /// </summary>
         public readonly int THREAD_WAIT_TIME = 300;
-        
+
         /// <summary>
         /// Sets how deep the fields of every class will be parsed.
         /// </summary>
-        public readonly int RECURSION_DEPTH = 3;
+        public readonly int RECURSION_DEPTH = 6;
 
         /// <summary>
         /// Checks whether something is a list or array and parses the containing class
@@ -28,14 +31,29 @@ namespace migrationtool.utility
         public readonly Regex RegexGuid = new Regex(@"(?<=guid: )[A-z0-9]*", RegexOptions.Compiled);
 
         /// <summary>
-        /// Path to the export.json from the Asset path
+        /// Path to the project root
         /// </summary>
-        public readonly string RelativeExportPath = "/MigrationTool/Exports/Export.json";
+        public readonly string RootDirectory = Directory.GetCurrentDirectory();
 
         /// <summary>
-        /// Path to the Found.json from the Asset path
+        /// Path to the ProjectIDs.json from the Root path
         /// </summary>
-        public readonly string RelativeFoundScriptPath = "/MigrationTool/Exports/Found.json";
+        public readonly string RelativeExportPath = "/MigrationTool/Exports/ProjectIDs.json";
+
+        /// <summary>
+        /// Path to the GeneratedMappings.json from the Root path
+        /// </summary>
+        public readonly string RelativeScriptMappingPath = "/MigrationTool/Exports/GeneratedMappings.json";
+
+        /// <summary>
+        /// Path to the log file from the Root path
+        /// </summary>
+        public readonly string RelativeLogPath = "/MigrationTool/Exports/Migration.log";
+        
+        /// <summary>
+        ///  Sets the formatting of the saved files
+        /// </summary>
+        public readonly Formatting IndentJson = Formatting.None;
 
         /// <summary>
         /// Fields to exclude in the field mapping of the MonoBehaviour Yaml
@@ -60,7 +78,10 @@ namespace migrationtool.utility
         public readonly Dictionary<string, ICustomMappingLogic> CustomLogicMapping =
             new Dictionary<string, ICustomMappingLogic>()
             {
-//                {typeof(TestScriptQuaternion).FullName, new QuaternionCustomMappingLogic()}
+//                {typeof(TestScri
+//
+// ptQuaternion).FullName, new QuaternionCustomMappingLogic()}
             };
     }
 }
+#endif

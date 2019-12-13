@@ -1,29 +1,72 @@
 ﻿#if UNITY_EDITOR
-
+using u040.prespective.migrationtool;
 using System.Linq;
 using System;
 using System.Reflection;
 using System.Threading;
 using migrationtool.windows;
+using UnityEditor;
 using UnityEngine;
 
 namespace migrationtool.utility
 {
-    public class ThreadTestWindow : MainThreadDispatcherEditorWindow
+    public class ThreadTestWindow : EditorWindow
     {
         // Add menu named "My Window" to the Window menu
-//        [MenuItem("Window/ThreadTestWindow")]
-//        static void Init()
-//        {
-//            // Get existing open window or if none, make a new one:
-//            ThreadTestWindow window = (ThreadTestWindow) EditorWindow.GetWindow(typeof(ThreadTestWindow));
-//            window.Show();
-//        }
+        [MenuItem("Window/ThreadTestWindow2")]
+        static void Init()
+        {
+            // Get existing open window or if none, make a new one:
+            ThreadTestWindow window = (ThreadTestWindow) EditorWindow.GetWindow(typeof(ThreadTestWindow));
+            window.Show();
+        }
 
         private bool isRunning;
 
+        private long FileID_of_nested_PrefabInstance;
+        private long FileID_of_object_in_nested_Prefab;
+
         void OnGUI()
         {
+//            if (GUILayout.Button("Combine versions"))
+//            {
+//                new MappingView().CombineMappings("1.0.0.75", "1.0.1.82");
+//            }
+
+            
+            if (GUILayout.Button("Get PREspective version"))
+            {
+                TestPrespectiveVersion();
+            }
+//            if (GUILayout.Button("Map mappings"))
+//            {
+//                new MappingView().CombineMappings("1.0.0.1","1.0.0.2");
+//            }
+
+            if (GUILayout.Button("test zip"))
+                
+            {
+                string package = EditorUtility.OpenFilePanel("open packages",
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "prepackage");
+                if (string.IsNullOrEmpty(package))
+                {
+                    return;
+                }
+
+                Unzipper.ParseUnityPackagesToFiles(package);
+            }
+
+
+            FileID_of_nested_PrefabInstance =
+                EditorGUILayout.LongField("FileID_of_nested_PrefabInstance", FileID_of_nested_PrefabInstance);
+            FileID_of_object_in_nested_Prefab = EditorGUILayout.LongField("FileID_of_object_in_nested_Prefab",
+                FileID_of_object_in_nested_Prefab);
+
+            long result = (FileID_of_nested_PrefabInstance ^ FileID_of_object_in_nested_Prefab) & 0x7fffffffffffffff;
+            EditorGUILayout.LongField(result);
+
+            GUILayout.Space(50);
+
             if (GUILayout.Button("AssetDatabaseTest"))
             {
                 Assembly executingAssembly = Assembly.GetExecutingAssembly();
@@ -76,15 +119,28 @@ namespace migrationtool.utility
             GUILayout.Label(isRunning ? "Running" : "Stopped");
         }
 
+        private static void TestPrespectiveVersion()
+        {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GetName().Name.ToLower().Contains("prespective"))
+                {
+                    Debug.LogWarning(assembly.GetName().Version.ToString());
+                }
+            }
+        }
+
         private void OnComplete()
         {
             isRunning = false;
         }
 
+        
+
         private void test(Action OnComplete)
         {
             string result = null;
-            ThreadTestWindow.Instance().Enqueue(() =>
+            ThreadUtility.RunMainTask(() =>
             {
                 OptionsWizard optionsWizard =
                     OptionsWizard.CreateWizard("Class cannot be found, select which one to choose",
@@ -98,7 +154,6 @@ namespace migrationtool.utility
                 Debug.Log("result : " + result);
                 Thread.Sleep(1000);
             }
-
             Debug.Log("result : " + result);
             Debug.Log("Completed");
             OnComplete();

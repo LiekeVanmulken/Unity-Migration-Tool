@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
@@ -177,3 +178,4 @@ namespace migrationtool.utility
         }
     }
 }
+#endif

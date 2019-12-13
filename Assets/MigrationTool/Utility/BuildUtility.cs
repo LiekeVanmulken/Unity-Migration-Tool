@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+using System;
 using System.Collections.Generic;
 using System.IO;
 using migrationtool.controllers;
@@ -15,7 +16,7 @@ namespace migrationtool.utility
     /// </summary>
     public class BuildUtility
     {
-        /// <summary>
+        /// <summary> 
         /// Exports the classes of the project
         /// </summary>
         /// <param name="projectPath"></param>
@@ -33,7 +34,7 @@ namespace migrationtool.utility
         public static void ExportClassData(string projectPath, string exportPath)
         {
             List<ClassModel> export = ExportClassData(projectPath);
-            string jsonExport = JsonConvert.SerializeObject(export, Formatting.Indented);
+            string jsonExport = JsonConvert.SerializeObject(export, Constants.Instance.IndentJson);
 
             if (!Directory.Exists(Path.GetDirectoryName(exportPath)))
             {
@@ -73,10 +74,8 @@ namespace migrationtool.utility
                 throw new DirectoryNotFoundException("Could not find the original or destination path");
             }
 
-            List<ClassModel> oldIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(originalProjectPath));
-            List<ClassModel> newIDs =
-                JsonConvert.DeserializeObject<List<ClassModel>>(File.ReadAllText(destinationExportFile));
+            List<ClassModel> oldIDs = IDController.DeserializeIDs(originalProjectPath);
+            List<ClassModel> newIDs = IDController.DeserializeIDs(destinationExportFile);
 
             TransformIDsOfPrefabs(oldIDs, newIDs, originalProjectPath, destinationProjectPath);
         }
@@ -93,18 +92,19 @@ namespace migrationtool.utility
             string originalProjectPath, string destinationProjectPath)
         {
             List<PrefabModel> exportPrefabs = new PrefabController().ExportPrefabs(originalProjectPath);
-            List<FoundScript> foundScripts = new List<FoundScript>();
+            List<ScriptMapping> scriptMappings = new List<ScriptMapping>();
 
             IDController idController = new IDController();
             PrefabView prefabView = new PrefabView();
 
             foreach (PrefabModel prefab in exportPrefabs)
             {
-                string[] parsedPrefab = idController.TransformIDs(prefab.Path, oldIDs, newIDs, ref foundScripts);
-                prefabView.WritePrefab(parsedPrefab, prefab, destinationProjectPath);
+                string[] parsedPrefab = idController.TransformIDs(prefab.Path, oldIDs, newIDs, ref scriptMappings);
+                prefabView.SavePrefabFile(parsedPrefab, prefab, destinationProjectPath);
             }
 
             Debug.Log("Converted all prefabs to : " + destinationProjectPath);
         }
     }
 }
+#endif
