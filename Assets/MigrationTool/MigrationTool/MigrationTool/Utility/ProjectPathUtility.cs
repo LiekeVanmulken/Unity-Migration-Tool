@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR || UNITY_EDITOR_BETA
+#if UNITY_EDITOR || UNITY_EDITOR_BETA
 using System;
 using System.IO;
 using System.Linq;
@@ -35,7 +35,6 @@ namespace migrationtool.utility
                 string path = Path.GetFullPath(Path.Combine(match, @"..\"));
                 if (
                     Directory.Exists(path + @"\Library") &&
-                    Directory.Exists(path + @"\obj") &&
                     Directory.Exists(path + @"\Packages")
                 )
                 {
